@@ -79,11 +79,10 @@
         <div class="w-full max-w-sm p-8 bg-white rounded-3xl shadow-xl">
             <div class="flex justify-center mb-4">
                 <div class="w-16 h-16 bg-orange-400 rounded-full flex items-center justify-center shadow-lg shadow-orange-200">
-                    <svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 19V5" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 5h8" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 12h5" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l3 6 3-6v14" />
+                    <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.58 20 4 16.42 4 12C4 7.58 7.58 4 12 4C16.42 4 20 7.58 20 12C20 16.42 16.42 20 12 20Z" fill="white" fill-opacity="0.2"/>
+                        <path d="M10.5 17V8.5C10.5 7.67 9.83 7 9 7C8.17 7 7.5 7.67 7.5 8.5V17H5.5V8.5C5.5 6.57 7.07 5 9 5C10.93 5 12.5 6.57 12.5 8.5V17H10.5Z" fill="white"/>
+                        <path d="M18.5 17V8.5C18.5 7.67 17.83 7 17 7C16.17 7 15.5 7.67 15.5 8.5V17H13.5V8.5C13.5 6.57 15.07 5 17 5C18.93 5 20.5 6.57 20.5 8.5V17H18.5Z" fill="white"/>
                     </svg>
                 </div>
             </div>
@@ -653,7 +652,9 @@
 
         // --- 인증 및 데이터 로딩 ---
         onAuthStateChanged(auth, (user) => {
-            if (user) { // 이메일 인증 여부 체크는 일단 제거하여 로그인 흐름을 확인합니다.
+            // 이메일 인증 기능은 복잡성을 증가시키므로, 우선은 가입 즉시 로그인되는 흐름으로 구현합니다.
+            // 추후 필요시 sendEmailVerification을 사용하여 인증 로직을 추가할 수 있습니다.
+            if (user) {
                 // 사용자가 로그인한 경우
                 userId = user.uid;
                 authView.classList.add('hidden');
