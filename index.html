@@ -88,6 +88,8 @@
             </div>
             <h1 class="text-4xl font-jua text-rose-500 text-center">피트밀</h1>
             <p class="text-slate-500 text-center mb-8">나만의 AI 영양사, 피트밀</p>
+            
+            <!-- 로그인 폼 -->
             <form id="login-form" class="space-y-4">
                 <div>
                     <label for="email" class="block text-sm font-medium text-slate-600">이메일</label>
@@ -97,11 +99,37 @@
                     <label for="password" class="block text-sm font-medium text-slate-600">비밀번호</label>
                     <input type="password" id="password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500" required>
                 </div>
+                 <div class="text-right text-sm">
+                    <a href="#" id="forgot-password-link" class="font-medium text-rose-600 hover:text-rose-500">비밀번호를 잊으셨나요?</a>
+                </div>
                 <div class="flex gap-3 pt-2">
                     <button type="submit" id="login-btn" class="w-full bg-rose-500 text-white py-3 rounded-full font-semibold hover:bg-rose-600 transition">로그인</button>
-                    <button type="button" id="register-btn" class="w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition">회원가입</button>
+                    <button type="button" id="go-to-register-btn" class="w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition">회원가입</button>
                 </div>
             </form>
+
+            <!-- 회원가입 폼 (숨겨짐) -->
+            <form id="register-form" class="hidden space-y-4">
+                <div>
+                    <label for="register-email" class="block text-sm font-medium text-slate-600">이메일</label>
+                    <input type="email" id="register-email" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500" required>
+                </div>
+                <div>
+                    <label for="register-password" class="block text-sm font-medium text-slate-600">비밀번호</label>
+                    <input type="password" id="register-password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500" required>
+                    <p class="mt-1 text-xs text-slate-500">8자리 이상 영문 소문자, 숫자를 조합해주세요.</p>
+                </div>
+                 <div>
+                    <label for="confirm-password" class="block text-sm font-medium text-slate-600">비밀번호 확인</label>
+                    <input type="password" id="confirm-password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500" required>
+                </div>
+                <p id="password-error" class="hidden text-xs text-red-500">비밀번호가 일치하지 않거나 형식이 올바르지 않습니다.</p>
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" id="register-btn" class="w-full bg-rose-500 text-white py-3 rounded-full font-semibold hover:bg-rose-600 transition">회원가입</button>
+                </div>
+                 <button type="button" id="back-to-login-btn" class="w-full text-slate-500 py-2 rounded-full text-sm font-semibold hover:bg-slate-100 transition">로그인으로 돌아가기</button>
+            </form>
+
             <div class="relative my-6">
                 <div class="absolute inset-0 flex items-center" aria-hidden="true">
                     <div class="w-full border-t border-slate-300"></div>
@@ -265,6 +293,7 @@
             <form id="profile-form" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4"><div><label for="gender" class="block text-sm font-medium text-slate-600">성별</label><select id="gender" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500"><option value="female">여성</option><option value="male">남성</option><option value="unspecified">선택 안함</option></select></div><div><label for="age" class="block text-sm font-medium text-slate-600">나이</label><input type="number" id="age" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500" placeholder="세"></div></div><div class="grid grid-cols-2 gap-4"><div><label for="height" class="block text-sm font-medium text-slate-600">신장</label><input type="number" id="height" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500" placeholder="cm"></div><div><label for="weight" class="block text-sm font-medium text-slate-600">체중</label><input type="number" id="weight" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500" placeholder="kg"></div></div><div><label for="activity" class="block text-sm font-medium text-slate-600">활동량</label><select id="activity" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500"><option value="1.2">거의 없음</option><option value="1.375">가벼운 활동</option><option value="1.55">보통 활동</option><option value="1.725">높은 활동</option><option value="1.9">매우 높은 활동</option></select></div><div><label for="goal" class="block text-sm font-medium text-slate-600">목표</label><select id="goal" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500"><option value="loss">체중 감량</option><option value="maintain">체중 유지</option><option value="gain">체중 증가</option></select></div><div class="pt-4"><button type="submit" class="w-full bg-rose-500 text-white py-3 rounded-full font-semibold hover:bg-rose-600 transition duration-300">저장하기</button></div>
             </form>
+             <button id="withdraw-btn" class="mt-4 w-full text-xs text-slate-400 hover:text-red-500 hover:underline transition">회원 탈퇴</button>
         </div>
     </div>
     
@@ -396,13 +425,31 @@
             <h2 class="text-2xl font-jua text-rose-600 mb-6 text-center">이용약관</h2>
             <div class="prose prose-sm max-h-96 overflow-y-auto text-slate-600">
                 <h3>제1조 (목적)</h3>
-                <p>본 약관은 피트밀(이하 "회사")가 제공하는 피트밀 서비스 및 관련 제반 서비스(이하 "서비스")의 이용과 관련하여 회사와 회원과의 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.</p>
+                <p>본 약관은 피트밀(이하 "회사")가 제공하는 피트밀 앱(이하 "서비스")의 이용과 관련하여, 회사와 이용자 간의 권리와 의무, 책임사항 등을 정함을 목적으로 합니다.</p>
                 <h3>제2조 (정의)</h3>
-                <p>본 약관에서 사용하는 용어의 정의는 다음과 같습니다.<br>1. "서비스"라 함은 회원이 PC, 휴대형 단말기 등 각종 유무선 장치를 통하여 이용할 수 있는 피트밀 및 관련 제반 서비스를 의미합니다.<br>2. "회원"이라 함은 회사의 서비스에 접속하여 본 약관에 따라 회사와 이용계약을 체결하고 회사가 제공하는 서비스를 이용하는 고객을 말합니다.</p>
-                <h3>제3조 (회원의 의무)</h3>
-                <p>회원은 다음 행위를 하여서는 안 됩니다.<br>1. 신청 또는 변경 시 허위 내용의 등록<br>2. 타인의 정보 도용<br>3. 회사가 게시한 정보의 변경<br>4. 기타 불법적이거나 부당한 행위</p>
+                <p>"이용자"란 피트밀 앱에 접속하여 본 약관에 따라 회사가 제공하는 서비스를 이용하는 모든 분을 의미합니다.</p>
+                <p>"프리미엄 서비스"는 서비스 내 유료 결제를 통해 이용할 수 있으며, 광고 제거, 캘린더 상 상세 리포트 열람 등의 기능을 포함합니다.</p>
+                <p>"콘텐츠"란 피트밀에서 제공하는 AI 식단 추천, 영양 정보, 텍스트, 이미지 및 기타 자료를 포함합니다.</p>
+                <h3>제3조 (약관의 게시 및 변경)</h3>
+                <p>본 약관은 피트밀 앱 내 또는 연결된 화면을 통해 게시되며, 이용자는 언제든지 열람하실 수 있습니다. 회사는 관련 법령에 따라 약관을 개정할 수 있으며, 변경 시에는 사전 고지를 통해 안내드립니다.</p>
+                <h3>제4조 (회원가입 및 계정관리)</h3>
+                <p>이용자는 이메일/비밀번호 또는 SNS 계정을 통해 간편하게 회원가입을 하실 수 있습니다. 회원가입 시 제공한 정보는 사실에 기반해야 하며, 최신 상태로 유지해 주셔야 합니다. 회원은 앱 내 계정 설정 메뉴를 통해 언제든지 탈퇴를 요청하실 수 있습니다.</p>
+                <h3>제5조 (서비스의 제공)</h3>
+                <p>회사는 AI 영양 체크, AI 다이어트 기록 등 다양한 콘텐츠를 서비스 형태로 제공합니다. 서비스는 시스템 점검, 기술적 이슈 등으로 인해 일시적으로 중단될 수 있으며, 가능할 경우 사전에 공지드립니다.</p>
+                <h3>제6조 (유료결제 및 프리미엄 서비스 이용)</h3>
+                <p>이용자는 앱 내 결제 시스템을 통해 프리미엄 서비스를 이용하실 수 있습니다. 프리미엄 서비스는 월 단위로 결제되며, 결제 완료 시 결제 취소를 하더라도 1개월 간의 서비스는 지속되며 환불은 어렵습니다. 결제 및 환불은 각 마켓(Google Play, App Store 등)의 운영 정책을 따르며, 해당 마켓을 통해 진행됩니다.</p>
+                <h3>제7조 (콘텐츠 및 정보의 한계)</h3>
+                <p>피트밀 앱에서 제공되는 AI 식단 추천 및 영양 정보 콘텐츠는 인공지능(AI) 기술을 기반으로 자동 생성되는 정보입니다. 이러한 정보는 건강 관리를 위한 참고용으로 제공되는 것으로, 의학적 진단이나 법적 효력을 보장하는 해석은 아닙니다. AI는 이용자가 입력한 데이터를 기반으로 통계적 알고리즘에 따라 콘텐츠를 생성하므로, 실제 전문가의 진단과 다를 수 있습니다. 회사는 해당 콘텐츠에 따른 이용자의 해석이나 판단, 행동 결과에 대해 법적 책임을 지지 않습니다.</p>
+                <h3>제8조 (이용자의 의무)</h3>
+                <p>다른 사람의 정보를 무단으로 사용해서는 안 됩니다. 서비스 이용 중 법령에 위반되거나 부정한 목적의 행위는 금지됩니다. 시스템 장애를 유발할 수 있는 해킹, 자동화 도구 등의 사용은 허용되지 않습니다.</p>
+                <h3>제9조 (권리의 귀속)</h3>
+                <p>서비스 내에서 제공되는 모든 콘텐츠 및 자료의 저작권은 회사에 있으며, 이용자는 이를 사전 허가 없이 복제, 배포, 유통하실 수 없습니다.</p>
+                <h3>제10조 (책임의 제한)</h3>
+                <p>이용자의 단말기 환경, 네트워크 상태 등 외부 요인으로 인해 발생하는 서비스 이용의 어려움에 대해서는 회사가 직접적으로 책임지기 어렵습니다. 앱 내 제공되는 콘텐츠는 참고용 정보이며, 이에 따른 판단이나 행위의 결과에 대해서는 회사가 법적 책임을 지지 않습니다.</p>
+                <h3>제11조 (분쟁 해결 및 준거법)</h3>
+                <p>서비스 이용과 관련한 분쟁은 상호 협의를 통해 원만히 해결하며, 필요 시 대한민국 관련 법령에 따라 처리되고, 관할 법원은 민사소송법에 따릅니다.</p>
                 <hr>
-                <p class="text-xs text-center">본 약관은 샘플이며, 실제 서비스 운영 시에는 법률 전문가의 검토를 거친 후 사용해야 합니다.</p>
+                <p><strong>부칙</strong><br>이 약관은 2024년 8월 26일부터 시행됩니다.</p>
             </div>
             <button type="button" id="close-terms-modal" class="mt-6 w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition duration-300">닫기</button>
         </div>
@@ -413,16 +460,77 @@
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-2xl p-6 md:p-8 transform scale-95 transition-transform duration-300">
             <h2 class="text-2xl font-jua text-rose-600 mb-6 text-center">개인정보 처리방침</h2>
             <div class="prose prose-sm max-h-96 overflow-y-auto text-slate-600">
-                <h3>1. 총칙</h3>
-                <p>피트밀(이하 "회사")는 이용자의 개인정보를 중요시하며, "정보통신망 이용촉진 및 정보보호"에 관한 법률을 준수하고 있습니다. 회사는 개인정보처리방침을 통하여 이용자가 제공하는 개인정보가 어떠한 용도와 방식으로 이용되고 있으며, 개인정보보호를 위해 어떠한 조치가 취해지고 있는지 알려드립니다.</p>
-                <h3>2. 수집하는 개인정보 항목</h3>
-                <p>회사는 회원가입, 상담, 서비스 신청 등을 위해 아래와 같은 개인정보를 수집하고 있습니다.<br>- 필수항목 : 이메일, 비밀번호<br>- 선택항목 : 성별, 나이, 키, 체중, 활동량, 목표</p>
-                <h3>3. 개인정보의 수집 및 이용 목적</h3>
-                <p>회사는 수집한 개인정보를 다음의 목적을 위해 활용합니다.<br>- 서비스 제공에 관한 계약 이행 및 서비스 제공에 따른 요금정산<br>- 회원 관리: 회원제 서비스 이용에 따른 본인확인, 개인 식별, 불량회원의 부정 이용 방지와 비인가 사용 방지<br>- AI 기반 맞춤형 식단 및 운동 추천 서비스 제공</p>
+                <h3>1. 수집하는 개인정보 항목</h3>
+                <p>회사는 회원가입 및 서비스 제공을 위해 아래와 같은 개인정보를 수집합니다.<br>
+                - 회원가입 시: 이메일 주소, 비밀번호<br>
+                - SNS 로그인 시: 닉네임, 이메일 등 SNS 제공 정보<br>
+                - 프로필 설정 시 (선택): 성별, 나이, 키, 체중, 활동량, 목표<br>
+                - 서비스 이용 시 자동 수집: 기기 정보, IP 주소, 접속 기록, 쿠키 등<br>
+                - 유료 서비스 이용 시: 결제 기록 (결제 수단 정보는 수집하지 않음)</p>
+                <h3>2. 개인정보의 이용 목적</h3>
+                <p>회사는 수집한 개인정보를 다음의 목적을 위해 활용합니다.<br>
+                - 회원 식별 및 본인 확인<br>
+                - AI 기반 맞춤형 식단 및 운동 추천 서비스 제공<br>
+                - 유료 서비스 제공 및 결제 처리<br>
+                - 고객 문의 응대 및 민원 처리<br>
+                - 서비스 안정성 확보 및 부정 이용 방지</p>
+                <h3>3. 개인정보 보유 및 이용 기간</h3>
+                <p>개인정보는 목적 달성 후 지체 없이 파기하며, 관계 법령에 따라 일정 기간 보존될 수 있습니다.<br>
+                - 계약 및 결제 기록: 5년 (전자상거래법)<br>
+                - 소비자 불만 및 분쟁 처리 기록: 3년 (전자상거래법)<br>
+                - 접속 기록: 3개월 (통신비밀보호법)</p>
+                <h3>4. 개인정보의 제3자 제공 및 처리 위탁</h3>
+                <p>회사는 원칙적으로 이용자의 개인정보를 외부에 제공하지 않으며, 결제 처리 및 서비스 안정성 확보를 위해 다음과 같이 개인정보 처리를 위탁할 수 있습니다.<br>
+                - 수탁업체: Google (Firebase, Google Play), Apple (App Store)<br>
+                - 위탁업무: 회원인증, 데이터 저장 및 분석, 인앱 결제 처리</p>
+                <h3>5. 이용자의 권리</h3>
+                <p>이용자는 언제든지 등록되어 있는 자신의 개인정보를 조회하거나 수정할 수 있으며 가입해지를 요청할 수도 있습니다. 앱 내 ‘프로필’ 메뉴 또는 고객센터를 통해 요청 가능합니다.</p>
+                <h3>6. 개인정보 보호책임자</h3>
+                <p>성명: [대표자 이름]<br>
+                소속/직책: 피트밀 / 대표<br>
+                이메일: [회사 이메일]<br>
+                전화번호: [회사 연락처]</p>
                 <hr>
-                <p class="text-xs text-center">본 개인정보 처리방침은 샘플이며, 실제 서비스 운영 시에는 법률 전문가의 검토를 거친 후 사용해야 합니다.</p>
+                <p><strong>공고일자:</strong> 2024년 8월 26일<br>
+                <strong>시행일자:</strong> 2024년 8월 26일</p>
             </div>
             <button type="button" id="close-privacy-modal" class="mt-6 w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition duration-300">닫기</button>
+        </div>
+    </div>
+    
+    <!-- 비밀번호 재설정 모달 -->
+    <div id="password-reset-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
+        <div class="bg-white rounded-3xl shadow-xl w-full max-w-sm p-8 transform scale-95 transition-transform duration-300">
+            <h2 class="text-2xl font-jua text-rose-600 mb-6 text-center">비밀번호 재설정</h2>
+            <p class="text-center text-slate-600 mb-4">가입하신 이메일 주소를 입력하시면, 비밀번호를 재설정할 수 있는 링크를 보내드립니다.</p>
+            <form id="password-reset-form">
+                <div>
+                    <label for="reset-email" class="block text-sm font-medium text-slate-600">이메일</label>
+                    <input type="email" id="reset-email" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500" required>
+                </div>
+                <div class="pt-4 flex flex-col gap-3">
+                    <button type="submit" class="w-full bg-rose-500 text-white py-3 rounded-full font-semibold hover:bg-rose-600 transition">재설정 이메일 받기</button>
+                    <button type="button" id="cancel-reset-password" class="w-full text-slate-500 py-2 rounded-full font-semibold hover:bg-slate-100 transition">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 회원탈퇴 확인 모달 -->
+    <div id="withdraw-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
+        <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 md:p-8 transform scale-95 transition-transform duration-300 text-center">
+            <h2 class="text-2xl font-jua text-rose-600 mb-4">정말로 탈퇴하시겠어요? 😢</h2>
+            <p class="text-slate-600 mb-6">지금 탈퇴하시면 모든 식단 기록, 운동 기록, 결제 내역이 영구적으로 삭제되며 다시는 복구할 수 없어요! 프리미엄 구독 중인 경우, 남은 기간은 환불되지 않습니다.</p>
+            <div>
+                <label for="withdraw-confirm-text" class="block text-sm font-medium text-slate-600 mb-2">탈퇴하시려면 아래에 "탈퇴하겠습니다"를 입력해주세요.</label>
+                <input type="text" id="withdraw-confirm-text" class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-rose-500 focus:ring-rose-500">
+            </div>
+            <div class="pt-4 flex space-x-3">
+                <button type="button" id="cancel-withdraw" class="w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition">계정 유지하기</button>
+                <button type="button" id="confirm-withdraw-btn" class="w-full bg-red-500 text-white py-3 rounded-full font-semibold hover:bg-red-600 transition disabled:bg-red-300" disabled>
+                    탈퇴하기
+                </button>
+            </div>
         </div>
     </div>
 
@@ -436,8 +544,8 @@
     <script type="module">
         // Firebase SDK 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, arrayUnion, arrayRemove, collection, query, where, getDocs, documentId } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, sendEmailVerification, sendPasswordResetEmail, deleteUser } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, updateDoc, arrayUnion, arrayRemove, collection, query, where, getDocs, documentId, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Firebase 설정
         const firebaseConfig = {
@@ -462,9 +570,12 @@
         const authView = document.getElementById('auth-view');
         const appView = document.getElementById('app-view');
         const loginForm = document.getElementById('login-form');
-        const registerBtn = document.getElementById('register-btn');
+        const registerForm = document.getElementById('register-form');
+        const goToRegisterBtn = document.getElementById('go-to-register-btn');
+        const backToLoginBtn = document.getElementById('back-to-login-btn');
         const googleLoginBtn = document.getElementById('google-login-btn');
         const logoutButton = document.getElementById('logout-button');
+        const forgotPasswordLink = document.getElementById('forgot-password-link');
 
         const dashboardView = document.getElementById('dashboard-view');
         const calendarView = document.getElementById('calendar-view');
@@ -483,9 +594,12 @@
         const premiumModal = document.getElementById('premium-modal');
         const termsModal = document.getElementById('terms-modal');
         const privacyModal = document.getElementById('privacy-modal');
+        const passwordResetModal = document.getElementById('password-reset-modal');
+        const withdrawModal = document.getElementById('withdraw-modal');
         const profileForm = document.getElementById('profile-form');
         const addFoodForm = document.getElementById('add-food-form');
         const addExerciseForm = document.getElementById('add-exercise-form');
+        const passwordResetForm = document.getElementById('password-reset-form');
         const profileButton = document.getElementById('profile-button');
         const generatePlanButton = document.getElementById('generate-plan-button');
         const addFoodButton = document.getElementById('add-food-button');
@@ -494,6 +608,7 @@
         const cancelAddFoodButton = document.getElementById('cancel-add-food');
         const cancelAddExerciseButton = document.getElementById('cancel-add-exercise');
         const cancelPhotoAnalysisButton = document.getElementById('cancel-photo-analysis');
+        const cancelResetPasswordBtn = document.getElementById('cancel-reset-password');
         const analyzePhotoButton = document.getElementById('analyze-photo-button');
         const photoInput = document.getElementById('photo-input');
         const imagePreview = document.getElementById('image-preview');
@@ -514,6 +629,10 @@
         const privacyLink = document.getElementById('privacy-link');
         const closeTermsModalBtn = document.getElementById('close-terms-modal');
         const closePrivacyModalBtn = document.getElementById('close-privacy-modal');
+        const withdrawBtn = document.getElementById('withdraw-btn');
+        const cancelWithdrawBtn = document.getElementById('cancel-withdraw');
+        const confirmWithdrawBtn = document.getElementById('confirm-withdraw-btn');
+        const withdrawConfirmText = document.getElementById('withdraw-confirm-text');
         
         // 상태 관리
         let userProfile = null;
@@ -533,8 +652,8 @@
 
         // --- 인증 및 데이터 로딩 ---
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // 사용자가 로그인한 경우
+            if (user && user.emailVerified) {
+                // 사용자가 로그인했고 이메일 인증을 완료한 경우
                 userId = user.uid;
                 authView.classList.add('hidden');
                 appView.classList.remove('hidden');
@@ -569,7 +688,13 @@
                 onSnapshot(waterRef, (docSnap) => { updateWaterUI(docSnap.exists() ? docSnap.data().count : 0); });
                 
                 renderCalendar();
-            } else {
+            } else if (user && !user.emailVerified) {
+                // 이메일 인증이 아직 안된 경우
+                showToast('이메일을 확인하여 인증을 완료해주세요.');
+                authView.classList.remove('hidden');
+                appView.classList.add('hidden');
+            }
+            else {
                 // 사용자가 로그아웃한 경우
                 userId = null;
                 userProfile = null;
