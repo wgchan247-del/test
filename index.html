@@ -79,9 +79,11 @@
         <div class="w-full max-w-sm p-8 bg-white rounded-3xl shadow-xl">
             <div class="flex justify-center mb-4">
                 <div class="w-16 h-16 bg-orange-400 rounded-full flex items-center justify-center shadow-lg shadow-orange-200">
-                    <svg class="w-8 h-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.362-3.797z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214C14.267 4.43 13.18 4 12 4a8.25 8.25 0 00-5.962 2.952 8.287 8.287 0 014.9-2.313 8.983 8.983 0 003.362 2.575z" />
+                    <svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 19V5" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 5h8" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 12h5" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l3 6 3-6v14" />
                     </svg>
                 </div>
             </div>
@@ -418,10 +420,10 @@
         </div>
     </div>
 
-     <!-- 이용약관 모달 -->
+    <!-- 이용약관 모달 -->
     <div id="terms-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-2xl p-6 md:p-8 transform scale-95 transition-transform duration-300">
-            <h2 class="text-2xl font-jua text-rose-600 mb-6 text-center">이용약관</h2>
+            <h2 class="text-2xl font-jua text-orange-600 mb-6 text-center">이용약관</h2>
             <div class="prose prose-sm max-h-96 overflow-y-auto text-slate-600">
                 <h3>제1조 (목적)</h3>
                 <p>본 약관은 에프앤앤(이하 "회사")가 제공하는 피트밀 앱(이하 "서비스")의 이용과 관련하여, 회사와 이용자 간의 권리와 의무, 책임사항 등을 정함을 목적으로 합니다.</p>
@@ -457,7 +459,7 @@
     <!-- 개인정보 처리방침 모달 -->
     <div id="privacy-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-2xl p-6 md:p-8 transform scale-95 transition-transform duration-300">
-            <h2 class="text-2xl font-jua text-rose-600 mb-6 text-center">개인정보 처리방침</h2>
+            <h2 class="text-2xl font-jua text-orange-600 mb-6 text-center">개인정보 처리방침</h2>
             <div class="prose prose-sm max-h-96 overflow-y-auto text-slate-600">
                 <h3>1. 수집하는 개인정보 항목</h3>
                 <p>회사는 회원가입 및 서비스 제공을 위해 아래와 같은 개인정보를 수집합니다.<br>
@@ -493,9 +495,6 @@
                 <p><strong>공고일자:</strong> 2025년 8월 25일<br>
                 <strong>시행일자:</strong> 2025년 8월 27일</p>
             </div>
-            <button type="button" id="close-privacy-modal" class="mt-6 w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition duration-300">닫기</button>
-        </div>
-    </div>
             <button type="button" id="close-privacy-modal" class="mt-6 w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition duration-300">닫기</button>
         </div>
     </div>
@@ -760,14 +759,31 @@
         function renderMealPlan(plan) {
             mealPlanContent.innerHTML = '';
             const mealTypes = { breakfast: '아침', lunch: '점심', dinner: '저녁', snack: '간식' };
-            for (const mealType in plan) {
-                const meal = plan[mealType];
-                const card = document.createElement('div');
-                card.className = 'bg-white p-5 rounded-2xl custom-shadow meal-card';
-                card.innerHTML = `<div class="flex justify-between items-start"><div><h3 class="text-lg font-jua text-rose-500">${mealTypes[mealType]}</h3><p class="text-xl font-semibold my-2 text-slate-800">${meal.name}</p></div><button class="log-ai-meal-btn bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-sm font-semibold hover:bg-rose-200">식단에 추가</button></div><div class="flex justify-between text-sm text-slate-500 border-t border-slate-100 pt-3 mt-3"><span>🔥 ${meal.calories} kcal</span><span>🍞 ${meal.carbs}g</span><span>🍗 ${meal.protein}g</span><span>🥑 ${meal.fat}g</span></div>`;
-                card.querySelector('.log-ai-meal-btn').addEventListener('click', () => logFoodItem({ name: `(AI) ${meal.name}`, ...meal, timestamp: Date.now() }));
-                mealPlanContent.appendChild(card);
-            }
+            const orderedMealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+
+            orderedMealTypes.forEach(mealType => {
+                if (plan[mealType]) {
+                    const meal = plan[mealType];
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-5 rounded-2xl custom-shadow meal-card';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-jua text-orange-500">${mealTypes[mealType]}</h3>
+                                <p class="text-xl font-semibold my-2 text-slate-800">${meal.name}</p>
+                            </div>
+                            <button class="log-ai-meal-btn bg-orange-100 text-orange-600 w-10 h-10 rounded-full text-xl font-semibold hover:bg-orange-200 flex items-center justify-center">+</button>
+                        </div>
+                        <div class="flex justify-between text-sm text-slate-500 border-t border-slate-100 pt-3 mt-3">
+                            <span>🔥 ${meal.calories} kcal</span>
+                            <span>🍞 ${meal.carbs}g</span>
+                            <span>🍗 ${meal.protein}g</span>
+                            <span>🥑 ${meal.fat}g</span>
+                        </div>`;
+                    card.querySelector('.log-ai-meal-btn').addEventListener('click', () => logFoodItem({ name: `(AI) ${meal.name}`, ...meal, timestamp: Date.now() }));
+                    mealPlanContent.appendChild(card);
+                }
+            });
         }
 
         function renderDailyIntake(foods) {
@@ -776,7 +792,7 @@
             foods.forEach((food) => {
                 const item = document.createElement('div');
                 item.className = 'bg-white p-4 rounded-2xl custom-shadow flex justify-between items-center';
-                const imageHtml = food.photo ? `<img src="${food.photo}" class="w-12 h-12 rounded-lg object-cover mr-4">` : `<div class="w-12 h-12 rounded-lg bg-rose-50 flex-shrink-0 mr-4"></div>`;
+                const imageHtml = food.photo ? `<img src="${food.photo}" class="w-12 h-12 rounded-lg object-cover mr-4">` : `<div class="w-12 h-12 rounded-lg bg-orange-50 flex-shrink-0 mr-4"></div>`;
                 item.innerHTML = `
                     <div class="flex items-center flex-grow">
                         ${imageHtml}
