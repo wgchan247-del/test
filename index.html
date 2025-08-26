@@ -486,8 +486,7 @@
                 const userDocRef = doc(db, "users", auth.currentUser.uid);
                 await setDoc(userDocRef, userInfo);
                 state.userInfo = userInfo;
-                setupFoodListener(auth.currentUser.uid);
-                render();
+                // 온보딩 완료 후에는 onAuthStateChanged가 리스너를 설정하고 렌더링을 다시 호출합니다.
             } catch (error) {
                 alert("정보 저장 실패: " + error.message);
             }
@@ -543,7 +542,8 @@
                     allEntries[entry.date].push(entry);
                 });
                 state.foodEntries = allEntries;
-                render();
+                // 데이터가 변경될 때마다 다시 렌더링
+                if(state.isLoggedIn) render();
             }, (error) => {
                 console.error("Snapshot listener error:", error);
             });
@@ -552,6 +552,7 @@
         // --- 앱 시작 및 인증 상태 감지 ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                // 로그인 상태
                 state.isLoggedIn = true;
                 state.user = user;
                 
@@ -560,12 +561,13 @@
 
                 if (docSnap.exists()) {
                     state.userInfo = docSnap.data();
-                    setupFoodListener(user.uid);
+                    setupFoodListener(user.uid); // 리스너는 여기서 한번만 설정
                 } else {
                     state.userInfo = null;
-                    render(); // 온보딩을 위해 렌더링
+                    render(); // 온보딩 페이지를 보여주기 위해 렌더링
                 }
             } else {
+                // 로그아웃 상태
                 if (state.unsubscribeFoodListener) state.unsubscribeFoodListener();
                 Object.assign(state, {
                     isLoggedIn: false,
@@ -579,7 +581,7 @@
             }
         });
         
-        // --- 전역 스코프에 함수 노출 및 초기 렌더링 ---
+        // --- 전역 스코프에 함수 노출 ---
         window.navigate = navigate;
         window.changeDate = (amount) => {
             const currentDateObj = new Date(state.currentDate + 'T00:00:00');
@@ -589,9 +591,6 @@
         };
         window.openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
         window.closeModal = () => document.getElementById('add-food-modal').classList.add('hidden');
-
-        // 페이지가 로드되면 바로 첫 화면을 렌더링합니다.
-        render();
 
     </script>
 </body>
