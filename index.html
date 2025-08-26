@@ -4,146 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitMeal - AI 식단 관리</title>
+    <!-- Tailwind CSS CDN 로드 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        html { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        /* 기본 폰트 및 부드러운 스크롤 적용 */
+        html {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        /* 커스텀 스크롤바 (선택 사항) */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
+        /* 간단한 페이드인 애니메이션 */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
-        /* 깜빡임 방지를 위해 초기에 숨김 */
-        body { visibility: hidden; }
     </style>
+    <!-- Google Fonts (Inter) 로드 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
 
-    <div id="app-container">
-        <!-- 초기 콘텐츠가 여기에 렌더링됩니다. -->
-    </div>
+    <!-- 이 div가 전체 앱의 컨테이너 역할을 합니다. -->
+    <div id="app-container"></div>
 
-    <!-- Firebase SDK 스크립트 -->
-    <script type="module">
-        // Firebase v9+ 모듈러 SDK 임포트
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut, 
-            onAuthStateChanged,
-            setPersistence,
-            browserSessionPersistence,
-            deleteUser
-        } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            query, 
-            where, 
-            onSnapshot,
-            doc,
-            deleteDoc,
-            setDoc,
-            getDoc,
-            writeBatch,
-            getDocs
-        } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-        import {
-            getStorage,
-            ref,
-            uploadBytes,
-            getDownloadURL
-        } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
-
-        // ===================================================================================
-        // Firebase 프로젝트 설정 값
-        // ===================================================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyCRax6rd1rlBIc3kVgg5OkHmSIQyzJmC8A",
-            authDomain: "fitmeal-app-d1a97.firebaseapp.com",
-            projectId: "fitmeal-app-d1a97",
-            storageBucket: "fitmeal-app-d1a97.appspot.com",
-            messagingSenderId: "968711774677",
-            appId: "1:968711774677:web:b3d3cb9ccc2388c3ba5d5c"
-        };
-
-        // ===================================================================================
-        // Gemini API 키
-        // ===================================================================================
-        const GEMINI_API_KEY = "AIzaSyATtInpyR0qJRe2RU5FWiUvMddl36-ZI2E";
-
-        // ===================================================================================
-        // !!! 중요: Firebase Storage 활성화 및 규칙 설정 !!!
-        // '사진으로 기록하기' 기능을 사용하려면 Storage를 활성화해야 합니다.
-        // 1. Firebase 콘솔 > 왼쪽 메뉴에서 [빌드] > [Storage] 클릭
-        // 2. [시작하기] 버튼 클릭
-        // 3. '테스트 모드에서 시작' 선택 후 [다음] 클릭
-        // 4. 위치 선택 후 [완료] 클릭
-        // 5. Storage 페이지의 [규칙(Rules)] 탭으로 이동하여, 기존 내용을 모두 지우고
-        //    아래 코드를 붙여넣은 후 [게시]를 누르세요.
-        /*
-        rules_version = '2';
-        service firebase.storage {
-          match /b/{bucket}/o {
-            match /food_images/{userId}/{allPaths=**} {
-              allow read, write: if request.auth != null && request.auth.uid == userId;
-            }
-          }
-        }
-        */
-        // ===================================================================================
-
-
-        // Firebase 앱 초기화
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-
-        // --- 세션 기반 인증 설정 ---
-        setPersistence(auth, browserSessionPersistence)
-            .catch((error) => {
-                console.error("인증 상태 설정 실패:", error);
-            });
-
-        // --- 날짜 관련 헬퍼 함수 ---
-        const getLocalDateString = (date) => {
-            const year = date.getFullYear();
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const day = date.getDate().toString().padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        };
-
+    <script>
         // --- 앱 상태 관리 ---
         let state = {
-            authReady: false, // 인증 상태 확인 완료 여부
-            currentPage: 'login',
+            currentPage: 'login', // 현재 보여줄 페이지 (login, register, onboarding, dashboard)
             isLoggedIn: false,
-            user: null, 
-            userInfo: null, 
-            foodEntries: {},
-            currentDate: getLocalDateString(new Date()),
-            unsubscribeFoodListener: null,
-            unsubscribeUserListener: null,
-            viewMode: 'list', // 'list' or 'calendar'
-            calendarDate: new Date(), // 캘린더가 보여주는 월
-            foodIdToDelete: null, // 삭제 확인을 위한 ID 저장
-            analyzedImageFile: null, // AI 분석에 사용된 이미지 파일
+            user: null, // { name, goal, carbsGoal, proteinGoal, fatGoal }
+            foodEntries: {}, // { 'YYYY-MM-DD': [...] }
+            currentDate: new Date().toISOString().split('T')[0], // 날짜를 문자열로 관리
         };
 
-        // --- HTML 템플릿 ---
-        const LoadingSpinner = () => `
-            <div class="flex items-center justify-center min-h-screen">
-                <div class="w-16 h-16 border-4 border-teal-500 border-dashed rounded-full animate-spin"></div>
-            </div>
-        `;
+        // --- 데이터베이스 시뮬레이션 ---
+        const mockDB = {
+            users: {
+                'test@fitmeal.com': {
+                    password: 'password123',
+                    name: '피트밀',
+                    goal: 2000,
+                    carbsGoal: 250,
+                    proteinGoal: 120,
+                    fatGoal: 67,
+                }
+            }
+        };
+        
+        // --- 데이터 영속성 (LocalStorage) ---
+        const saveState = () => {
+            localStorage.setItem('fitmealState', JSON.stringify(state));
+        };
 
+        const loadState = () => {
+            const savedState = localStorage.getItem('fitmealState');
+            if (savedState) {
+                state = JSON.parse(savedState);
+            }
+        };
+
+        // --- 템플릿 (HTML 조각) ---
+        
         const LoginPage = () => `
             <div class="flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in">
                 <div class="w-full max-w-sm">
@@ -152,15 +77,15 @@
                     <form id="login-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4">
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="email">이메일</label>
-                            <input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="email" type="email" placeholder="email@example.com" required>
+                            <input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="email" type="email" value="test@fitmeal.com" required>
                         </div>
                         <div class="mb-6">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="password">비밀번호</label>
-                            <input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="password" type="password" placeholder="********" required>
+                            <input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="password" type="password" value="password123" required>
                         </div>
                         <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300" type="submit">로그인</button>
                     </form>
-                    <p class="text-center text-gray-500 text-sm">계정이 없으신가요? <button onclick="window.navigate('register')" class="font-bold text-teal-500 hover:text-teal-700">회원가입</button></p>
+                    <p class="text-center text-gray-500 text-sm">계정이 없으신가요? <button onclick="navigate('register')" class="font-bold text-teal-500 hover:text-teal-700">회원가입</button></p>
                 </div>
             </div>
         `;
@@ -174,11 +99,11 @@
                         <div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="password" type="password" required></div>
                         <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg" type="submit">다음</button>
                     </form>
-                    <p class="text-center text-gray-500 text-sm">이미 계정이 있으신가요? <button onclick="window.navigate('login')" class="font-bold text-teal-500 hover:text-teal-700">로그인</button></p>
+                    <p class="text-center text-gray-500 text-sm">이미 계정이 있으신가요? <button onclick="navigate('login')" class="font-bold text-teal-500 hover:text-teal-700">로그인</button></p>
                 </div>
             </div>
         `;
-        
+
         const OnboardingPage = () => `
             <div class="flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in">
                 <div class="w-full max-w-md text-center">
@@ -198,46 +123,10 @@
                 </div>
             </div>
         `;
-        
-        const DashboardPage = () => {
-            return `
-                <div class="min-h-screen bg-gray-50 animate-fade-in">
-                    <header class="bg-white shadow-sm sticky top-0 z-10">
-                        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                            <h1 onclick="window.goToDashboard()" class="text-2xl font-bold text-teal-500 cursor-pointer">FitMeal</h1>
-                            <div class="flex items-center gap-4">
-                                <button onclick="window.toggleViewMode()" class="text-sm text-gray-600 hover:text-teal-500">${state.viewMode === 'list' ? '캘린더' : '메인'}</button>
-                                <button onclick="window.openProfileModal()" class="text-sm text-gray-600 hover:text-teal-500">설정</button>
-                                <button onclick="window.handleLogout()" class="text-sm text-gray-600 hover:text-teal-500">로그아웃</button>
-                            </div>
-                        </div>
-                    </header>
-                    <main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-                        ${state.viewMode === 'list' ? DailyView() : CalendarView()}
-                    </main>
-                    <div class="fixed bottom-6 right-6 z-20">
-                        <button onclick="window.openModal()" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300">+</button>
-                    </div>
-                    <div id="add-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-                        ${AddFoodModal()}
-                    </div>
-                    <div id="delete-account-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-                        ${DeleteAccountModal()}
-                    </div>
-                    <div id="delete-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-                        ${DeleteFoodModal()}
-                    </div>
-                    <div id="profile-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-                        ${ProfileModal()}
-                    </div>
-                </div>
-            `;
-        };
 
-        const DailyView = () => {
+        const DashboardPage = () => {
             const dateKey = state.currentDate;
             const todaysEntries = state.foodEntries[dateKey] || [];
-            const userInfo = state.userInfo || { goal: 2000, carbsGoal: 250, proteinGoal: 120, fatGoal: 67 };
             
             const totals = todaysEntries.reduce((acc, entry) => {
                 acc.calories += entry.calories;
@@ -250,99 +139,62 @@
             const meals = { '아침': [], '점심': [], '저녁': [], '간식': [] };
             todaysEntries.forEach(entry => meals[entry.mealType].push(entry));
 
-            const caloriePercentage = userInfo.goal > 0 ? Math.min((totals.calories / userInfo.goal) * 100, 100) : 0;
+            const caloriePercentage = state.user.goal > 0 ? Math.min((totals.calories / state.user.goal) * 100, 100) : 0;
             const circumference = 2 * Math.PI * 50;
             const strokeDashoffset = circumference - (caloriePercentage / 100) * circumference;
 
             return `
-                <div>
-                    <div class="flex items-center justify-between mb-6">
-                        <button onclick="window.changeDate(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&lt;</button>
-                        <h2 class="text-xl font-semibold text-gray-800">${new Date(dateKey).toLocaleDateString('ko-KR', { timeZone: 'UTC' })}</h2>
-                        <button onclick="window.changeDate(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&gt;</button>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                        <div class="flex flex-col md:flex-row items-center justify-around gap-8">
-                            <div class="relative flex items-center justify-center w-48 h-48">
-                                <svg class="w-full h-full" viewBox="0 0 120 120">
-                                    <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60"/>
-                                    <circle class="text-teal-500" stroke-width="10" stroke-dasharray="${circumference}" stroke-dashoffset="${strokeDashoffset}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60" transform="rotate(-90 60 60)"/>
-                                </svg>
-                                <div class="absolute flex flex-col items-center">
-                                    <span class="text-3xl font-bold text-gray-800">${totals.calories}</span>
-                                    <span class="text-sm text-gray-500">/ ${userInfo.goal} kcal</span>
+                <div class="min-h-screen bg-gray-50 animate-fade-in">
+                    <header class="bg-white shadow-sm sticky top-0 z-10">
+                        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                            <h1 class="text-2xl font-bold text-teal-500">FitMeal</h1>
+                            <button onclick="handleLogout()" class="text-sm text-gray-600 hover:text-teal-500">로그아웃</button>
+                        </div>
+                    </header>
+                    
+                    <main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+                        <div class="flex items-center justify-between mb-6">
+                            <button onclick="changeDate(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&lt;</button>
+                            <h2 class="text-xl font-semibold text-gray-800">${new Date(dateKey).toLocaleDateString('ko-KR')}</h2>
+                            <button onclick="changeDate(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&gt;</button>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                            <div class="flex flex-col md:flex-row items-center justify-around gap-8">
+                                <!-- Calorie Chart -->
+                                <div class="relative flex items-center justify-center w-48 h-48">
+                                    <svg class="w-full h-full" viewBox="0 0 120 120">
+                                        <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60"/>
+                                        <circle class="text-teal-500" stroke-width="10" stroke-dasharray="${circumference}" stroke-dashoffset="${strokeDashoffset}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60" transform="rotate(-90 60 60)"/>
+                                    </svg>
+                                    <div class="absolute flex flex-col items-center">
+                                        <span class="text-3xl font-bold text-gray-800">${totals.calories}</span>
+                                        <span class="text-sm text-gray-500">/ ${state.user.goal} kcal</span>
+                                    </div>
+                                </div>
+                                <!-- Nutrient Bars -->
+                                <div class="w-full md:w-1/2 space-y-4">
+                                    ${NutrientBar('탄수화물', totals.carbs, state.user.carbsGoal, 'bg-orange-500')}
+                                    ${NutrientBar('단백질', totals.protein, state.user.proteinGoal, 'bg-sky-500')}
+                                    ${NutrientBar('지방', totals.fat, state.user.fatGoal, 'bg-amber-400')}
                                 </div>
                             </div>
-                            <div class="w-full md:w-1/2 space-y-4">
-                                ${NutrientBar('탄수화물', totals.carbs, userInfo.carbsGoal, 'bg-orange-500')}
-                                ${NutrientBar('단백질', totals.protein, userInfo.proteinGoal, 'bg-sky-500')}
-                                ${NutrientBar('지방', totals.fat, userInfo.fatGoal, 'bg-amber-400')}
-                            </div>
                         </div>
+
+                        <div class="space-y-6">
+                            ${Object.entries(meals).map(([mealType, entries]) => MealCard(mealType, entries)).join('')}
+                        </div>
+                    </main>
+
+                    <div class="fixed bottom-6 right-6">
+                        <button onclick="openModal()" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300">+</button>
                     </div>
-                    <div class="space-y-6">
-                        ${Object.entries(meals).map(([mealType, entries]) => MealCard(mealType, entries)).join('')}
+
+                    <div id="add-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+                        ${AddFoodModal()}
                     </div>
-                     <footer class="mt-12 text-left">
-                        <button onclick="window.openDeleteModal()" class="text-xs text-gray-400 hover:text-red-500 hover:underline">회원 탈퇴</button>
-                    </footer>
                 </div>
             `;
-        };
-
-        const CalendarView = () => {
-            const date = state.calendarDate;
-            const year = date.getFullYear();
-            const month = date.getMonth();
-
-            const firstDayOfMonth = new Date(year, month, 1);
-            const firstDayOfWeek = firstDayOfMonth.getDay(); // 0 (Sun) to 6 (Sat)
-            
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            let calendarHtml = `
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <div class="flex items-center justify-between mb-6">
-                        <button onclick="window.changeMonth(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&lt;</button>
-                        <h2 class="text-xl font-semibold text-gray-800">${year}년 ${month + 1}월</h2>
-                        <button onclick="window.changeMonth(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&gt;</button>
-                    </div>
-                    <div class="grid grid-cols-7 gap-2 text-center text-sm">
-                        <div class="font-bold text-red-500">일</div>
-                        <div class="font-bold">월</div>
-                        <div class="font-bold">화</div>
-                        <div class="font-bold">수</div>
-                        <div class="font-bold">목</div>
-                        <div class="font-bold">금</div>
-                        <div class="font-bold text-blue-500">토</div>
-            `;
-
-            for (let i = 0; i < firstDayOfWeek; i++) {
-                calendarHtml += `<div></div>`;
-            }
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateKey = getLocalDateString(new Date(year, month, day));
-                const entries = state.foodEntries[dateKey] || [];
-                const totalCalories = entries.reduce((sum, entry) => sum + entry.calories, 0);
-                
-                const isSelected = dateKey === state.currentDate;
-                const isToday = dateKey === getLocalDateString(new Date());
-
-                let dayClass = 'bg-gray-100'; // 기본
-                if (isSelected) dayClass = 'border-2 border-teal-500'; // 선택된 날짜
-                if (isToday) dayClass = 'bg-teal-500 text-white'; // 오늘 날짜 (우선순위 높음)
-
-                calendarHtml += `
-                    <div onclick="window.selectDateFromCalendar('${dateKey}')" class="cursor-pointer p-2 rounded-lg hover:bg-teal-100">
-                        <div class="w-8 h-8 mx-auto flex items-center justify-center rounded-full ${dayClass}">${day}</div>
-                        ${totalCalories > 0 ? `<div class="text-xs text-gray-500 mt-1">${totalCalories} kcal</div>` : ''}
-                    </div>
-                `;
-            }
-
-            calendarHtml += `</div></div>`;
-            return calendarHtml;
         };
 
         const NutrientBar = (label, consumed, goal, color) => {
@@ -367,14 +219,11 @@
                     <ul class="divide-y divide-gray-200">
                         ${entries.map(entry => `
                             <li class="py-3 flex justify-between items-center">
-                                <div class="flex items-center gap-4">
-                                    ${entry.imageUrl ? `<img src="${entry.imageUrl}" alt="${entry.name}" class="w-12 h-12 rounded-md object-cover">` : ''}
-                                    <div>
-                                        <p class="font-semibold text-gray-700">${entry.name}</p>
-                                        <p class="text-sm text-gray-500">${entry.calories} kcal</p>
-                                    </div>
+                                <div>
+                                    <p class="font-semibold text-gray-700">${entry.name}</p>
+                                    <p class="text-sm text-gray-500">${entry.calories} kcal</p>
                                 </div>
-                                <button onclick="window.openDeleteFoodModal('${entry.id}')" class="text-red-500 hover:text-red-700 font-bold text-xl">×</button>
+                                <button onclick="deleteFood(${entry.id})" class="text-red-500 hover:text-red-700 font-bold text-xl">×</button>
                             </li>
                         `).join('')}
                     </ul>
@@ -384,128 +233,43 @@
 
         const AddFoodModal = () => `
             <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in">
-                <button onclick="window.closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-xl">×</button>
+                <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-xl">×</button>
                 <h2 class="text-2xl font-bold mb-4 text-gray-800">식단 기록하기</h2>
-                
-                <div id="ai-section">
-                    <div class="mb-4 p-4 border border-dashed rounded-lg text-center">
-                        <label for="image-upload" class="cursor-pointer text-teal-500 font-semibold hover:text-teal-600">
-                            📷 사진으로 기록하기 (AI 분석)
-                        </label>
-                        <input id="image-upload" type="file" accept="image/*" class="hidden">
-                        <p id="ai-status" class="text-sm text-gray-500 mt-2">사진을 선택하면 AI가 분석을 시작합니다.</p>
-                    </div>
-                    
-                    <div class="relative py-2">
-                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-300"></div></div>
-                        <div class="relative flex justify-center"><span class="bg-white px-2 text-sm text-gray-500">또는</span></div>
-                    </div>
-                </div>
-
-                <div id="manual-form-section">
-                    <form id="add-food-form" class="mt-4">
-                        <div class="mb-4">
-                            <label class="block text-sm font-bold mb-2">식사 종류</label>
-                            <select id="mealType" class="w-full p-3 border rounded-lg bg-gray-50">
-                                <option>아침</option><option>점심</option><option>저녁</option><option>간식</option>
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <label class="block text-sm font-bold mb-2">음식 이름</label>
-                            <input id="foodName" type="text" placeholder="예: 닭가슴살 샐러드" class="w-full p-3 border rounded-lg" required>
-                        </div>
-                        <div class="mb-6">
-                            <label class="block text-sm font-bold mb-2">칼로리 (kcal)</label>
-                            <input id="calories" type="number" placeholder="예: 350" class="w-full p-3 border rounded-lg" required>
-                        </div>
-                        <button id="add-food-btn" type="submit" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition">기록 추가</button>
-                    </form>
-                </div>
-
-                <div id="ai-results-section" class="hidden">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">AI 분석 결과</h3>
-                    <p class="text-sm text-gray-600 mb-4">기록할 음식을 선택하고 식사 종류를 확인해주세요.</p>
-                    <div id="ai-results-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto">
-                        <!-- AI results will be injected here -->
-                    </div>
+                <form id="add-food-form">
                     <div class="mb-4">
                         <label class="block text-sm font-bold mb-2">식사 종류</label>
-                        <select id="ai-mealType" class="w-full p-3 border rounded-lg bg-gray-50">
+                        <select id="mealType" class="w-full p-3 border rounded-lg bg-gray-50">
                             <option>아침</option><option>점심</option><option>저녁</option><option>간식</option>
                         </select>
                     </div>
-                    <button id="add-selected-foods-btn" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition">선택 항목 기록</button>
-                    <button onclick="window.resetModalView()" class="w-full mt-2 text-sm text-gray-600 hover:text-teal-500">다른 사진으로 분석 / 직접 입력</button>
-                </div>
-            </div>
-        `;
-
-        const DeleteAccountModal = () => `
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in text-center">
-                 <h2 class="text-2xl font-bold mb-4 text-gray-800">회원 탈퇴</h2>
-                 <p class="text-gray-600 mb-6">정말로 탈퇴하시겠습니까?<br>모든 식단 기록이 영구적으로 삭제되며 복구할 수 없습니다.</p>
-                 <div class="flex justify-center gap-4">
-                    <button onclick="window.closeDeleteModal()" class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-300 transition">취소</button>
-                    <button onclick="window.confirmDeleteAccount()" class="w-full bg-red-500 text-white font-bold py-3 rounded-lg hover:bg-red-600 transition">탈퇴 확인</button>
-                 </div>
-            </div>
-        `;
-        
-        const DeleteFoodModal = () => `
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in text-center">
-                 <h2 class="text-2xl font-bold mb-4 text-gray-800">기록 삭제</h2>
-                 <p class="text-gray-600 mb-6">정말로 이 기록을 삭제하시겠습니까?</p>
-                 <div class="flex justify-center gap-4">
-                    <button onclick="window.closeDeleteFoodModal()" class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-300 transition">취소</button>
-                    <button onclick="window.confirmDeleteFood()" class="w-full bg-red-500 text-white font-bold py-3 rounded-lg hover:bg-red-600 transition">삭제 확인</button>
-                 </div>
-            </div>
-        `;
-
-        const ProfileModal = () => `
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in">
-                <button onclick="window.closeProfileModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-xl">×</button>
-                <h2 class="text-2xl font-bold mb-4 text-gray-800">프로필 설정</h2>
-                <form id="profile-form">
-                    <div class="mb-6">
-                        <label class="block text-gray-700 text-lg font-bold mb-4">목표 변경</label>
-                        <div id="profile-goal-options" class="flex flex-col sm:flex-row justify-center gap-4">
-                            <button type="button" data-goal="체중 감량" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition">체중 감량</button>
-                            <button type="button" data-goal="체중 유지" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition">체중 유지</button>
-                            <button type="button" data-goal="근육 증가" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition">근육 증가</button>
-                        </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-2">음식 이름</label>
+                        <input id="foodName" type="text" placeholder="예: 닭가슴살 샐러드" class="w-full p-3 border rounded-lg" required>
                     </div>
-                    <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg" type="submit">저장하기</button>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold mb-2">칼로리 (kcal)</label>
+                        <input id="calories" type="number" placeholder="예: 350" class="w-full p-3 border rounded-lg" required>
+                    </div>
+                    <button type="submit" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition">기록 추가</button>
                 </form>
             </div>
         `;
-        
+
         // --- 렌더링 및 이벤트 핸들러 ---
         const appContainer = document.getElementById('app-container');
 
         const render = () => {
-            if (!state.authReady) {
-                appContainer.innerHTML = LoadingSpinner();
-                return;
-            }
-
-            let html = '';
-            // 로그인 상태와 사용자 정보 유무에 따라 페이지 결정
             if (state.isLoggedIn) {
-                if (state.userInfo) {
-                    html = DashboardPage();
-                } else {
-                    html = OnboardingPage();
-                }
-            } else {
-                if (state.currentPage === 'register') {
-                    html = RegisterPage();
-                } else {
-                    html = LoginPage();
-                }
+                state.currentPage = 'dashboard';
             }
-            appContainer.innerHTML = html;
+            
+            if (state.currentPage === 'login') appContainer.innerHTML = LoginPage();
+            else if (state.currentPage === 'register') appContainer.innerHTML = RegisterPage();
+            else if (state.currentPage === 'onboarding') appContainer.innerHTML = OnboardingPage();
+            else if (state.currentPage === 'dashboard') appContainer.innerHTML = DashboardPage();
+            
             addEventListeners();
+            saveState(); // 모든 렌더링 후에 상태를 저장
         };
 
         const navigate = (page) => {
@@ -514,407 +278,121 @@
         };
 
         const addEventListeners = () => {
-            document.getElementById('login-form')?.addEventListener('submit', window.handleLogin);
-            document.getElementById('register-form')?.addEventListener('submit', window.handleRegister);
-            document.getElementById('onboarding-form')?.addEventListener('submit', window.handleOnboarding);
-            document.getElementById('add-food-form')?.addEventListener('submit', window.handleAddFood);
-            document.getElementById('image-upload')?.addEventListener('change', window.handleImageUpload);
-            document.getElementById('profile-form')?.addEventListener('submit', window.handleUpdateProfile);
-            document.getElementById('add-selected-foods-btn')?.addEventListener('click', window.handleAddSelectedFoods);
-            
-            if (state.currentPage === 'onboarding' || (state.isLoggedIn && !state.userInfo) || document.getElementById('profile-modal')) {
-                 document.querySelectorAll('.goal-btn').forEach(btn => {
+            if (state.currentPage === 'login') {
+                document.getElementById('login-form')?.addEventListener('submit', handleLogin);
+            }
+            if (state.currentPage === 'register') {
+                document.getElementById('register-form')?.addEventListener('submit', handleRegister);
+            }
+            if (state.currentPage === 'onboarding') {
+                document.getElementById('onboarding-form')?.addEventListener('submit', handleOnboarding);
+                document.querySelectorAll('.goal-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        e.currentTarget.parentElement.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('bg-teal-500', 'text-white', 'border-teal-500'));
+                        document.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('bg-teal-500', 'text-white', 'border-teal-500'));
                         e.currentTarget.classList.add('bg-teal-500', 'text-white', 'border-teal-500');
                     });
                 });
             }
-        };
-
-        // --- AI 분석 및 Firebase 연동 로직 ---
-        const fileToBase64 = (file) => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result.split(',')[1]);
-            reader.onerror = error => reject(error);
-        });
-
-        window.handleImageUpload = async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
-                alert("Gemini API 키를 코드에 입력해주세요.");
-                return;
-            }
-
-            const statusEl = document.getElementById('ai-status');
-            const aiSection = document.getElementById('ai-section');
-            const manualFormSection = document.getElementById('manual-form-section');
-            const aiResultsSection = document.getElementById('ai-results-section');
-            const aiResultsList = document.getElementById('ai-results-list');
-
-            statusEl.textContent = 'AI가 사진을 분석하고 있습니다...';
-            
-            try {
-                const base64Image = await fileToBase64(file);
-
-                const model = "gemini-1.5-flash-latest";
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: "이 음식 사진에 있는 모든 음식을 각각 식별하고, 1인분 기준 예상 칼로리와 함께 JSON 배열 형식으로 알려주세요. 각 객체는 'name'과 'calories' 키를 가져야 합니다. 예시: [{'name': '김치찌개', 'calories': 450}, {'name': '계란후라이', 'calories': 180}]" },
-                                { inline_data: { mime_type: file.type, data: base64Image } }
-                            ]
-                        }]
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('AI Server Error:', errorData);
-                    throw new Error(`AI 서버 오류: ${errorData.error.message}`);
-                }
-
-                const data = await response.json();
-                
-                if (!data.candidates || data.candidates.length === 0) {
-                    throw new Error('AI가 분석 결과를 생성하지 못했습니다.');
-                }
-
-                const text = data.candidates[0].content.parts[0].text;
-                
-                const jsonMatch = text.match(/\[.*\]/s);
-                if (!jsonMatch) {
-                    throw new Error('AI가 분석 결과를 JSON 형식으로 반환하지 않았습니다.');
-                }
-
-                const results = JSON.parse(jsonMatch[0]);
-
-                if (results.length === 0) {
-                    throw new Error('AI가 사진에서 음식을 찾지 못했습니다.');
-                }
-                
-                aiResultsList.innerHTML = results.map((item, index) => `
-                    <label for="food-item-${index}" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
-                        <div>
-                            <span class="font-semibold text-gray-800">${item.name}</span>
-                            <span class="text-sm text-gray-500 ml-2">${item.calories} kcal</span>
-                        </div>
-                        <input type="checkbox" id="food-item-${index}" class="form-checkbox h-5 w-5 text-teal-600 rounded focus:ring-teal-500" data-name="${item.name}" data-calories="${item.calories}" checked>
-                    </label>
-                `).join('');
-                
-                aiSection.classList.add('hidden');
-                manualFormSection.classList.add('hidden');
-                aiResultsSection.classList.remove('hidden');
-
-            } catch (error) {
-                console.error("AI 분석 오류:", error);
-                statusEl.textContent = `분석 실패. 직접 입력해주세요.`;
-                alert(`AI 분석 중 오류가 발생했습니다: ${error.message}`);
-            }
-        };
-
-        // --- Firebase CRUD 및 인증 로직 ---
-        window.handleLogin = async (e) => {
-            e.preventDefault();
-            const email = e.target.email.value;
-            const password = e.target.password.value;
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                alert("로그인 실패: " + error.message);
-            }
-        };
-
-        window.handleRegister = async (e) => {
-            e.preventDefault();
-            const email = e.target.email.value;
-            const password = e.target.password.value;
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                alert("회원가입 실패: " + error.message);
+            if (state.currentPage === 'dashboard') {
+                 document.getElementById('add-food-form')?.addEventListener('submit', handleAddFood);
             }
         };
         
-        window.handleOnboarding = async (e) => {
+        // --- 기능 로직 ---
+        const handleLogin = (e) => {
             e.preventDefault();
-            const selectedGoalEl = document.querySelector('#onboarding-form .goal-btn.bg-teal-500');
-            if (!selectedGoalEl) {
-                alert("목표를 선택해주세요.");
+            const email = e.target.email.value;
+            const password = e.target.password.value;
+            if (mockDB.users[email] && mockDB.users[email].password === password) {
+                state.isLoggedIn = true;
+                state.user = mockDB.users[email];
+                navigate('dashboard');
+            } else {
+                alert('이메일 또는 비밀번호가 일치하지 않습니다.');
+            }
+        };
+
+        const handleRegister = (e) => {
+            e.preventDefault();
+            const email = e.target.email.value;
+            const password = e.target.password.value;
+            if (mockDB.users[email]) {
+                alert('이미 가입된 이메일입니다.');
                 return;
             }
-            const selectedGoal = selectedGoalEl.dataset.goal;
+            // 새 사용자 정보를 mockDB에 추가 (시뮬레이션)
+            mockDB.users[email] = { password, name: '새 사용자' };
+            navigate('onboarding');
+        };
+
+        const handleOnboarding = (e) => {
+            e.preventDefault();
+            const selectedGoal = document.querySelector('.goal-btn.bg-teal-500').dataset.goal;
             let calorieGoal = 2000;
             if (selectedGoal === '체중 감량') calorieGoal = 1800;
             if (selectedGoal === '근육 증가') calorieGoal = 2500;
             
-            const userInfo = {
+            state.isLoggedIn = true;
+            state.user = {
+                ...state.user,
                 goal: calorieGoal,
                 carbsGoal: Math.round(calorieGoal * 0.5 / 4),
                 proteinGoal: Math.round(calorieGoal * 0.3 / 4),
                 fatGoal: Math.round(calorieGoal * 0.2 / 9)
             };
-            
-            try {
-                const userDocRef = doc(db, "users", auth.currentUser.uid);
-                await setDoc(userDocRef, userInfo);
-            } catch (error) {
-                alert("정보 저장 실패: " + error.message);
-            }
+            navigate('dashboard');
         };
 
-        window.handleUpdateProfile = async (e) => {
-            e.preventDefault();
-            const selectedGoalEl = document.querySelector('#profile-form .goal-btn.bg-teal-500');
-             if (!selectedGoalEl) {
-                alert("새로운 목표를 선택해주세요.");
-                return;
-            }
-            const selectedGoal = selectedGoalEl.dataset.goal;
-            let calorieGoal = 2000;
-            if (selectedGoal === '체중 감량') calorieGoal = 1800;
-            if (selectedGoal === '근육 증가') calorieGoal = 2500;
-
-            const newUserInfo = {
-                goal: calorieGoal,
-                carbsGoal: Math.round(calorieGoal * 0.5 / 4),
-                proteinGoal: Math.round(calorieGoal * 0.3 / 4),
-                fatGoal: Math.round(calorieGoal * 0.2 / 9)
-            };
-
-            try {
-                const userDocRef = doc(db, "users", auth.currentUser.uid);
-                await setDoc(userDocRef, newUserInfo);
-                window.closeProfileModal();
-            } catch (error) {
-                alert("프로필 업데이트 실패: " + error.message);
-            }
+        const handleLogout = () => {
+            state.isLoggedIn = false;
+            state.user = null;
+            // 로그아웃 시 저장된 상태의 일부만 초기화
+            state.currentPage = 'login';
+            render();
         };
 
-        window.handleLogout = async () => {
-            await signOut(auth);
+        const changeDate = (amount) => {
+            const currentDateObj = new Date(state.currentDate);
+            currentDateObj.setDate(currentDateObj.getDate() + amount);
+            state.currentDate = currentDateObj.toISOString().split('T')[0];
+            render();
         };
 
-        const deleteUserData = async (uid) => {
-            const batch = writeBatch(db);
-            const foodEntriesQuery = query(collection(db, "foodEntries"), where("uid", "==", uid));
-            const foodEntriesSnapshot = await getDocs(foodEntriesQuery);
-            foodEntriesSnapshot.forEach((doc) => batch.delete(doc.ref));
-            const userDocRef = doc(db, "users", uid);
-            batch.delete(userDocRef);
-            await batch.commit();
-        };
+        const openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
+        const closeModal = () => document.getElementById('add-food-modal').classList.add('hidden');
 
-        window.confirmDeleteAccount = async () => {
-            const user = auth.currentUser;
-            if (user) {
-                try {
-                    await deleteUserData(user.uid);
-                    await deleteUser(user);
-                    alert("회원 탈퇴가 완료되었습니다.");
-                } catch (error) {
-                    console.error("회원 탈퇴 오류:", error);
-                    alert(`오류가 발생하여 탈퇴를 완료하지 못했습니다. ${error.message}`);
-                    if (error.code === 'auth/requires-recent-login') {
-                        alert("보안을 위해 다시 로그인한 후 회원 탈퇴를 시도해주세요.");
-                        await signOut(auth);
-                    }
-                }
-            }
-        };
-        
-        window.handleAddFood = async (e) => {
+        const handleAddFood = (e) => {
             e.preventDefault();
             const newEntry = {
-                uid: auth.currentUser.uid,
-                date: state.currentDate,
+                id: Date.now(),
                 name: e.target.foodName.value,
                 calories: parseInt(e.target.calories.value),
                 mealType: e.target.mealType.value,
                 carbs: Math.round(parseInt(e.target.calories.value) * 0.5 / 4),
                 protein: Math.round(parseInt(e.target.calories.value) * 0.2 / 4),
                 fat: Math.round(parseInt(e.target.calories.value) * 0.3 / 9),
-                imageUrl: null,
             };
+
+            const dateKey = state.currentDate;
+            if (!state.foodEntries[dateKey]) {
+                state.foodEntries[dateKey] = [];
+            }
+            state.foodEntries[dateKey].push(newEntry);
             
-            try {
-                await addDoc(collection(db, "foodEntries"), newEntry);
-                window.closeModal();
-            } catch (error) {
-                alert("기록 추가 실패: " + error.message);
-            }
-        };
-
-        window.handleAddSelectedFoods = async () => {
-            const mealTypeSelect = document.getElementById('ai-mealType');
-            const checkboxes = document.querySelectorAll('#ai-results-list input[type="checkbox"]');
-            const selectedFoods = document.querySelectorAll('#ai-results-list input[type="checkbox"]:checked');
-
-            if (selectedFoods.length === 0) {
-                alert('기록할 음식을 하나 이상 선택해주세요.');
-                return;
-            }
-
-            const button = document.getElementById('add-selected-foods-btn');
-            button.disabled = true;
-            button.textContent = '저장 중...';
-            checkboxes.forEach(c => c.disabled = true);
-            mealTypeSelect.disabled = true;
-            
-            try {
-                const batch = writeBatch(db);
-                selectedFoods.forEach(checkbox => {
-                    const newEntry = {
-                        uid: auth.currentUser.uid,
-                        date: state.currentDate,
-                        name: checkbox.dataset.name,
-                        calories: parseInt(checkbox.dataset.calories),
-                        mealType: mealTypeSelect.value,
-                        carbs: Math.round(parseInt(checkbox.dataset.calories) * 0.5 / 4),
-                        protein: Math.round(parseInt(checkbox.dataset.calories) * 0.2 / 4),
-                        fat: Math.round(parseInt(checkbox.dataset.calories) * 0.3 / 9),
-                        imageUrl: null, // 사진 저장 기능 제외
-                    };
-                    const docRef = doc(collection(db, "foodEntries"));
-                    batch.set(docRef, newEntry);
-                });
-                await batch.commit();
-                window.closeModal();
-
-            } catch (error) {
-                alert("기록 추가 실패: " + error.message);
-                button.disabled = false;
-                button.textContent = '선택 항목 기록';
-                checkboxes.forEach(c => c.disabled = false);
-                mealTypeSelect.disabled = false;
-            }
-        };
-
-        window.confirmDeleteFood = async () => {
-            if (state.foodIdToDelete) {
-                try {
-                    await deleteDoc(doc(db, "foodEntries", state.foodIdToDelete));
-                } catch (error) {
-                    alert("삭제 실패: " + error.message);
-                } finally {
-                    window.closeDeleteFoodModal();
-                }
-            }
-        };
-
-        const setupListeners = (uid) => {
-            if (state.unsubscribeFoodListener) state.unsubscribeFoodListener();
-            const foodQuery = query(collection(db, "foodEntries"), where("uid", "==", uid));
-            state.unsubscribeFoodListener = onSnapshot(foodQuery, (snapshot) => {
-                const allEntries = {};
-                snapshot.forEach((doc) => {
-                    const entry = { id: doc.id, ...doc.data() };
-                    if (!allEntries[entry.date]) allEntries[entry.date] = [];
-                    allEntries[entry.date].push(entry);
-                });
-                state.foodEntries = allEntries;
-                if (state.authReady) render();
-            });
-
-            if (state.unsubscribeUserListener) state.unsubscribeUserListener();
-            const userDocRef = doc(db, "users", uid);
-            state.unsubscribeUserListener = onSnapshot(userDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    state.userInfo = docSnap.data();
-                    if (state.authReady) render();
-                }
-            });
-        };
-
-        // --- 앱 시작 및 인증 상태 감지 ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                state.isLoggedIn = true;
-                state.user = user;
-                const userDocRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(userDocRef);
-                if (docSnap.exists()) {
-                    state.userInfo = docSnap.data();
-                    setupListeners(user.uid);
-                } else {
-                    state.userInfo = null;
-                }
-            } else {
-                if (state.unsubscribeFoodListener) state.unsubscribeFoodListener();
-                if (state.unsubscribeUserListener) state.unsubscribeUserListener();
-                Object.assign(state, {
-                    isLoggedIn: false, user: null, userInfo: null, foodEntries: {},
-                    currentPage: 'login', unsubscribeFoodListener: null, unsubscribeUserListener: null,
-                });
-            }
-            state.authReady = true;
-            render();
-            document.body.style.visibility = 'visible';
-        });
-        
-        // --- 전역 스코프에 함수 노출 ---
-        window.navigate = navigate;
-        window.changeDate = (amount) => {
-            const currentDateObj = new Date(state.currentDate);
-            currentDateObj.setDate(currentDateObj.getDate() + amount);
-            state.currentDate = getLocalDateString(currentDateObj);
+            closeModal();
             render();
         };
-        window.changeMonth = (amount) => {
-            state.calendarDate.setMonth(state.calendarDate.getMonth() + amount);
+
+        const deleteFood = (id) => {
+            const dateKey = state.currentDate;
+            state.foodEntries[dateKey] = state.foodEntries[dateKey].filter(entry => entry.id !== id);
             render();
         };
-        window.selectDateFromCalendar = (dateKey) => {
-            state.currentDate = dateKey;
-            state.viewMode = 'list';
-            render();
-        };
-        window.toggleViewMode = () => {
-            state.viewMode = state.viewMode === 'list' ? 'calendar' : 'list';
-            if (state.viewMode === 'calendar') {
-                state.calendarDate = new Date(state.currentDate);
-            }
-            render();
-        };
-        window.openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
-        window.closeModal = () => {
-            document.getElementById('add-food-modal').classList.add('hidden');
-            if (document.getElementById('ai-results-section')) {
-                window.resetModalView();
-            }
-        };
-        window.resetModalView = () => {
-            document.getElementById('ai-section')?.classList.remove('hidden');
-            document.getElementById('manual-form-section')?.classList.remove('hidden');
-            document.getElementById('ai-results-section')?.classList.add('hidden');
-            const aiStatus = document.getElementById('ai-status');
-            if(aiStatus) aiStatus.textContent = '사진을 선택하면 AI가 분석을 시작합니다.';
-            const imageUpload = document.getElementById('image-upload');
-            if(imageUpload) imageUpload.value = '';
-            state.analyzedImageFile = null;
-        };
-        window.openDeleteModal = () => document.getElementById('delete-account-modal').classList.remove('hidden');
-        window.closeDeleteModal = () => document.getElementById('delete-account-modal').classList.add('hidden');
-        window.openDeleteFoodModal = (id) => {
-            state.foodIdToDelete = id;
-            document.getElementById('delete-food-modal').classList.remove('hidden');
-        };
-        window.closeDeleteFoodModal = () => {
-            state.foodIdToDelete = null;
-            document.getElementById('delete-food-modal').classList.add('hidden');
-        };
-        window.openProfileModal = () => document.getElementById('profile-modal').classList.remove('hidden');
-        window.closeProfileModal = () => document.getElementById('profile-modal').classList.add('hidden');
-        window.goToDashboard = () => {
-            state.viewMode = 'list';
-            state.currentDate = getLocalDateString(new Date());
+
+
+        // --- 앱 시작 ---
+        window.onload = () => {
+            loadState(); // 앱이 시작될 때 저장된 상태를 불러옵니다.
             render();
         };
 
