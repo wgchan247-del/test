@@ -67,6 +67,34 @@
         // ===================================================================================
         const GEMINI_API_KEY = "AIzaSyATtInpyR0qJRe2RU5FWiUvMddl36-ZI2E";
 
+        // ===================================================================================
+        // !!! 중요: Firestore 보안 규칙 업데이트 필요 !!!
+        // 'permission-denied' 오류는 아래의 보안 규칙이 적용되지 않았기 때문입니다.
+        // Firebase 콘솔 > Firestore Database > 규칙(Rules) 탭으로 이동하여
+        // 기존 내용을 모두 지우고 아래 코드를 붙여넣은 후 [게시] 버튼을 누르세요.
+        /*
+        rules_version = '2';
+        service cloud.firestore {
+          match /databases/{database}/documents {
+            
+            match /subscribers/{subscriberId} {
+              allow create: if true;
+            }
+
+            match /users/{userId} {
+              allow read, write: if request.auth != null && request.auth.uid == userId;
+            }
+
+            match /foodEntries/{entryId} {
+              // 로그인한 사용자는 자신의 음식 기록만 생성, 읽기, 삭제할 수 있습니다.
+              allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+              allow read, delete: if request.auth != null && resource.data.uid == request.auth.uid;
+            }
+          }
+        }
+        */
+        // ===================================================================================
+
 
         // Firebase 앱 초기화
         const app = initializeApp(firebaseConfig);
@@ -74,7 +102,6 @@
         const db = getFirestore(app);
 
         // --- 세션 기반 인증 설정 ---
-        // 웹 브라우저를 닫으면 자동으로 로그아웃되도록 설정합니다.
         setPersistence(auth, browserSessionPersistence)
             .catch((error) => {
                 console.error("인증 상태 설정 실패:", error);
@@ -545,10 +572,11 @@
                     unsubscribeFoodListener: null,
                 });
             }
+            // 인증 상태가 확인된 후에만 렌더링
             render();
         });
         
-        // --- 전역 스코프에 함수 노출 ---
+        // --- 전역 스코프에 함수 노출 및 초기 렌더링 ---
         window.navigate = navigate;
         window.changeDate = (amount) => {
             const currentDateObj = new Date(state.currentDate + 'T00:00:00');
@@ -558,6 +586,10 @@
         };
         window.openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
         window.closeModal = () => document.getElementById('add-food-modal').classList.add('hidden');
+
+        // 페이지가 로드되면 바로 첫 화면을 렌더링합니다.
+        // onAuthStateChanged가 첫 렌더링을 담당하므로 이 부분은 삭제합니다.
+        // render();
 
     </script>
 </body>
