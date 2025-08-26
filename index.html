@@ -13,6 +13,8 @@
         ::-webkit-scrollbar-thumb:hover { background: #555; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+        /* 깜빡임 방지를 위해 초기에 숨김 */
+        body { visibility: hidden; }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,6 +54,12 @@
             writeBatch,
             getDocs
         } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import {
+            getStorage,
+            ref,
+            uploadBytes,
+            getDownloadURL
+        } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-storage.js";
 
         // ===================================================================================
         // Firebase 프로젝트 설정 값
@@ -71,27 +79,20 @@
         const GEMINI_API_KEY = "AIzaSyATtInpyR0qJRe2RU5FWiUvMddl36-ZI2E";
 
         // ===================================================================================
-        // !!! 중요: Firestore 보안 규칙 업데이트 필요 !!!
-        // 'permission-denied' 오류는 아래의 보안 규칙이 적용되지 않았기 때문입니다.
-        // Firebase 콘솔 > Firestore Database > 규칙(Rules) 탭으로 이동하여
-        // 기존 내용을 모두 지우고 아래 코드를 붙여넣은 후 [게시] 버튼을 누르세요.
+        // !!! 중요: Firebase Storage 활성화 및 규칙 설정 !!!
+        // '사진으로 기록하기' 기능을 사용하려면 Storage를 활성화해야 합니다.
+        // 1. Firebase 콘솔 > 왼쪽 메뉴에서 [빌드] > [Storage] 클릭
+        // 2. [시작하기] 버튼 클릭
+        // 3. '테스트 모드에서 시작' 선택 후 [다음] 클릭
+        // 4. 위치 선택 후 [완료] 클릭
+        // 5. Storage 페이지의 [규칙(Rules)] 탭으로 이동하여, 기존 내용을 모두 지우고
+        //    아래 코드를 붙여넣은 후 [게시]를 누르세요.
         /*
         rules_version = '2';
-        service cloud.firestore {
-          match /databases/{database}/documents {
-            
-            match /subscribers/{subscriberId} {
-              allow create: if true;
-            }
-
-            match /users/{userId} {
+        service firebase.storage {
+          match /b/{bucket}/o {
+            match /food_images/{userId}/{allPaths=**} {
               allow read, write: if request.auth != null && request.auth.uid == userId;
-            }
-
-            match /foodEntries/{entryId} {
-              // 로그인한 사용자는 자신의 음식 기록만 생성, 읽기, 삭제할 수 있습니다.
-              allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
-              allow read, delete: if request.auth != null && resource.data.uid == request.auth.uid;
             }
           }
         }
@@ -103,6 +104,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
 
         // --- 세션 기반 인증 설정 ---
         setPersistence(auth, browserSessionPersistence)
@@ -132,9 +134,16 @@
             viewMode: 'list', // 'list' or 'calendar'
             calendarDate: new Date(), // 캘린더가 보여주는 월
             foodIdToDelete: null, // 삭제 확인을 위한 ID 저장
+            analyzedImageFile: null, // AI 분석에 사용된 이미지 파일
         };
 
         // --- HTML 템플릿 ---
+        const LoadingSpinner = () => `
+            <div class="flex items-center justify-center min-h-screen">
+                <div class="w-16 h-16 border-4 border-teal-500 border-dashed rounded-full animate-spin"></div>
+            </div>
+        `;
+
         const LoginPage = () => `
             <div class="flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in">
                 <div class="w-full max-w-sm">
@@ -358,9 +367,12 @@
                     <ul class="divide-y divide-gray-200">
                         ${entries.map(entry => `
                             <li class="py-3 flex justify-between items-center">
-                                <div>
-                                    <p class="font-semibold text-gray-700">${entry.name}</p>
-                                    <p class="text-sm text-gray-500">${entry.calories} kcal</p>
+                                <div class="flex items-center gap-4">
+                                    ${entry.imageUrl ? `<img src="${entry.imageUrl}" alt="${entry.name}" class="w-12 h-12 rounded-md object-cover">` : ''}
+                                    <div>
+                                        <p class="font-semibold text-gray-700">${entry.name}</p>
+                                        <p class="text-sm text-gray-500">${entry.calories} kcal</p>
+                                    </div>
                                 </div>
                                 <button onclick="window.openDeleteFoodModal('${entry.id}')" class="text-red-500 hover:text-red-700 font-bold text-xl">×</button>
                             </li>
@@ -375,36 +387,56 @@
                 <button onclick="window.closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-xl">×</button>
                 <h2 class="text-2xl font-bold mb-4 text-gray-800">식단 기록하기</h2>
                 
-                <div class="mb-4 p-4 border border-dashed rounded-lg text-center">
-                    <label for="image-upload" class="cursor-pointer text-teal-500 font-semibold hover:text-teal-600">
-                        📷 사진으로 기록하기 (AI 분석)
-                    </label>
-                    <input id="image-upload" type="file" accept="image/*" class="hidden">
-                    <p id="ai-status" class="text-sm text-gray-500 mt-2">사진을 선택하면 AI가 분석을 시작합니다.</p>
-                </div>
-                
-                <div class="relative py-2">
-                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-300"></div></div>
-                    <div class="relative flex justify-center"><span class="bg-white px-2 text-sm text-gray-500">또는</span></div>
+                <div id="ai-section">
+                    <div class="mb-4 p-4 border border-dashed rounded-lg text-center">
+                        <label for="image-upload" class="cursor-pointer text-teal-500 font-semibold hover:text-teal-600">
+                            📷 사진으로 기록하기 (AI 분석)
+                        </label>
+                        <input id="image-upload" type="file" accept="image/*" class="hidden">
+                        <p id="ai-status" class="text-sm text-gray-500 mt-2">사진을 선택하면 AI가 분석을 시작합니다.</p>
+                    </div>
+                    
+                    <div class="relative py-2">
+                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-300"></div></div>
+                        <div class="relative flex justify-center"><span class="bg-white px-2 text-sm text-gray-500">또는</span></div>
+                    </div>
                 </div>
 
-                <form id="add-food-form" class="mt-4">
+                <div id="manual-form-section">
+                    <form id="add-food-form" class="mt-4">
+                        <div class="mb-4">
+                            <label class="block text-sm font-bold mb-2">식사 종류</label>
+                            <select id="mealType" class="w-full p-3 border rounded-lg bg-gray-50">
+                                <option>아침</option><option>점심</option><option>저녁</option><option>간식</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-bold mb-2">음식 이름</label>
+                            <input id="foodName" type="text" placeholder="예: 닭가슴살 샐러드" class="w-full p-3 border rounded-lg" required>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-sm font-bold mb-2">칼로리 (kcal)</label>
+                            <input id="calories" type="number" placeholder="예: 350" class="w-full p-3 border rounded-lg" required>
+                        </div>
+                        <button id="add-food-btn" type="submit" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition">기록 추가</button>
+                    </form>
+                </div>
+
+                <div id="ai-results-section" class="hidden">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">AI 분석 결과</h3>
+                    <p class="text-sm text-gray-600 mb-4">기록할 음식을 선택하고 식사 종류를 확인해주세요.</p>
+                    <div id="ai-results-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto">
+                        <!-- AI results will be injected here -->
+                    </div>
                     <div class="mb-4">
                         <label class="block text-sm font-bold mb-2">식사 종류</label>
-                        <select id="mealType" class="w-full p-3 border rounded-lg bg-gray-50">
+                        <select id="ai-mealType" class="w-full p-3 border rounded-lg bg-gray-50">
                             <option>아침</option><option>점심</option><option>저녁</option><option>간식</option>
                         </select>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold mb-2">음식 이름</label>
-                        <input id="foodName" type="text" placeholder="예: 닭가슴살 샐러드" class="w-full p-3 border rounded-lg" required>
-                    </div>
-                    <div class="mb-6">
-                        <label class="block text-sm font-bold mb-2">칼로리 (kcal)</label>
-                        <input id="calories" type="number" placeholder="예: 350" class="w-full p-3 border rounded-lg" required>
-                    </div>
-                    <button id="add-food-btn" type="submit" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition">기록 추가</button>
-                </form>
+                    <button id="add-selected-foods-btn" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition">선택 항목 기록</button>
+                    <button onclick="window.resetModalView()" class="w-full mt-2 text-sm text-gray-600 hover:text-teal-500">다른 사진으로 분석 / 직접 입력</button>
+                </div>
             </div>
         `;
 
@@ -453,7 +485,7 @@
 
         const render = () => {
             if (!state.authReady) {
-                appContainer.innerHTML = ''; // 인증 확인 전에는 아무것도 그리지 않음
+                appContainer.innerHTML = LoadingSpinner();
                 return;
             }
 
@@ -488,6 +520,7 @@
             document.getElementById('add-food-form')?.addEventListener('submit', window.handleAddFood);
             document.getElementById('image-upload')?.addEventListener('change', window.handleImageUpload);
             document.getElementById('profile-form')?.addEventListener('submit', window.handleUpdateProfile);
+            document.getElementById('add-selected-foods-btn')?.addEventListener('click', window.handleAddSelectedFoods);
             
             if (state.currentPage === 'onboarding' || (state.isLoggedIn && !state.userInfo) || document.getElementById('profile-modal')) {
                  document.querySelectorAll('.goal-btn').forEach(btn => {
@@ -517,25 +550,24 @@
             }
 
             const statusEl = document.getElementById('ai-status');
-            const foodNameInput = document.getElementById('foodName');
-            const caloriesInput = document.getElementById('calories');
-            const addFoodBtn = document.getElementById('add-food-btn');
+            const aiSection = document.getElementById('ai-section');
+            const manualFormSection = document.getElementById('manual-form-section');
+            const aiResultsSection = document.getElementById('ai-results-section');
+            const aiResultsList = document.getElementById('ai-results-list');
 
             statusEl.textContent = 'AI가 사진을 분석하고 있습니다...';
-            addFoodBtn.disabled = true;
-            addFoodBtn.textContent = '분석 중...';
-
+            
             try {
                 const base64Image = await fileToBase64(file);
 
-                const model = "gemini-1.5-flash-latest"; // 최신 모델 이름으로 변경
+                const model = "gemini-1.5-flash-latest";
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{
                             parts: [
-                                { text: "이 음식 사진을 보고 음식 이름과 1인분 기준 예상 칼로리를 알려주세요. 답변은 '음식명: [이름], 칼로리: [숫자]' 형식으로만 정확히 답변해주세요." },
+                                { text: "이 음식 사진에 있는 모든 음식을 각각 식별하고, 1인분 기준 예상 칼로리와 함께 JSON 배열 형식으로 알려주세요. 각 객체는 'name'과 'calories' 키를 가져야 합니다. 예시: [{'name': '김치찌개', 'calories': 450}, {'name': '계란후라이', 'calories': 180}]" },
                                 { inline_data: { mime_type: file.type, data: base64Image } }
                             ]
                         }]
@@ -551,33 +583,40 @@
                 const data = await response.json();
                 
                 if (!data.candidates || data.candidates.length === 0) {
-                    throw new Error('AI가 분석 결과를 생성하지 못했습니다. 다른 사진으로 시도해보세요.');
+                    throw new Error('AI가 분석 결과를 생성하지 못했습니다.');
                 }
 
                 const text = data.candidates[0].content.parts[0].text;
-
-                const foodNameMatch = text.match(/음식명: (.*?)(,|$)/);
-                const caloriesMatch = text.match(/칼로리: (\d+)/);
-
-                if (foodNameMatch && caloriesMatch) {
-                    const foodName = foodNameMatch[1].trim();
-                    const calories = parseInt(caloriesMatch[1]);
-                    
-                    foodNameInput.value = foodName;
-                    caloriesInput.value = calories;
-                    statusEl.textContent = `분석 완료: ${foodName} (${calories}kcal)`;
-                } else {
-                    console.warn("AI 응답 형식 불일치:", text);
-                    throw new Error('AI가 음식 정보를 정확히 분석하지 못했습니다. 직접 입력해주세요.');
+                
+                const jsonMatch = text.match(/\[.*\]/s);
+                if (!jsonMatch) {
+                    throw new Error('AI가 분석 결과를 JSON 형식으로 반환하지 않았습니다.');
                 }
+
+                const results = JSON.parse(jsonMatch[0]);
+
+                if (results.length === 0) {
+                    throw new Error('AI가 사진에서 음식을 찾지 못했습니다.');
+                }
+                
+                aiResultsList.innerHTML = results.map((item, index) => `
+                    <label for="food-item-${index}" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
+                        <div>
+                            <span class="font-semibold text-gray-800">${item.name}</span>
+                            <span class="text-sm text-gray-500 ml-2">${item.calories} kcal</span>
+                        </div>
+                        <input type="checkbox" id="food-item-${index}" class="form-checkbox h-5 w-5 text-teal-600 rounded focus:ring-teal-500" data-name="${item.name}" data-calories="${item.calories}" checked>
+                    </label>
+                `).join('');
+                
+                aiSection.classList.add('hidden');
+                manualFormSection.classList.add('hidden');
+                aiResultsSection.classList.remove('hidden');
 
             } catch (error) {
                 console.error("AI 분석 오류:", error);
                 statusEl.textContent = `분석 실패. 직접 입력해주세요.`;
-                alert(`AI 분석 중 오류가 발생했습니다. 네트워크 상태를 확인하거나 직접 입력해주세요.\n\n오류: ${error.message}`);
-            } finally {
-                addFoodBtn.disabled = false;
-                addFoodBtn.textContent = '기록 추가';
+                alert(`AI 분석 중 오류가 발생했습니다: ${error.message}`);
             }
         };
 
@@ -702,6 +741,7 @@
                 carbs: Math.round(parseInt(e.target.calories.value) * 0.5 / 4),
                 protein: Math.round(parseInt(e.target.calories.value) * 0.2 / 4),
                 fat: Math.round(parseInt(e.target.calories.value) * 0.3 / 9),
+                imageUrl: null,
             };
             
             try {
@@ -709,6 +749,51 @@
                 window.closeModal();
             } catch (error) {
                 alert("기록 추가 실패: " + error.message);
+            }
+        };
+
+        window.handleAddSelectedFoods = async () => {
+            const mealTypeSelect = document.getElementById('ai-mealType');
+            const checkboxes = document.querySelectorAll('#ai-results-list input[type="checkbox"]');
+            const selectedFoods = document.querySelectorAll('#ai-results-list input[type="checkbox"]:checked');
+
+            if (selectedFoods.length === 0) {
+                alert('기록할 음식을 하나 이상 선택해주세요.');
+                return;
+            }
+
+            const button = document.getElementById('add-selected-foods-btn');
+            button.disabled = true;
+            button.textContent = '저장 중...';
+            checkboxes.forEach(c => c.disabled = true);
+            mealTypeSelect.disabled = true;
+            
+            try {
+                const batch = writeBatch(db);
+                selectedFoods.forEach(checkbox => {
+                    const newEntry = {
+                        uid: auth.currentUser.uid,
+                        date: state.currentDate,
+                        name: checkbox.dataset.name,
+                        calories: parseInt(checkbox.dataset.calories),
+                        mealType: mealTypeSelect.value,
+                        carbs: Math.round(parseInt(checkbox.dataset.calories) * 0.5 / 4),
+                        protein: Math.round(parseInt(checkbox.dataset.calories) * 0.2 / 4),
+                        fat: Math.round(parseInt(checkbox.dataset.calories) * 0.3 / 9),
+                        imageUrl: null, // 사진 저장 기능 제외
+                    };
+                    const docRef = doc(collection(db, "foodEntries"));
+                    batch.set(docRef, newEntry);
+                });
+                await batch.commit();
+                window.closeModal();
+
+            } catch (error) {
+                alert("기록 추가 실패: " + error.message);
+                button.disabled = false;
+                button.textContent = '선택 항목 기록';
+                checkboxes.forEach(c => c.disabled = false);
+                mealTypeSelect.disabled = false;
             }
         };
 
@@ -735,7 +820,7 @@
                     allEntries[entry.date].push(entry);
                 });
                 state.foodEntries = allEntries;
-                render();
+                if (state.authReady) render();
             });
 
             if (state.unsubscribeUserListener) state.unsubscribeUserListener();
@@ -743,7 +828,7 @@
             state.unsubscribeUserListener = onSnapshot(userDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     state.userInfo = docSnap.data();
-                    render();
+                    if (state.authReady) render();
                 }
             });
         };
@@ -771,6 +856,7 @@
             }
             state.authReady = true;
             render();
+            document.body.style.visibility = 'visible';
         });
         
         // --- 전역 스코프에 함수 노출 ---
@@ -798,7 +884,22 @@
             render();
         };
         window.openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
-        window.closeModal = () => document.getElementById('add-food-modal').classList.add('hidden');
+        window.closeModal = () => {
+            document.getElementById('add-food-modal').classList.add('hidden');
+            if (document.getElementById('ai-results-section')) {
+                window.resetModalView();
+            }
+        };
+        window.resetModalView = () => {
+            document.getElementById('ai-section')?.classList.remove('hidden');
+            document.getElementById('manual-form-section')?.classList.remove('hidden');
+            document.getElementById('ai-results-section')?.classList.add('hidden');
+            const aiStatus = document.getElementById('ai-status');
+            if(aiStatus) aiStatus.textContent = '사진을 선택하면 AI가 분석을 시작합니다.';
+            const imageUpload = document.getElementById('image-upload');
+            if(imageUpload) imageUpload.value = '';
+            state.analyzedImageFile = null;
+        };
         window.openDeleteModal = () => document.getElementById('delete-account-modal').classList.remove('hidden');
         window.closeDeleteModal = () => document.getElementById('delete-account-modal').classList.add('hidden');
         window.openDeleteFoodModal = (id) => {
