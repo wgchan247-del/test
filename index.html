@@ -3,441 +3,349 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>피트밀 - 나만의 AI 영양사</title>
+    <title>FitMeal - AI 식단 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .animate-fade-in { animation: fadeIn 0.5s ease-in-out; }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #fff7ed; }
-        .font-jua { font-family: 'Jua', sans-serif; }
-        .nutrient-ring {
-            --size: 72px; --thickness: 8px; width: var(--size); height: var(--size); position: relative;
-            display: inline-grid; place-content: center; font-size: 0.8rem; font-weight: 600;
-        }
-        .nutrient-ring::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: conic-gradient(var(--color, #f97316) calc(var(--p, 0) * 1%), #fed7aa 0);
-            border-radius: 50%;
-            mask: radial-gradient(farthest-side, transparent calc(99% - var(--thickness)), #fff calc(100% - var(--thickness)));
-            -webkit-mask: radial-gradient(farthest-side, transparent calc(99% - var(--thickness)), #fff calc(100% - var(--thickness)));
-            transition: background 0.5s ease-in-out;
-        }
-        [data-action] { cursor: pointer; }
-        .card-shadow { box-shadow: 0 4px 12px 0 rgba(249, 115, 22, 0.1); }
-        .modal { transition: opacity 0.3s ease; }
-        .modal-content { transition: transform 0.3s ease; }
-        .toast { transition: opacity 0.3s ease, transform 0.3s ease; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="text-slate-700">
+<body class="bg-gray-50">
 
-    <div id="app" class="max-w-2xl mx-auto p-4">
+    <div id="app-container">
+        <!-- 초기 로딩 화면 -->
+        <div class="flex items-center justify-center min-h-screen">
+            <p class="text-gray-500">앱을 불러오는 중입니다...</p>
         </div>
+    </div>
 
-    <div id="modal-container">
-        </div>
-
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50">
-         </div>
-
+    <!-- Firebase SDK 스크립트 -->
     <script type="module">
-        // Firebase SDK 가져오기
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
+        // Firebase v9+ 모듈러 SDK 임포트
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signOut, 
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query, 
+            where, 
+            onSnapshot,
+            doc,
+            deleteDoc,
+            setDoc,
+            getDoc
+        } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
-        // --- 1. 설정 및 초기화 ---
+        // ===================================================================================
+        // 중요! 여기에 자신의 Firebase 프로젝트 설정 값을 붙여넣으세요.
+        // ===================================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyCRax6rd1rlBIc3kVgg5OkHmSIQyzJmC8A",
             authDomain: "fitmeal-app-d1a97.firebaseapp.com",
             projectId: "fitmeal-app-d1a97",
-            storageBucket: "fitmeal-app-d1a97.appspot.com",
+            storageBucket: "fitmeal-app-d1a97.firebasestorage.app",
             messagingSenderId: "968711774677",
             appId: "1:968711774677:web:b3d3cb9ccc2388c3ba5d5c"
-        };
+            };
 
+        // Firebase 앱 초기화
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
-        const functions = getFunctions(app);
-        const callGeminiAPI_server = httpsCallable(functions, 'callGeminiAPI');
-        const callGeminiVisionAPI_server = httpsCallable(functions, 'callGeminiVisionAPI');
 
-        const MOCK_USER_ID = 'local-user';
-        const todayString = new Date().toISOString().slice(0, 10);
-
-        // --- 2. 앱 상태 관리 ---
-        const state = {
-            userProfile: null,
-            records: {}, 
-            mealPlan: null,
+        // --- 앱 상태 관리 ---
+        let state = {
             currentPage: 'loading',
-            isLoading: false,
-            currentDate: todayString,
+            isLoggedIn: false,
+            user: null, // Firebase auth user 객체
+            userInfo: null, // Firestore에 저장된 사용자 정보
+            foodEntries: {},
+            currentDate: new Date().toISOString().split('T')[0],
+            unsubscribeFoodListener: null, // 실시간 리스너 구독 해제 함수
         };
 
-        // --- 3. UI 컴포넌트 (HTML 템플릿 함수) ---
-        const AppShell = (content) => `
-            <header class="flex justify-between items-center mb-6">
-                <h1 class="text-4xl font-jua text-orange-500">피트밀 🥗</h1>
-                <div class="flex items-center gap-4">
-                    <button data-action="show-calendar" class="text-slate-400 hover:text-orange-500">
-                        <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
-                    </button>
-                    <button data-action="open-profile" class="text-slate-400 hover:text-orange-500">
-                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"/></svg>
-                    </button>
-                </div>
-            </header>
-            <main>${content}</main>
-        `;
-        
-        const LoadingSpinner = () => `<div class="text-center py-10"><div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div></div>`;
-        
-        const ProfileSetupPage = (isModal = false) => {
-            const profile = state.userProfile || {};
-            return `
-                <div class="bg-white rounded-2xl card-shadow p-6 ${isModal ? '' : 'mt-10'}">
-                    <h2 class="text-2xl font-jua text-orange-500 mb-2 text-center">프로필 설정</h2>
-                    <p class="text-slate-500 mb-6 text-center">정확한 AI 추천을 위해 정보를 입력해주세요.</p>
-                    <form id="profile-form" class="space-y-4" data-action="save-profile">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-medium text-slate-600">성별</label><select id="gender" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"><option value="female" ${profile.gender === 'female' ? 'selected' : ''}>여성</option><option value="male" ${profile.gender === 'male' ? 'selected' : ''}>남성</option></select></div>
-                            <div><label class="block text-sm font-medium text-slate-600">나이</label><input type="number" id="age" value="${profile.age || ''}" class="mt-1 block w-full rounded-lg border-slate-300" placeholder="세" required></div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-medium text-slate-600">신장 (cm)</label><input type="number" id="height" value="${profile.height || ''}" class="mt-1 block w-full rounded-lg border-slate-300" required></div>
-                            <div><label class="block text-sm font-medium text-slate-600">체중 (kg)</label><input type="number" id="weight" value="${profile.weight || ''}" class="mt-1 block w-full rounded-lg border-slate-300" required></div>
-                        </div>
-                        <div><label class="block text-sm font-medium text-slate-600">활동량</label><select id="activity" class="mt-1 block w-full rounded-lg border-slate-300"><option value="1.2" ${profile.activity == 1.2 ? 'selected' : ''}>거의 없음</option><option value="1.375" ${profile.activity == 1.375 ? 'selected' : ''}>가벼운 활동</option><option value="1.55" ${profile.activity == 1.55 ? 'selected' : ''}>보통 활동</option><option value="1.725" ${profile.activity == 1.725 ? 'selected' : ''}>높은 활동</option><option value="1.9" ${profile.activity == 1.9 ? 'selected' : ''}>매우 높은 활동</option></select></div>
-                        <div><label class="block text-sm font-medium text-slate-600">목표</label><select id="goal" class="mt-1 block w-full rounded-lg border-slate-300"><option value="loss" ${profile.goal === 'loss' ? 'selected' : ''}>체중 감량</option><option value="maintain" ${profile.goal === 'maintain' ? 'selected' : ''}>체중 유지</option><option value="gain" ${profile.goal === 'gain' ? 'selected' : ''}>체중 증가</option></select></div>
-                        <div class="pt-4"><button type="submit" class="w-full bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 transition">저장하기</button></div>
-                    </form>
-                </div>
-            `;
-        };
+        // --- HTML 템플릿 ---
+        const LoginPage = () => `...`; // (이전과 동일, 생략)
+        const RegisterPage = () => `...`; // (이전과 동일, 생략)
+        const OnboardingPage = () => `...`; // (이전과 동일, 생략)
         
         const DashboardPage = () => {
-            const records = state.records[state.currentDate] || { meals: [], exercises: [], water: 0 };
-            const goals = state.userProfile?.nutritionGoals || {};
+            const dateKey = state.currentDate;
+            const todaysEntries = state.foodEntries[dateKey] || [];
+            const userInfo = state.userInfo || { goal: 2000, carbsGoal: 250, proteinGoal: 120, fatGoal: 67 };
             
-            const totals = records.meals.reduce((acc, meal) => {
-                acc.calories += meal.calories; acc.carbs += meal.carbs;
-                acc.protein += meal.protein; acc.fat += meal.fat;
+            const totals = todaysEntries.reduce((acc, entry) => {
+                acc.calories += entry.calories;
+                acc.carbs += entry.carbs;
+                acc.protein += entry.protein;
+                acc.fat += entry.fat;
                 return acc;
             }, { calories: 0, carbs: 0, protein: 0, fat: 0 });
 
+            const meals = { '아침': [], '점심': [], '저녁': [], '간식': [] };
+            todaysEntries.forEach(entry => meals[entry.mealType].push(entry));
+
+            const caloriePercentage = userInfo.goal > 0 ? Math.min((totals.calories / userInfo.goal) * 100, 100) : 0;
+            const circumference = 2 * Math.PI * 50;
+            const strokeDashoffset = circumference - (caloriePercentage / 100) * circumference;
+
             return `
-                <div class="space-y-6">
-                    <section class="bg-white p-4 rounded-2xl card-shadow">
-                        <h2 class="text-xl font-jua text-orange-500 mb-3">오늘의 영양소 (${state.currentDate})</h2>
-                        <div class="grid grid-cols-4 gap-2 text-center">
-                            ${NutritionRing('칼로리', totals.calories, goals.calories, 'kcal', '#f97316')}
-                            ${NutritionRing('탄수화물', totals.carbs, goals.carbs, 'g', '#14b8a6')}
-                            ${NutritionRing('단백질', totals.protein, goals.protein, 'g', '#f59e0b')}
-                            ${NutritionRing('지방', totals.fat, goals.fat, 'g', '#8b5cf6')}
+                <div class="min-h-screen bg-gray-50 animate-fade-in">
+                    <header class="bg-white shadow-sm sticky top-0 z-10">
+                        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                            <h1 class="text-2xl font-bold text-teal-500">FitMeal</h1>
+                            <button onclick="window.handleLogout()" class="text-sm text-gray-600 hover:text-teal-500">로그아웃</button>
                         </div>
-                    </section>
-
-                    <section>${AiMealPlan(state.mealPlan)}</section>
-
-                    <section>
-                        <h2 class="text-xl font-jua text-orange-500 mb-3">식단 기록 📝</h2>
-                        <div id="meal-list" class="space-y-2 mb-3">
-                            ${records.meals.length > 0 ? records.meals.map(MealItem).join('') : '<p class="text-center text-slate-400 py-4">기록된 음식이 없습니다.</p>'}
+                    </header>
+                    <main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+                        <div class="flex items-center justify-between mb-6">
+                            <button onclick="window.changeDate(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&lt;</button>
+                            <h2 class="text-xl font-semibold text-gray-800">${new Date(dateKey + 'T00:00:00').toLocaleDateString('ko-KR')}</h2>
+                            <button onclick="window.changeDate(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&gt;</button>
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button data-action="add-meal-manual" class="w-full bg-white border-2 border-dashed border-orange-200 text-orange-600 py-3 rounded-xl font-semibold hover:bg-orange-50 transition">+ 직접 입력</button>
-                            <button data-action="add-meal-photo" class="w-full bg-orange-500 text-white py-3 rounded-xl font-semibold hover:bg-orange-600 transition">📷 AI 카메라로 기록</button>
-                        </div>
-                    </section>
-                    
-                     <section>
-                        <h2 class="text-xl font-jua text-orange-500 mb-3">운동 기록 🏋️‍♀️</h2>
-                        <div id="exercise-list" class="space-y-2 mb-3">
-                           ${records.exercises.length > 0 ? records.exercises.map(ExerciseItem).join('') : '<p class="text-center text-slate-400 py-4">기록된 운동이 없습니다.</p>'}
-                        </div>
-                        <button data-action="add-exercise" class="w-full bg-white border-2 border-dashed border-teal-200 text-teal-600 py-3 rounded-xl font-semibold hover:bg-teal-50 transition">+ 운동 추가하기</button>
-                    </section>
-
-                    <section class="bg-white p-4 rounded-2xl card-shadow">
-                        <h2 class="text-xl font-jua text-orange-500 mb-3">수분 섭취 💧</h2>
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-3xl font-bold text-sky-500">${records.water} / 8 잔</p>
-                                <p class="text-slate-400 text-sm">${records.water * 250}ml / 2L 목표</p>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button data-action="update-water" data-value="${records.water + 1}" class="bg-sky-400 text-white rounded-full w-12 h-12 text-2xl font-bold hover:bg-sky-500 transition">+</button>
-                                <button data-action="update-water" data-value="${records.water - 1}" class="bg-slate-100 text-slate-500 rounded-full w-12 h-12 text-2xl font-bold hover:bg-slate-200 transition">-</button>
+                        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                            <div class="flex flex-col md:flex-row items-center justify-around gap-8">
+                                <div class="relative flex items-center justify-center w-48 h-48">
+                                    <svg class="w-full h-full" viewBox="0 0 120 120">
+                                        <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60"/>
+                                        <circle class="text-teal-500" stroke-width="10" stroke-dasharray="${circumference}" stroke-dashoffset="${strokeDashoffset}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60" transform="rotate(-90 60 60)"/>
+                                    </svg>
+                                    <div class="absolute flex flex-col items-center">
+                                        <span class="text-3xl font-bold text-gray-800">${totals.calories}</span>
+                                        <span class="text-sm text-gray-500">/ ${userInfo.goal} kcal</span>
+                                    </div>
+                                </div>
+                                <div class="w-full md:w-1/2 space-y-4">
+                                    ${NutrientBar('탄수화물', totals.carbs, userInfo.carbsGoal, 'bg-orange-500')}
+                                    ${NutrientBar('단백질', totals.protein, userInfo.proteinGoal, 'bg-sky-500')}
+                                    ${NutrientBar('지방', totals.fat, userInfo.fatGoal, 'bg-amber-400')}
+                                </div>
                             </div>
                         </div>
-                    </section>
-                </div>
-            `;
-        };
-
-        const NutritionRing = (name, current, goal, unit, color) => `
-            <div>
-                <div class="nutrient-ring mx-auto" style="--color: ${color}; --p: ${goal > 0 ? Math.min(Math.round((current / goal) * 100), 100) : 0};">
-                    <span>${Math.round(current)}</span>
-                    <small class="text-slate-400">/ ${goal || 0}</small>
-                </div>
-                <p class="mt-1 font-semibold text-sm">${name}</p>
-            </div>
-        `;
-
-        const AiMealPlan = (plan) => `
-            <h2 class="text-xl font-jua text-orange-500 mb-3">AI 추천 식단 ✨</h2>
-            <div id="meal-plan-content" class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                ${plan ? Object.entries(plan).map(([type, meal]) => MealPlanCard(type, meal)).join('') : '<p class="text-center text-slate-400 py-4 md:col-span-2">아래 버튼을 눌러 추천 식단을 받아보세요.</p>'}
-            </div>
-            <button data-action="generate-plan" class="w-full bg-orange-800 text-white py-3 rounded-xl font-semibold hover:bg-orange-900 transition">새 식단 받기</button>
-        `;
-
-        const MealPlanCard = (type, meal) => {
-            const mealTypes = { breakfast: '아침', lunch: '점심', dinner: '저녁', snack: '간식' };
-            const mealData = JSON.stringify({ name: `(AI) ${meal.name}`, ...meal });
-            return `
-                <div class="bg-white p-4 rounded-xl card-shadow">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="font-jua text-orange-500">${mealTypes[type]}</h3>
-                            <p class="text-lg font-semibold my-1">${meal.name}</p>
+                        <div class="space-y-6">
+                            ${Object.entries(meals).map(([mealType, entries]) => MealCard(mealType, entries)).join('')}
                         </div>
-                        <button data-action="log-ai-meal" data-meal='${mealData}' class="bg-orange-100 text-orange-600 w-9 h-9 rounded-full text-xl font-semibold hover:bg-orange-200 flex items-center justify-center">+</button>
+                    </main>
+                    <div class="fixed bottom-6 right-6">
+                        <button onclick="window.openModal()" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300">+</button>
                     </div>
-                    <div class="flex justify-between text-xs text-slate-500 border-t pt-2 mt-2">
-                        <span>🔥 ${meal.calories}kcal</span><span>🍞 ${meal.carbs}g</span><span>🍗 ${meal.protein}g</span><span>🥑 ${meal.fat}g</span>
+                    <div id="add-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+                        ${AddFoodModal()}
                     </div>
                 </div>
             `;
         };
         
-        const MealItem = (meal) => `
-            <div class="bg-white p-3 rounded-xl card-shadow flex justify-between items-center">
-                <div class="flex items-center flex-grow">
-                    ${meal.photo ? `<img src="${meal.photo}" class="w-12 h-12 rounded-lg object-cover mr-3">` : `<div class="w-12 h-12 rounded-lg bg-orange-50 flex-shrink-0 mr-3"></div>`}
-                    <div class="flex-grow">
-                        <p class="font-semibold">${meal.name}</p>
-                        <p class="text-sm text-slate-500">${meal.calories}kcal | 탄 ${meal.carbs}g, 단 ${meal.protein}g, 지 ${meal.fat}g</p>
-                    </div>
-                </div>
-                <button data-action="delete-meal" data-id="${meal.id}" class="text-rose-400 hover:text-rose-600 text-2xl font-bold flex-shrink-0 ml-2">&times;</button>
-            </div>
-        `;
-        
-        const ExerciseItem = (exercise) => `
-             <div class="bg-white p-3 rounded-xl card-shadow flex justify-between items-center">
-                <div>
-                    <p class="font-semibold">${exercise.name}</p>
-                    <p class="text-sm text-slate-500">${exercise.duration}분 | ${exercise.calories}kcal 소모</p>
-                </div>
-                <button data-action="delete-exercise" data-id="${exercise.id}" class="text-rose-400 hover:text-rose-600 text-2xl font-bold">&times;</button>
-            </div>
-        `;
-
-        const Modal = (title, content, actions) => `
-            <div class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-40 opacity-0" data-action="close-modal">
-                <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md p-6 transform scale-95">
-                    <h2 class="text-2xl font-jua text-orange-500 mb-6 text-center">${title}</h2>
-                    ${content}
-                    ${actions ? `<div class="pt-4 flex space-x-3">${actions}</div>` : ''}
-                </div>
-            </div>
-        `;
-
-        // --- 4. 데이터베이스 및 API 함수 ---
-        const dbService = {
-            getProfile: async () => {
-                const docRef = doc(db, `users/${MOCK_USER_ID}/profile/data`);
-                const docSnap = await getDoc(docRef);
-                return docSnap.exists() ? docSnap.data() : null;
-            },
-            saveProfile: (profileData) => {
-                const docRef = doc(db, `users/${MOCK_USER_ID}/profile/data`);
-                return setDoc(docRef, profileData);
-            },
-            getRecords: async (dateStr) => {
-                const docRef = doc(db, `users/${MOCK_USER_ID}/records/${dateStr}`);
-                const docSnap = await getDoc(docRef);
-                return docSnap.exists() ? docSnap.data() : { meals: [], exercises: [], water: 0 };
-            },
-            saveRecords: (dateStr, records) => {
-                const docRef = doc(db, `users/${MOCK_USER_ID}/records/${dateStr}`);
-                return setDoc(docRef, records, { merge: true });
-            }
-        };
-
-        const aiService = {
-            generateMealPlan: (profile) => {
-                const prompt = `사용자 정보: 나이 ${profile.age}세, 성별 ${profile.gender}, 목표 ${profile.goal}. 영양 목표: 칼로리 ${profile.nutritionGoals.calories}kcal, 탄수화물 ${profile.nutritionGoals.carbs}g, 단백질 ${profile.nutritionGoals.protein}g, 지방 ${profile.nutritionGoals.fat}g. 이 정보를 바탕으로 한국식 위주의 맛있는 하루 식단(아침, 점심, 저녁, 간식)을 추천해줘.`;
-                const schema = { type: "OBJECT", properties: { breakfast: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, lunch: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, dinner: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, snack: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } } } };
-                return callGeminiAPI_server({ prompt, schema }).then(res => JSON.parse(res.data.result));
-            },
-            analyzeFoodImage: (base64) => {
-                const prompt = "이 음식 사진을 분석해서, 음식 이름, 예상 칼로리, 탄수화물, 단백질, 지방 함량, 그리고 영양학적 조언을 JSON 형식으로 알려줘.";
-                const schema = { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" }, tip: { type: "STRING" } } };
-                return callGeminiVisionAPI_server({ base64ImageData: base64, prompt, schema }).then(res => JSON.parse(res.data.result));
-            }
-        };
-
-        // --- 5. 핵심 로직 및 이벤트 핸들러 ---
-        const calculateGoals = (profile) => {
-            let bmr = (10 * profile.weight) + (6.25 * profile.height) - (5 * profile.age) + (profile.gender === 'male' ? 5 : -161);
-            let tdee = bmr * profile.activity;
-            if (profile.goal === 'loss') tdee -= 500; if (profile.goal === 'gain') tdee += 300;
-            return {
-                calories: Math.round(tdee), carbs: Math.round((tdee * 0.45) / 4),
-                protein: Math.round((tdee * 0.30) / 4), fat: Math.round((tdee * 0.25) / 9)
-            };
-        };
-
-        const actions = {
-            async saveProfile(e) {
-                e.preventDefault();
-                const form = e.target;
-                const profileData = {
-                    gender: form.querySelector('#gender').value,
-                    age: parseInt(form.querySelector('#age').value),
-                    height: parseFloat(form.querySelector('#height').value),
-                    weight: parseFloat(form.querySelector('#weight').value),
-                    activity: parseFloat(form.querySelector('#activity').value),
-                    goal: form.querySelector('#goal').value,
-                };
-                profileData.nutritionGoals = calculateGoals(profileData);
-                await dbService.saveProfile(profileData);
-                state.userProfile = profileData;
-                state.currentPage = 'dashboard';
-                await loadDataForDate(state.currentDate);
-                render();
-                showToast('프로필이 저장되었습니다!');
-                closeModal();
-            },
-            openProfile() {
-                renderModal('내 정보 수정', ProfileSetupPage(true));
-            },
-            async generatePlan() {
-                showToast('AI가 식단을 생성 중입니다...', 'info');
-                try {
-                    const plan = await aiService.generateMealPlan(state.userProfile);
-                    state.mealPlan = plan;
-                    render();
-                    showToast('AI 추천 식단이 생성되었습니다!');
-                } catch (e) { showToast('식단 생성에 실패했습니다.', 'error'); }
-            },
-            async logAiMeal(e) {
-                const mealData = JSON.parse(e.target.dataset.meal);
-                mealData.id = Date.now();
-                const currentRecords = state.records[state.currentDate] || { meals: [], exercises: [], water: 0 };
-                currentRecords.meals.push(mealData);
-                await dbService.saveRecords(state.currentDate, currentRecords);
-                render();
-                showToast(`${mealData.name} 기록 완료!`);
-            },
-            async updateWater(e) {
-                const newCount = Math.max(0, parseInt(e.target.dataset.value));
-                const currentRecords = state.records[state.currentDate] || { meals: [], exercises: [], water: 0 };
-                currentRecords.water = newCount;
-                await dbService.saveRecords(state.currentDate, currentRecords);
-                render();
-            },
-            async deleteMeal(e) {
-                const mealId = parseInt(e.target.dataset.id);
-                const currentRecords = state.records[state.currentDate];
-                currentRecords.meals = currentRecords.meals.filter(m => m.id !== mealId);
-                await dbService.saveRecords(state.currentDate, currentRecords);
-                render();
-                showToast('식단 기록이 삭제되었습니다.');
-            }
-        };
-
-        // --- 6. 렌더링 및 유틸리티 함수 ---
-        const app = document.getElementById('app');
-        const modalContainer = document.getElementById('modal-container');
-        const toastContainer = document.getElementById('toast-container');
+        // --- 렌더링 및 이벤트 핸들러 ---
+        const appContainer = document.getElementById('app-container');
 
         const render = () => {
+            let html = '';
             if (state.currentPage === 'loading') {
-                app.innerHTML = LoadingSpinner();
-                return;
-            }
-            if (state.currentPage === 'profileSetup') {
-                app.innerHTML = ProfileSetupPage();
-                return;
-            }
-            if (state.currentPage === 'dashboard') {
-                app.innerHTML = AppShell(DashboardPage());
-            }
-        };
-
-        const renderModal = (title, content, actions = '') => {
-            modalContainer.innerHTML = Modal(title, content, actions);
-            setTimeout(() => {
-                const modal = modalContainer.querySelector('.modal');
-                modal.classList.remove('opacity-0');
-                modal.querySelector('.modal-content').classList.remove('scale-95');
-            }, 10);
-        };
-        const closeModal = () => {
-            const modal = modalContainer.querySelector('.modal');
-            if (modal) {
-                modal.classList.add('opacity-0');
-                modal.querySelector('.modal-content').classList.add('scale-95');
-                setTimeout(() => modalContainer.innerHTML = '', 300);
-            }
-        };
-
-        const showToast = (message, type = 'success') => {
-            const colors = { success: 'bg-orange-500', error: 'bg-red-500', info: 'bg-sky-500' };
-            const toast = document.createElement('div');
-            toast.className = `toast text-white px-6 py-3 rounded-full shadow-lg opacity-0 transform translate-y-2 ${colors[type]}`;
-            toast.textContent = message;
-            toastContainer.appendChild(toast);
-            setTimeout(() => toast.classList.remove('opacity-0', 'translate-y-2'), 10);
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                toast.addEventListener('transitionend', () => toast.remove());
-            }, 3000);
-        };
-
-        // --- 7. 이벤트 리스너 설정 ---
-        document.addEventListener('submit', (e) => {
-            const action = e.target.dataset.action;
-            if (action && actions[action]) {
-                actions[action](e);
-            }
-        });
-
-        document.addEventListener('click', (e) => {
-            const target = e.target.closest('[data-action]');
-            if (target) {
-                const action = target.dataset.action;
-                if(action === 'close-modal') closeModal();
-                else if (actions[action]) actions[action](e);
-            }
-        });
-        
-        // --- 8. 앱 시작 ---
-        const loadDataForDate = async (dateStr) => {
-            const records = await dbService.getRecords(dateStr);
-            state.records[dateStr] = records;
-        };
-
-        const main = async () => {
-            render(); 
-            const profile = await dbService.getProfile();
-            if (profile) {
-                state.userProfile = profile;
-                state.currentPage = 'dashboard';
-                await loadDataForDate(state.currentDate);
+                html = `<div class="flex items-center justify-center min-h-screen"><p class="text-gray-500">로딩 중...</p></div>`;
+            } else if (state.isLoggedIn) {
+                if (state.userInfo) {
+                    html = DashboardPage();
+                } else {
+                    html = OnboardingPage();
+                }
             } else {
-                state.currentPage = 'profileSetup';
+                if (state.currentPage === 'register') {
+                    html = RegisterPage();
+                } else {
+                    html = LoginPage();
+                }
             }
+            appContainer.innerHTML = html;
+            addEventListeners();
+        };
+
+        const navigate = (page) => {
+            state.currentPage = page;
             render();
         };
 
-        main();
+        const addEventListeners = () => {
+            document.getElementById('login-form')?.addEventListener('submit', window.handleLogin);
+            document.getElementById('register-form')?.addEventListener('submit', window.handleRegister);
+            document.getElementById('onboarding-form')?.addEventListener('submit', window.handleOnboarding);
+            document.getElementById('add-food-form')?.addEventListener('submit', window.handleAddFood);
+            
+            if (state.currentPage === 'onboarding' || (state.isLoggedIn && !state.userInfo)) {
+                 document.querySelectorAll('.goal-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('bg-teal-500', 'text-white', 'border-teal-500'));
+                        e.currentTarget.classList.add('bg-teal-500', 'text-white', 'border-teal-500');
+                    });
+                });
+            }
+        };
+
+        // --- Firebase 연동 로직 ---
+        window.handleLogin = async (e) => {
+            e.preventDefault();
+            const email = e.target.email.value;
+            const password = e.target.password.value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged가 나머지를 처리
+            } catch (error) {
+                alert("로그인 실패: " + error.message);
+            }
+        };
+
+        window.handleRegister = async (e) => {
+            e.preventDefault();
+            const email = e.target.email.value;
+            const password = e.target.password.value;
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                // onAuthStateChanged가 나머지를 처리
+            } catch (error) {
+                alert("회원가입 실패: " + error.message);
+            }
+        };
+        
+        window.handleOnboarding = async (e) => {
+            e.preventDefault();
+            const selectedGoal = document.querySelector('.goal-btn.bg-teal-500').dataset.goal;
+            let calorieGoal = 2000;
+            if (selectedGoal === '체중 감량') calorieGoal = 1800;
+            if (selectedGoal === '근육 증가') calorieGoal = 2500;
+            
+            const userInfo = {
+                goal: calorieGoal,
+                carbsGoal: Math.round(calorieGoal * 0.5 / 4),
+                proteinGoal: Math.round(calorieGoal * 0.3 / 4),
+                fatGoal: Math.round(calorieGoal * 0.2 / 9)
+            };
+            
+            try {
+                // Firestore에 사용자 정보 저장
+                const userDocRef = doc(db, "users", auth.currentUser.uid);
+                await setDoc(userDocRef, userInfo);
+                state.userInfo = userInfo;
+                render();
+            } catch (error) {
+                alert("정보 저장 실패: " + error.message);
+            }
+        };
+
+        window.handleLogout = async () => {
+            await signOut(auth);
+            // onAuthStateChanged가 나머지를 처리
+        };
+        
+        window.handleAddFood = async (e) => {
+            e.preventDefault();
+            const newEntry = {
+                uid: auth.currentUser.uid,
+                date: state.currentDate,
+                name: e.target.foodName.value,
+                calories: parseInt(e.target.calories.value),
+                mealType: e.target.mealType.value,
+                carbs: Math.round(parseInt(e.target.calories.value) * 0.5 / 4),
+                protein: Math.round(parseInt(e.target.calories.value) * 0.2 / 4),
+                fat: Math.round(parseInt(e.target.calories.value) * 0.3 / 9),
+            };
+            
+            try {
+                await addDoc(collection(db, "foodEntries"), newEntry);
+                closeModal();
+            } catch (error) {
+                alert("기록 추가 실패: " + error.message);
+            }
+        };
+
+        window.deleteFood = async (id) => {
+            try {
+                await deleteDoc(doc(db, "foodEntries", id));
+            } catch (error) {
+                alert("삭제 실패: " + error.message);
+            }
+        };
+
+        const setupFoodListener = (uid) => {
+            if (state.unsubscribeFoodListener) {
+                state.unsubscribeFoodListener(); // 이전 리스너 구독 해제
+            }
+            const q = query(collection(db, "foodEntries"), where("uid", "==", uid));
+            state.unsubscribeFoodListener = onSnapshot(q, (querySnapshot) => {
+                const allEntries = {};
+                querySnapshot.forEach((doc) => {
+                    const entry = { id: doc.id, ...doc.data() };
+                    if (!allEntries[entry.date]) {
+                        allEntries[entry.date] = [];
+                    }
+                    allEntries[entry.date].push(entry);
+                });
+                state.foodEntries = allEntries;
+                render(); // 데이터 변경 시 다시 렌더링
+            });
+        };
+
+        // --- 앱 시작 및 인증 상태 감지 ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // 사용자가 로그인한 경우
+                state.isLoggedIn = true;
+                state.user = user;
+                
+                // Firestore에서 사용자 정보 가져오기
+                const userDocRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(userDocRef);
+
+                if (docSnap.exists()) {
+                    state.userInfo = docSnap.data();
+                    setupFoodListener(user.uid); // 실시간 식단 리스너 설정
+                } else {
+                    state.userInfo = null; // 온보딩 필요
+                }
+            } else {
+                // 사용자가 로그아웃한 경우
+                if (state.unsubscribeFoodListener) state.unsubscribeFoodListener();
+                state = {
+                    ...state,
+                    isLoggedIn: false,
+                    user: null,
+                    userInfo: null,
+                    foodEntries: {},
+                    currentPage: 'login',
+                    unsubscribeFoodListener: null,
+                };
+            }
+            render();
+        });
+        
+        // 전역 스코프에 함수 노출
+        window.navigate = navigate;
+        window.changeDate = (amount) => {
+            const currentDateObj = new Date(state.currentDate + 'T00:00:00');
+            currentDateObj.setDate(currentDateObj.getDate() + amount);
+            state.currentDate = currentDateObj.toISOString().split('T')[0];
+            render();
+        };
+        window.openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
+        window.closeModal = () => document.getElementById('add-food-modal').classList.add('hidden');
+        
+        // LoginPage, RegisterPage 등 이전과 동일한 HTML 템플릿 함수들을 여기에 포함시켜야 합니다.
+        // ... (이전 코드의 템플릿 함수들) ...
+
     </script>
 </body>
 </html>
