@@ -21,10 +21,7 @@
 <body class="bg-gray-50">
 
     <div id="app-container">
-        <!-- 초기 로딩 화면 -->
-        <div class="flex items-center justify-center min-h-screen">
-            <p class="text-gray-500">앱을 불러오는 중입니다...</p>
-        </div>
+        <!-- 초기 콘텐츠가 여기에 렌더링됩니다. -->
     </div>
 
     <!-- Firebase SDK 스크립트 -->
@@ -36,7 +33,9 @@
             createUserWithEmailAndPassword, 
             signInWithEmailAndPassword, 
             signOut, 
-            onAuthStateChanged 
+            onAuthStateChanged,
+            setPersistence,
+            browserSessionPersistence
         } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { 
             getFirestore, 
@@ -74,9 +73,16 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // --- 세션 기반 인증 설정 ---
+        // 웹 브라우저를 닫으면 자동으로 로그아웃되도록 설정합니다.
+        setPersistence(auth, browserSessionPersistence)
+            .catch((error) => {
+                console.error("인증 상태 설정 실패:", error);
+            });
+
         // --- 앱 상태 관리 ---
         let state = {
-            currentPage: 'loading',
+            currentPage: 'login', // 초기 페이지를 'login'으로 설정
             isLoggedIn: false,
             user: null, 
             userInfo: null, 
@@ -285,9 +291,8 @@
 
         const render = () => {
             let html = '';
-            if (state.currentPage === 'loading') {
-                html = `<div class="flex items-center justify-center min-h-screen"><p class="text-gray-500">로딩 중...</p></div>`;
-            } else if (state.isLoggedIn) {
+            // 로그인 상태와 사용자 정보 유무에 따라 페이지 결정
+            if (state.isLoggedIn) {
                 if (state.userInfo) {
                     html = DashboardPage();
                 } else {
@@ -453,7 +458,6 @@
                 const userDocRef = doc(db, "users", auth.currentUser.uid);
                 await setDoc(userDocRef, userInfo);
                 state.userInfo = userInfo;
-                // BUG FIX: 온보딩 완료 후 실시간 리스너 설정
                 setupFoodListener(auth.currentUser.uid);
                 render();
             } catch (error) {
@@ -530,7 +534,6 @@
                 } else {
                     state.userInfo = null;
                 }
-                render();
             } else {
                 if (state.unsubscribeFoodListener) state.unsubscribeFoodListener();
                 Object.assign(state, {
@@ -541,8 +544,8 @@
                     currentPage: 'login',
                     unsubscribeFoodListener: null,
                 });
-                render();
             }
+            render();
         });
         
         // --- 전역 스코프에 함수 노출 ---
