@@ -24,7 +24,7 @@
             transition: background 0.5s ease-in-out;
         }
         [data-action] { cursor: pointer; }
-        .card-shadow { box-shadow: 0 4px M, `_M`c 12px 0 rgba(249, 115, 22, 0.1); }
+        .card-shadow { box-shadow: 0 4px 12px 0 rgba(249, 115, 22, 0.1); }
         .modal { transition: opacity 0.3s ease; }
         .modal-content { transition: transform 0.3s ease; }
         .toast { transition: opacity 0.3s ease, transform 0.3s ease; }
@@ -44,7 +44,7 @@
     <script type="module">
         // Firebase SDK 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 
         // --- 1. 설정 및 초기화 ---
@@ -414,7 +414,7 @@
             if (target) {
                 const action = target.dataset.action;
                 if(action === 'close-modal') closeModal();
-                else if (actions[action]) actions[action]({ target });
+                else if (actions[action]) actions[action](e);
             }
         });
         
