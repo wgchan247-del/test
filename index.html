@@ -120,13 +120,15 @@
 
         // --- 앱 상태 관리 ---
         let state = {
-            currentPage: 'login', // 초기 페이지를 'login'으로 설정
+            authReady: false, // 인증 상태 확인 완료 여부
+            currentPage: 'login',
             isLoggedIn: false,
             user: null, 
             userInfo: null, 
             foodEntries: {},
             currentDate: getLocalDateString(new Date()),
             unsubscribeFoodListener: null,
+            unsubscribeUserListener: null,
             viewMode: 'list', // 'list' or 'calendar'
             calendarDate: new Date(), // 캘린더가 보여주는 월
             foodIdToDelete: null, // 삭제 확인을 위한 ID 저장
@@ -193,8 +195,12 @@
                 <div class="min-h-screen bg-gray-50 animate-fade-in">
                     <header class="bg-white shadow-sm sticky top-0 z-10">
                         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                            <h1 class="text-2xl font-bold text-teal-500">FitMeal</h1>
-                            <button onclick="window.handleLogout()" class="text-sm text-gray-600 hover:text-teal-500">로그아웃</button>
+                            <h1 onclick="window.goToDashboard()" class="text-2xl font-bold text-teal-500 cursor-pointer">FitMeal</h1>
+                            <div class="flex items-center gap-4">
+                                <button onclick="window.toggleViewMode()" class="text-sm text-gray-600 hover:text-teal-500">${state.viewMode === 'list' ? '캘린더' : '메인'}</button>
+                                <button onclick="window.openProfileModal()" class="text-sm text-gray-600 hover:text-teal-500">설정</button>
+                                <button onclick="window.handleLogout()" class="text-sm text-gray-600 hover:text-teal-500">로그아웃</button>
+                            </div>
                         </div>
                     </header>
                     <main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
@@ -211,6 +217,9 @@
                     </div>
                     <div id="delete-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
                         ${DeleteFoodModal()}
+                    </div>
+                    <div id="profile-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+                        ${ProfileModal()}
                     </div>
                 </div>
             `;
@@ -242,7 +251,6 @@
                         <button onclick="window.changeDate(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&lt;</button>
                         <h2 class="text-xl font-semibold text-gray-800">${new Date(dateKey).toLocaleDateString('ko-KR', { timeZone: 'UTC' })}</h2>
                         <button onclick="window.changeDate(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&gt;</button>
-                        <button onclick="window.toggleViewMode()" class="p-2 rounded-full hover:bg-gray-200">📅</button>
                     </div>
                     <div class="bg-white p-6 rounded-lg shadow-md mb-8">
                         <div class="flex flex-col md:flex-row items-center justify-around gap-8">
@@ -289,7 +297,6 @@
                         <button onclick="window.changeMonth(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&lt;</button>
                         <h2 class="text-xl font-semibold text-gray-800">${year}년 ${month + 1}월</h2>
                         <button onclick="window.changeMonth(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&gt;</button>
-                        <button onclick="window.toggleViewMode()" class="p-2 rounded-full hover:bg-gray-200">📋</button>
                     </div>
                     <div class="grid grid-cols-7 gap-2 text-center text-sm">
                         <div class="font-bold text-red-500">일</div>
@@ -422,11 +429,34 @@
                  </div>
             </div>
         `;
+
+        const ProfileModal = () => `
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in">
+                <button onclick="window.closeProfileModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-xl">×</button>
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">프로필 설정</h2>
+                <form id="profile-form">
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-lg font-bold mb-4">목표 변경</label>
+                        <div id="profile-goal-options" class="flex flex-col sm:flex-row justify-center gap-4">
+                            <button type="button" data-goal="체중 감량" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition">체중 감량</button>
+                            <button type="button" data-goal="체중 유지" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition">체중 유지</button>
+                            <button type="button" data-goal="근육 증가" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition">근육 증가</button>
+                        </div>
+                    </div>
+                    <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg" type="submit">저장하기</button>
+                </form>
+            </div>
+        `;
         
         // --- 렌더링 및 이벤트 핸들러 ---
         const appContainer = document.getElementById('app-container');
 
         const render = () => {
+            if (!state.authReady) {
+                appContainer.innerHTML = ''; // 인증 확인 전에는 아무것도 그리지 않음
+                return;
+            }
+
             let html = '';
             // 로그인 상태와 사용자 정보 유무에 따라 페이지 결정
             if (state.isLoggedIn) {
@@ -457,11 +487,12 @@
             document.getElementById('onboarding-form')?.addEventListener('submit', window.handleOnboarding);
             document.getElementById('add-food-form')?.addEventListener('submit', window.handleAddFood);
             document.getElementById('image-upload')?.addEventListener('change', window.handleImageUpload);
+            document.getElementById('profile-form')?.addEventListener('submit', window.handleUpdateProfile);
             
-            if (state.currentPage === 'onboarding' || (state.isLoggedIn && !state.userInfo)) {
+            if (state.currentPage === 'onboarding' || (state.isLoggedIn && !state.userInfo) || document.getElementById('profile-modal')) {
                  document.querySelectorAll('.goal-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        document.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('bg-teal-500', 'text-white', 'border-teal-500'));
+                        e.currentTarget.parentElement.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('bg-teal-500', 'text-white', 'border-teal-500'));
                         e.currentTarget.classList.add('bg-teal-500', 'text-white', 'border-teal-500');
                     });
                 });
@@ -567,8 +598,6 @@
             const email = e.target.email.value;
             const password = e.target.password.value;
             try {
-                // Firebase는 탈퇴하여 완전히 삭제된 계정의 이메일로도
-                // 새로운 계정을 생성하는 것을 허용합니다.
                 await createUserWithEmailAndPassword(auth, email, password);
             } catch (error) {
                 alert("회원가입 실패: " + error.message);
@@ -577,7 +606,7 @@
         
         window.handleOnboarding = async (e) => {
             e.preventDefault();
-            const selectedGoalEl = document.querySelector('.goal-btn.bg-teal-500');
+            const selectedGoalEl = document.querySelector('#onboarding-form .goal-btn.bg-teal-500');
             if (!selectedGoalEl) {
                 alert("목표를 선택해주세요.");
                 return;
@@ -597,10 +626,36 @@
             try {
                 const userDocRef = doc(db, "users", auth.currentUser.uid);
                 await setDoc(userDocRef, userInfo);
-                state.userInfo = userInfo;
-                // onAuthStateChanged가 리스너를 설정하고 렌더링을 다시 호출합니다.
             } catch (error) {
                 alert("정보 저장 실패: " + error.message);
+            }
+        };
+
+        window.handleUpdateProfile = async (e) => {
+            e.preventDefault();
+            const selectedGoalEl = document.querySelector('#profile-form .goal-btn.bg-teal-500');
+             if (!selectedGoalEl) {
+                alert("새로운 목표를 선택해주세요.");
+                return;
+            }
+            const selectedGoal = selectedGoalEl.dataset.goal;
+            let calorieGoal = 2000;
+            if (selectedGoal === '체중 감량') calorieGoal = 1800;
+            if (selectedGoal === '근육 증가') calorieGoal = 2500;
+
+            const newUserInfo = {
+                goal: calorieGoal,
+                carbsGoal: Math.round(calorieGoal * 0.5 / 4),
+                proteinGoal: Math.round(calorieGoal * 0.3 / 4),
+                fatGoal: Math.round(calorieGoal * 0.2 / 9)
+            };
+
+            try {
+                const userDocRef = doc(db, "users", auth.currentUser.uid);
+                await setDoc(userDocRef, newUserInfo);
+                window.closeProfileModal();
+            } catch (error) {
+                alert("프로필 업데이트 실패: " + error.message);
             }
         };
 
@@ -610,18 +665,11 @@
 
         const deleteUserData = async (uid) => {
             const batch = writeBatch(db);
-
-            // 사용자의 모든 음식 기록 삭제
             const foodEntriesQuery = query(collection(db, "foodEntries"), where("uid", "==", uid));
             const foodEntriesSnapshot = await getDocs(foodEntriesQuery);
-            foodEntriesSnapshot.forEach((doc) => {
-                batch.delete(doc.ref);
-            });
-
-            // 사용자 정보 문서 삭제
+            foodEntriesSnapshot.forEach((doc) => batch.delete(doc.ref));
             const userDocRef = doc(db, "users", uid);
             batch.delete(userDocRef);
-
             await batch.commit();
         };
 
@@ -629,13 +677,9 @@
             const user = auth.currentUser;
             if (user) {
                 try {
-                    // Firestore에서 사용자 데이터 먼저 삭제
                     await deleteUserData(user.uid);
-                    // Firebase Authentication에서 사용자 삭제
-                    // 이 작업이 완료되면 해당 이메일로 다시 회원가입할 수 있습니다.
                     await deleteUser(user);
-                    alert("회원 탈퇴가 완료되었습니다. 이용해주셔서 감사합니다.");
-                    // onAuthStateChanged가 로그아웃 상태를 감지하고 UI를 업데이트합니다.
+                    alert("회원 탈퇴가 완료되었습니다.");
                 } catch (error) {
                     console.error("회원 탈퇴 오류:", error);
                     alert(`오류가 발생하여 탈퇴를 완료하지 못했습니다. ${error.message}`);
@@ -680,58 +724,53 @@
             }
         };
 
-        const setupFoodListener = (uid) => {
-            if (state.unsubscribeFoodListener) {
-                state.unsubscribeFoodListener();
-            }
-            const q = query(collection(db, "foodEntries"), where("uid", "==", uid));
-            state.unsubscribeFoodListener = onSnapshot(q, (querySnapshot) => {
+        const setupListeners = (uid) => {
+            if (state.unsubscribeFoodListener) state.unsubscribeFoodListener();
+            const foodQuery = query(collection(db, "foodEntries"), where("uid", "==", uid));
+            state.unsubscribeFoodListener = onSnapshot(foodQuery, (snapshot) => {
                 const allEntries = {};
-                querySnapshot.forEach((doc) => {
+                snapshot.forEach((doc) => {
                     const entry = { id: doc.id, ...doc.data() };
-                    if (!allEntries[entry.date]) {
-                        allEntries[entry.date] = [];
-                    }
+                    if (!allEntries[entry.date]) allEntries[entry.date] = [];
                     allEntries[entry.date].push(entry);
-});
+                });
                 state.foodEntries = allEntries;
-                // 데이터가 변경될 때마다 다시 렌더링
-                if(state.isLoggedIn) render();
-            }, (error) => {
-                console.error("Snapshot listener error:", error);
+                render();
+            });
+
+            if (state.unsubscribeUserListener) state.unsubscribeUserListener();
+            const userDocRef = doc(db, "users", uid);
+            state.unsubscribeUserListener = onSnapshot(userDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    state.userInfo = docSnap.data();
+                    render();
+                }
             });
         };
 
         // --- 앱 시작 및 인증 상태 감지 ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 로그인 상태
                 state.isLoggedIn = true;
                 state.user = user;
-                
                 const userDocRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(userDocRef);
-
                 if (docSnap.exists()) {
                     state.userInfo = docSnap.data();
-                    setupFoodListener(user.uid);
+                    setupListeners(user.uid);
                 } else {
                     state.userInfo = null;
-                    render();
                 }
             } else {
-                // 로그아웃 상태
                 if (state.unsubscribeFoodListener) state.unsubscribeFoodListener();
+                if (state.unsubscribeUserListener) state.unsubscribeUserListener();
                 Object.assign(state, {
-                    isLoggedIn: false,
-                    user: null,
-                    userInfo: null,
-                    foodEntries: {},
-                    currentPage: 'login',
-                    unsubscribeFoodListener: null,
+                    isLoggedIn: false, user: null, userInfo: null, foodEntries: {},
+                    currentPage: 'login', unsubscribeFoodListener: null, unsubscribeUserListener: null,
                 });
-                render();
             }
+            state.authReady = true;
+            render();
         });
         
         // --- 전역 스코프에 함수 노출 ---
@@ -769,6 +808,13 @@
         window.closeDeleteFoodModal = () => {
             state.foodIdToDelete = null;
             document.getElementById('delete-food-modal').classList.add('hidden');
+        };
+        window.openProfileModal = () => document.getElementById('profile-modal').classList.remove('hidden');
+        window.closeProfileModal = () => document.getElementById('profile-modal').classList.add('hidden');
+        window.goToDashboard = () => {
+            state.viewMode = 'list';
+            state.currentDate = getLocalDateString(new Date());
+            render();
         };
 
     </script>
