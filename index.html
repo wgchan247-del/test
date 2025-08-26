@@ -18,11 +18,36 @@
         ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
         button:disabled { cursor: not-allowed; opacity: 0.7; }
+
+        /* 로딩 스피너 애니메이션 */
+        .loader {
+            border: 4px solid #f3f3f3; /* Light Grey */
+            border-top: 4px solid #0d9488; /* Teal-600 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* 버튼 클릭 효과 */
+        .btn-interactive {
+            transition: transform 0.1s ease;
+        }
+        .btn-interactive:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body class="bg-gray-50">
 
-    <div id="app-container"></div>
+    <div id="app-container">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="loader"></div>
+        </div>
+    </div>
 
 <script>
     // --- 1. 구성 설정 ---
@@ -43,7 +68,7 @@
 
     // --- 3. 앱 상태 관리 ---
     let state = {
-        currentPage: null, // [수정] 초기 페이지 상태를 null로 변경
+        currentPage: null,
         isLoggedIn: false,
         user: null,
         foodEntries: {},
@@ -51,10 +76,17 @@
     };
 
     // --- 4. HTML 템플릿 함수 ---
+    const Logo = (sizeClass = "text-4xl") => `
+        <div class="flex items-center justify-center gap-2">
+            <svg class="${sizeClass.replace('text-', 'w-').replace('4xl', '10').replace('2xl', '8')} text-teal-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.384,13.823,19.2,11.639,16.8,14.038V3a1,1,0,0,0-2,0v11.038L12.4,11.639,10.216,13.823,15.8,19.4a1,1,0,0,0,1.414,0ZM12,12a1,1,0,0,0-1,1v8a1,1,0,0,0,2,0V13A1,1,0,0,0,12,12ZM7.2,14.038,4.8,11.639,2.616,13.823,8.2,19.4a1,1,0,0,0,1.414,0L11.8,17.239,9.6,15.055,7.2,17.454V3a1,1,0,0,0-2,0Z"/></svg>
+            <h1 class="${sizeClass} font-bold text-teal-500">FitMeal</h1>
+        </div>
+    `;
+
     const LoginPage = () => `
         <div class="flex flex-col items-center justify-center min-h-screen p-4">
             <div class="w-full max-w-sm">
-                <h1 class="text-4xl font-bold text-center text-teal-500 mb-2">FitMeal</h1>
+                <div class="mb-2">${Logo("text-4xl")}</div>
                 <p class="text-center text-gray-600 mb-8">AI 식단 관리, 피트밀과 함께</p>
                 <form id="login-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4">
                     <div class="mb-4">
@@ -65,7 +97,7 @@
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="password">비밀번호</label>
                         <input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="password" type="password" required>
                     </div>
-                    <button id="login-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300" type="submit">로그인</button>
+                    <button id="login-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 btn-interactive" type="submit">로그인</button>
                 </form>
                 <p class="text-center text-gray-500 text-sm">계정이 없으신가요? <button onclick="navigate('register')" class="font-bold text-teal-500 hover:text-teal-700">회원가입</button></p>
             </div>
@@ -79,7 +111,7 @@
                 <form id="register-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4">
                     <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">이메일</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="email" type="email" required></div>
                     <div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="password" type="password" required></div>
-                    <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg" type="submit">다음</button>
+                    <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg btn-interactive" type="submit">다음</button>
                 </form>
                 <p class="text-center text-gray-500 text-sm">이미 계정이 있으신가요? <button onclick="navigate('login')" class="font-bold text-teal-500 hover:text-teal-700">로그인</button></p>
             </div>
@@ -95,26 +127,24 @@
                     <div class="mb-6">
                         <label class="block text-gray-700 text-lg font-bold mb-4">가장 중요한 목표는 무엇인가요?</label>
                         <div id="goal-options" class="flex flex-col sm:flex-row justify-center gap-4">
-                            <button type="button" data-goal="체중 감량" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition bg-teal-500 border-teal-500 text-white">체중 감량</button>
-                            <button type="button" data-goal="체중 유지" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition border-gray-300 text-gray-700">체중 유지</button>
-                            <button type="button" data-goal="근육 증가" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition border-gray-300 text-gray-700">근육 증가</button>
+                            <button type="button" data-goal="체중 감량" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition bg-teal-500 border-teal-500 text-white btn-interactive">체중 감량</button>
+                            <button type="button" data-goal="체중 유지" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition border-gray-300 text-gray-700 btn-interactive">체중 유지</button>
+                            <button type="button" data-goal="근육 증가" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition border-gray-300 text-gray-700 btn-interactive">근육 증가</button>
                         </div>
                     </div>
-                    <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg" type="submit">피트밀 시작하기</button>
+                    <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg btn-interactive" type="submit">피트밀 시작하기</button>
                 </form>
             </div>
         </div>
     `;
 
     const DashboardPage = () => {
-        if (!state.user) return '<div class="flex items-center justify-center min-h-screen"><p>사용자 정보를 불러오는 중입니다...</p></div>';
+        if (!state.user) return '<div class="flex items-center justify-center min-h-screen"><div class="loader"></div></div>';
         const dateKey = state.currentDate;
         const todaysEntries = state.foodEntries[dateKey] || [];
         const totals = todaysEntries.reduce((acc, entry) => ({
-            calories: acc.calories + entry.calories,
-            carbs: acc.carbs + entry.carbs,
-            protein: acc.protein + entry.protein,
-            fat: acc.fat + entry.fat,
+            calories: acc.calories + (entry.calories || 0), carbs: acc.carbs + (entry.carbs || 0),
+            protein: acc.protein + (entry.protein || 0), fat: acc.fat + (entry.fat || 0),
         }), { calories: 0, carbs: 0, protein: 0, fat: 0 });
         const meals = { '아침': [], '점심': [], '저녁': [], '간식': [] };
         todaysEntries.forEach(entry => meals[entry.mealType]?.push(entry));
@@ -125,15 +155,15 @@
             <div class="min-h-screen bg-gray-50">
                 <header class="bg-white shadow-sm sticky top-0 z-10">
                     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                        <h1 class="text-2xl font-bold text-teal-500">FitMeal</h1>
+                        ${Logo("text-2xl")}
                         <button onclick="handleLogout()" class="text-sm text-gray-600 hover:text-teal-500">로그아웃</button>
                     </div>
                 </header>
                 <main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
                     <div class="flex items-center justify-between mb-6">
-                        <button onclick="changeDate(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&lt;</button>
+                        <button onclick="changeDate(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold btn-interactive">&lt;</button>
                         <h2 class="text-xl font-semibold text-gray-800">${new Date(dateKey + 'T00:00:00').toLocaleDateString('ko-KR')}</h2>
-                        <button onclick="changeDate(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&gt;</button>
+                        <button onclick="changeDate(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold btn-interactive">&gt;</button>
                     </div>
                     <div class="bg-white p-6 rounded-lg shadow-md mb-8">
                         <div class="flex flex-col md:flex-row items-center justify-around gap-8">
@@ -157,7 +187,7 @@
                     <div class="space-y-6">${Object.entries(meals).map(([mealType, entries]) => MealCard(mealType, entries)).join('')}</div>
                 </main>
                 <div class="fixed bottom-6 right-6">
-                    <button onclick="openModal()" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300">+</button>
+                    <button onclick="openModal()" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300 btn-interactive">+</button>
                 </div>
                 <div id="add-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">${AddFoodModal()}</div>
             </div>
@@ -198,20 +228,20 @@
 
     const AddFoodModal = () => `
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-xl">×</button>
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">×</button>
             <h2 class="text-2xl font-bold mb-4 text-gray-800">AI 사진으로 식단 기록</h2>
             <div class="mb-4">
                 <label class="block text-sm font-bold mb-2">식사 종류</label>
                 <select id="mealType" class="w-full p-3 border rounded-lg bg-gray-50"><option>아침</option><option>점심</option><option>저녁</option><option>간식</option></select>
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-bold mb-2" for="food-image-input">음식 사진 업로드 (JPG, PNG, WEBP)</label>
+                <label class="block text-sm font-bold mb-2" for="food-image-input">음식 사진 업로드</label>
                 <input type="file" id="food-image-input" accept="image/jpeg, image/png, image/webp" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
                 <img id="image-preview" class="hidden rounded-lg mt-4 w-full h-auto object-cover"/>
             </div>
-            <button id="ai-analyze-btn" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition">AI로 분석하기</button>
+            <button id="ai-analyze-btn" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition btn-interactive">AI로 분석하기</button>
             <div id="ai-results-container" class="mt-6"></div>
-            <button id="record-selected-btn" class="hidden w-full bg-sky-500 text-white font-bold py-3 rounded-lg hover:bg-sky-600 transition mt-4">선택 항목 기록하기</button>
+            <button id="record-selected-btn" class="hidden w-full bg-sky-500 text-white font-bold py-3 rounded-lg hover:bg-sky-600 transition mt-4 btn-interactive">선택 항목 기록하기</button>
         </div>
     `;
 
@@ -220,7 +250,6 @@
 
     const render = () => {
         const { currentPage } = state;
-        // [수정] 로딩 상태 처리 로직 삭제
         if (currentPage === 'login') appContainer.innerHTML = LoginPage();
         else if (currentPage === 'register') appContainer.innerHTML = RegisterPage();
         else if (currentPage === 'onboarding') appContainer.innerHTML = OnboardingPage();
@@ -252,118 +281,25 @@
     };
 
     // --- 6. 기능별 함수 ---
-    const handleImagePreview = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        const preview = document.getElementById('image-preview');
-        reader.onload = (event) => {
-            preview.src = event.target.result;
-            preview.classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
-    };
-
-    const fileToBase64 = (file) => new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = error => reject(error);
-    });
-
+    const handleImagePreview = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); const preview = document.getElementById('image-preview'); reader.onload = (event) => { preview.src = event.target.result; preview.classList.remove('hidden'); }; reader.readAsDataURL(file); };
+    const fileToBase64 = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); });
     async function handlePhotoAnalysis() {
-        const fileInput = document.getElementById('food-image-input');
-        if (fileInput.files.length === 0) return alert('분석할 음식 사진을 업로드해주세요.');
-        const file = fileInput.files[0];
-        const resultsContainer = document.getElementById('ai-results-container');
-        const analyzeBtn = document.getElementById('ai-analyze-btn');
-        const recordBtn = document.getElementById('record-selected-btn');
-        resultsContainer.innerHTML = '<p class="text-center text-gray-500">AI가 사진을 분석 중입니다... 🤖</p>';
-        analyzeBtn.disabled = true;
-        analyzeBtn.textContent = '분석 중...';
-        recordBtn.classList.add('hidden');
+        const fileInput = document.getElementById('food-image-input'); if (fileInput.files.length === 0) return alert('분석할 음식 사진을 업로드해주세요.'); const file = fileInput.files[0]; const resultsContainer = document.getElementById('ai-results-container'); const analyzeBtn = document.getElementById('ai-analyze-btn'); const recordBtn = document.getElementById('record-selected-btn'); resultsContainer.innerHTML = '<p class="text-center text-gray-500">AI가 사진을 분석 중입니다... 🤖</p>'; analyzeBtn.disabled = true; analyzeBtn.textContent = '분석 중...'; recordBtn.classList.add('hidden');
         try {
-            const base64Image = await fileToBase64(file);
-            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`;
-            const prompt = "이 사진에 있는 모든 음식 각각에 대해 이름, 예상 칼로리(kcal), 탄수화물(g), 단백질(g), 지방(g)을 추출해서 JSON 배열 형식으로 응답해줘. 음식과 관련없는 객체는 제외해줘. 숫자는 정수로 반올림하고, 다른 설명 없이 순수 JSON 배열만 응답해줘.";
-            const requestBody = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64Image } }] }] };
-            const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
-            if (!response.ok) throw new Error(`API 오류: ${response.status}`);
-            const data = await response.json();
-            const jsonString = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
-            const foodItems = JSON.parse(jsonString);
-            displayAIResults(foodItems);
-        } catch (error) {
-            console.error("AI 사진 분석 중 오류:", error);
-            resultsContainer.innerHTML = `<p class="text-center text-red-500">사진 분석에 실패했습니다: ${error.message}</p>`;
-        } finally {
-            analyzeBtn.disabled = false;
-            analyzeBtn.textContent = 'AI로 분석하기';
-        }
+            const base64Image = await fileToBase64(file); const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`; const prompt = "이 사진에 있는 모든 음식 각각에 대해 이름, 예상 칼로리(kcal), 탄수화물(g), 단백질(g), 지방(g)을 추출해서 JSON 배열 형식으로 응답해줘. 음식과 관련없는 객체는 제외해줘. 숫자는 정수로 반올림하고, 다른 설명 없이 순수 JSON 배열만 응답해줘."; const requestBody = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64Image } }] }] }; const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }); if (!response.ok) throw new Error(`API 오류: ${response.status}`); const data = await response.json(); const jsonString = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim(); const foodItems = JSON.parse(jsonString); displayAIResults(foodItems);
+        } catch (error) { console.error("AI 사진 분석 중 오류:", error); resultsContainer.innerHTML = `<p class="text-center text-red-500">사진 분석에 실패했습니다: ${error.message}</p>`; } finally { analyzeBtn.disabled = false; analyzeBtn.textContent = 'AI로 분석하기'; }
     }
-
     function displayAIResults(foodItems) {
-        const resultsContainer = document.getElementById('ai-results-container');
-        const recordBtn = document.getElementById('record-selected-btn');
-        if (!foodItems || foodItems.length === 0) {
-            resultsContainer.innerHTML = '<p class="text-center text-gray-500">분석된 음식이 없습니다.</p>';
-            recordBtn.classList.add('hidden');
-            return;
-        }
-        resultsContainer.innerHTML = `
-            <h4 class="font-bold mb-2 text-gray-700">분석 결과 (기록할 항목 선택)</h4>
-            <ul class="space-y-2">
-                ${foodItems.map((item, index) => `
-                    <li class="flex items-center p-3 bg-gray-50 rounded-lg">
-                        <input id="food-${index}" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-                            data-name="${item.name || '이름없음'}" data-calories="${item.calories || 0}" data-carbs="${item.carbs || 0}"
-                            data-protein="${item.protein || 0}" data-fat="${item.fat || 0}" checked>
-                        <label for="food-${index}" class="ml-3 text-gray-800">
-                            <span class="font-semibold">${item.name || '이름없음'}</span>
-                            <span class="text-sm text-gray-500"> - ${item.calories || 0} kcal</span>
-                        </label>
-                    </li>
-                `).join('')}
-            </ul>
-        `;
-        recordBtn.classList.remove('hidden');
+        const resultsContainer = document.getElementById('ai-results-container'); const recordBtn = document.getElementById('record-selected-btn'); if (!foodItems || foodItems.length === 0) { resultsContainer.innerHTML = '<p class="text-center text-gray-500">분석된 음식이 없습니다.</p>'; recordBtn.classList.add('hidden'); return; }
+        resultsContainer.innerHTML = `<h4 class="font-bold mb-2 text-gray-700">분석 결과 (기록할 항목 선택)</h4><ul class="space-y-2">${foodItems.map((item, index) => `<li class="flex items-center p-3 bg-gray-50 rounded-lg"><input id="food-${index}" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-teal-600 focus:ring-teal-500" data-name="${item.name || '이름없음'}" data-calories="${item.calories || 0}" data-carbs="${item.carbs || 0}" data-protein="${item.protein || 0}" data-fat="${item.fat || 0}" checked><label for="food-${index}" class="ml-3 text-gray-800"><span class="font-semibold">${item.name || '이름없음'}</span><span class="text-sm text-gray-500"> - ${item.calories || 0} kcal</span></label></li>`).join('')}</ul>`; recordBtn.classList.remove('hidden');
     }
-
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        const loginBtn = document.getElementById('login-btn');
-        loginBtn.disabled = true;
-        loginBtn.textContent = '로그인 중...';
-        try {
-            await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value);
-        } catch (error) {
-            console.error("Firebase 로그인 오류:", error); 
-            alert(`로그인 실패: ${error.message}`);
-            loginBtn.disabled = false;
-            loginBtn.textContent = '로그인';
-        }
-    };
-    
+    const handleLogin = async (e) => { e.preventDefault(); const loginBtn = document.getElementById('login-btn'); loginBtn.disabled = true; loginBtn.textContent = '로그인 중...'; try { await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); } catch (error) { console.error("Firebase 로그인 오류:", error); alert(`로그인 실패: ${error.message}`); loginBtn.disabled = false; loginBtn.textContent = '로그인'; } };
     const handleRegister = (e) => { e.preventDefault(); auth.createUserWithEmailAndPassword(e.target.email.value, e.target.password.value).then(cred => db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, name: '새 사용자' })).catch(err => alert(err.message)); };
     const handleLogout = () => auth.signOut();
     const handleOnboarding = (e) => { e.preventDefault(); if (!state.user?.uid) return alert("사용자 정보가 없습니다."); const el = document.querySelector('.goal-btn.bg-teal-500'); if (!el) return alert('목표를 선택해주세요.'); let goal = 2000; if (el.dataset.goal === '체중 감량') goal = 1800; if (el.dataset.goal === '근육 증가') goal = 2500; const data = { goal, carbsGoal: Math.round(goal*0.5/4), proteinGoal: Math.round(goal*0.3/4), fatGoal: Math.round(goal*0.2/9) }; db.collection('users').doc(state.user.uid).update(data).then(() => { state.user = { ...state.user, ...data }; navigate('dashboard'); }).catch(err => alert(err.message)); };
     async function handleAddSelectedFoods() {
-        const sel = document.querySelectorAll('#ai-results-container input:checked');
-        if (sel.length === 0) return alert('기록할 음식을 선택해주세요.');
-        const btn = document.getElementById('record-selected-btn');
-        btn.disabled = true; btn.textContent = '저장 중...';
-        const entries = Array.from(sel).map(cb => ({ name: cb.dataset.name, calories: parseInt(cb.dataset.calories), carbs: parseInt(cb.dataset.carbs), protein: parseInt(cb.dataset.protein), fat: parseInt(cb.dataset.fat), mealType: document.getElementById('mealType').value, createdAt: firebase.firestore.FieldValue.serverTimestamp() }));
-        try {
-            const batch = db.batch();
-            const ref = db.collection('users').doc(state.user.uid).collection(state.currentDate);
-            entries.forEach(entry => batch.set(ref.doc(), entry));
-            await batch.commit();
-            closeModal();
-            fetchFoodEntriesForDate(state.currentDate);
-        } catch (error) {
-            alert('저장 실패: ' + error.message);
-            btn.disabled = false; btn.textContent = '선택 항목 기록하기';
-        }
+        const sel = document.querySelectorAll('#ai-results-container input:checked'); if (sel.length === 0) return alert('기록할 음식을 선택해주세요.'); const btn = document.getElementById('record-selected-btn'); btn.disabled = true; btn.textContent = '저장 중...'; const entries = Array.from(sel).map(cb => ({ name: cb.dataset.name, calories: parseInt(cb.dataset.calories), carbs: parseInt(cb.dataset.carbs), protein: parseInt(cb.dataset.protein), fat: parseInt(cb.dataset.fat), mealType: document.getElementById('mealType').value, createdAt: firebase.firestore.FieldValue.serverTimestamp() }));
+        try { const batch = db.batch(); const ref = db.collection('users').doc(state.user.uid).collection(state.currentDate); entries.forEach(entry => batch.set(ref.doc(), entry)); await batch.commit(); closeModal(); fetchFoodEntriesForDate(state.currentDate); } catch (error) { alert('저장 실패: ' + error.message); btn.disabled = false; btn.textContent = '선택 항목 기록하기'; }
     }
     const deleteFood = (id) => { if (confirm('삭제하시겠습니까?')) db.collection('users').doc(state.user.uid).collection(state.currentDate).doc(id).delete().then(() => fetchFoodEntriesForDate(state.currentDate)).catch(err => alert(err.message)); };
     const changeDate = (amount) => { const d = new Date(state.currentDate); d.setDate(d.getDate() + amount); state.currentDate = d.toISOString().split('T')[0]; fetchFoodEntriesForDate(state.currentDate); };
@@ -371,11 +307,7 @@
     const closeModal = () => document.getElementById('add-food-modal')?.classList.add('hidden');
     const fetchFoodEntriesForDate = async (dateKey) => {
         if (!state.user?.uid) return;
-        try {
-            const snapshot = await db.collection('users').doc(state.user.uid).collection(dateKey).orderBy('createdAt').get();
-            state.foodEntries[dateKey] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            render();
-        } catch (error) { console.error("Error fetching entries:", error); alert("데이터 로딩에 실패했습니다."); }
+        try { const snapshot = await db.collection('users').doc(state.user.uid).collection(dateKey).orderBy('createdAt').get(); state.foodEntries[dateKey] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); render(); } catch (error) { console.error("Error fetching entries:", error); alert("데이터 로딩에 실패했습니다."); }
     };
 
     // --- 7. 앱의 시작점: Firebase 인증 상태 감지 ---
@@ -384,9 +316,8 @@
             const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
             state.isLoggedIn = true;
             if (userDoc.exists) {
-                const userData = userDoc.data();
-                state.user = { uid: firebaseUser.uid, ...userData };
-                if (userData.goal) {
+                state.user = { uid: firebaseUser.uid, ...userDoc.data() };
+                if (state.user.goal) {
                     await fetchFoodEntriesForDate(state.currentDate);
                     navigate('dashboard');
                 } else {
