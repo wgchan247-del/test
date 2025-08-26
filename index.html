@@ -17,15 +17,12 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
+        button:disabled { cursor: not-allowed; opacity: 0.7; }
     </style>
 </head>
 <body class="bg-gray-50">
 
-    <div id="app-container">
-        <div class="flex items-center justify-center min-h-screen">
-            <p class="text-gray-500">앱을 불러오는 중입니다...</p>
-        </div>
-    </div>
+    <div id="app-container"></div>
 
 <script>
     // --- 1. 구성 설정 ---
@@ -46,7 +43,7 @@
 
     // --- 3. 앱 상태 관리 ---
     let state = {
-        currentPage: 'loading',
+        currentPage: null, // [수정] 초기 페이지 상태를 null로 변경
         isLoggedIn: false,
         user: null,
         foodEntries: {},
@@ -68,7 +65,7 @@
                         <label class="block text-gray-700 text-sm font-bold mb-2" for="password">비밀번호</label>
                         <input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="password" type="password" required>
                     </div>
-                    <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300" type="submit">로그인</button>
+                    <button id="login-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300" type="submit">로그인</button>
                 </form>
                 <p class="text-center text-gray-500 text-sm">계정이 없으신가요? <button onclick="navigate('register')" class="font-bold text-teal-500 hover:text-teal-700">회원가입</button></p>
             </div>
@@ -223,8 +220,8 @@
 
     const render = () => {
         const { currentPage } = state;
-        if (currentPage === 'loading') appContainer.innerHTML = '<div class="flex items-center justify-center min-h-screen"><p class="text-gray-500">앱을 불러오는 중입니다...</p></div>';
-        else if (currentPage === 'login') appContainer.innerHTML = LoginPage();
+        // [수정] 로딩 상태 처리 로직 삭제
+        if (currentPage === 'login') appContainer.innerHTML = LoginPage();
         else if (currentPage === 'register') appContainer.innerHTML = RegisterPage();
         else if (currentPage === 'onboarding') appContainer.innerHTML = OnboardingPage();
         else if (currentPage === 'dashboard') appContainer.innerHTML = DashboardPage();
@@ -277,33 +274,28 @@
     async function handlePhotoAnalysis() {
         const fileInput = document.getElementById('food-image-input');
         if (fileInput.files.length === 0) return alert('분석할 음식 사진을 업로드해주세요.');
-        
         const file = fileInput.files[0];
         const resultsContainer = document.getElementById('ai-results-container');
         const analyzeBtn = document.getElementById('ai-analyze-btn');
         const recordBtn = document.getElementById('record-selected-btn');
-        
         resultsContainer.innerHTML = '<p class="text-center text-gray-500">AI가 사진을 분석 중입니다... 🤖</p>';
         analyzeBtn.disabled = true;
         analyzeBtn.textContent = '분석 중...';
         recordBtn.classList.add('hidden');
-
         try {
             const base64Image = await fileToBase64(file);
             const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`;
             const prompt = "이 사진에 있는 모든 음식 각각에 대해 이름, 예상 칼로리(kcal), 탄수화물(g), 단백질(g), 지방(g)을 추출해서 JSON 배열 형식으로 응답해줘. 음식과 관련없는 객체는 제외해줘. 숫자는 정수로 반올림하고, 다른 설명 없이 순수 JSON 배열만 응답해줘.";
             const requestBody = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64Image } }] }] };
             const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
-            
             if (!response.ok) throw new Error(`API 오류: ${response.status}`);
-            
             const data = await response.json();
             const jsonString = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
             const foodItems = JSON.parse(jsonString);
             displayAIResults(foodItems);
         } catch (error) {
             console.error("AI 사진 분석 중 오류:", error);
-            resultsContainer.innerHTML = '<p class="text-center text-red-500">사진 분석에 실패했습니다. 다른 사진으로 시도해주세요.</p>';
+            resultsContainer.innerHTML = `<p class="text-center text-red-500">사진 분석에 실패했습니다: ${error.message}</p>`;
         } finally {
             analyzeBtn.disabled = false;
             analyzeBtn.textContent = 'AI로 분석하기';
@@ -337,90 +329,53 @@
         recordBtn.classList.remove('hidden');
     }
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        const email = e.target.email.value;
-        const password = e.target.password.value;
-        console.log(`로그인 시도: ${email}`);
-        auth.signInWithEmailAndPassword(email, password)
-            .catch(error => {
-                console.error("Firebase 로그인 오류:", error); 
-                alert(`로그인 실패: ${error.message}`);
-            });
+        const loginBtn = document.getElementById('login-btn');
+        loginBtn.disabled = true;
+        loginBtn.textContent = '로그인 중...';
+        try {
+            await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value);
+        } catch (error) {
+            console.error("Firebase 로그인 오류:", error); 
+            alert(`로그인 실패: ${error.message}`);
+            loginBtn.disabled = false;
+            loginBtn.textContent = '로그인';
+        }
     };
     
-    const handleRegister = (e) => {
-        e.preventDefault();
-        auth.createUserWithEmailAndPassword(e.target.email.value, e.target.password.value)
-            .then(cred => db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, name: '새 사용자' }))
-            .catch(err => alert(err.message));
-    };
-    
+    const handleRegister = (e) => { e.preventDefault(); auth.createUserWithEmailAndPassword(e.target.email.value, e.target.password.value).then(cred => db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, name: '새 사용자' })).catch(err => alert(err.message)); };
     const handleLogout = () => auth.signOut();
-    
-    const handleOnboarding = (e) => {
-        e.preventDefault();
-        if (!state.user?.uid) return alert("사용자 정보가 없습니다. 다시 로그인해주세요.");
-        const selectedGoalEl = document.querySelector('.goal-btn.bg-teal-500');
-        if (!selectedGoalEl) return alert('목표를 선택해주세요.');
-        const selectedGoal = selectedGoalEl.dataset.goal;
-        let calorieGoal = 2000;
-        if (selectedGoal === '체중 감량') calorieGoal = 1800;
-        if (selectedGoal === '근육 증가') calorieGoal = 2500;
-        const userData = { goal: calorieGoal, carbsGoal: Math.round(calorieGoal*0.5/4), proteinGoal: Math.round(calorieGoal*0.3/4), fatGoal: Math.round(calorieGoal*0.2/9) };
-        db.collection('users').doc(state.user.uid).update(userData)
-          .then(() => { state.user = { ...state.user, ...userData }; navigate('dashboard'); })
-          .catch(err => alert(err.message));
-    };
-
+    const handleOnboarding = (e) => { e.preventDefault(); if (!state.user?.uid) return alert("사용자 정보가 없습니다."); const el = document.querySelector('.goal-btn.bg-teal-500'); if (!el) return alert('목표를 선택해주세요.'); let goal = 2000; if (el.dataset.goal === '체중 감량') goal = 1800; if (el.dataset.goal === '근육 증가') goal = 2500; const data = { goal, carbsGoal: Math.round(goal*0.5/4), proteinGoal: Math.round(goal*0.3/4), fatGoal: Math.round(goal*0.2/9) }; db.collection('users').doc(state.user.uid).update(data).then(() => { state.user = { ...state.user, ...data }; navigate('dashboard'); }).catch(err => alert(err.message)); };
     async function handleAddSelectedFoods() {
-        const mealType = document.getElementById('mealType').value;
-        const selectedFoods = document.querySelectorAll('#ai-results-container input:checked');
-        if (selectedFoods.length === 0) return alert('기록할 음식을 선택해주세요.');
-        
-        const recordBtn = document.getElementById('record-selected-btn');
-        recordBtn.disabled = true; recordBtn.textContent = '저장 중...';
-        
-        const foodEntries = Array.from(selectedFoods).map(cb => ({ name: cb.dataset.name, calories: parseInt(cb.dataset.calories), carbs: parseInt(cb.dataset.carbs), protein: parseInt(cb.dataset.protein), fat: parseInt(cb.dataset.fat), mealType, createdAt: firebase.firestore.FieldValue.serverTimestamp() }));
-        
+        const sel = document.querySelectorAll('#ai-results-container input:checked');
+        if (sel.length === 0) return alert('기록할 음식을 선택해주세요.');
+        const btn = document.getElementById('record-selected-btn');
+        btn.disabled = true; btn.textContent = '저장 중...';
+        const entries = Array.from(sel).map(cb => ({ name: cb.dataset.name, calories: parseInt(cb.dataset.calories), carbs: parseInt(cb.dataset.carbs), protein: parseInt(cb.dataset.protein), fat: parseInt(cb.dataset.fat), mealType: document.getElementById('mealType').value, createdAt: firebase.firestore.FieldValue.serverTimestamp() }));
         try {
             const batch = db.batch();
-            const collectionRef = db.collection('users').doc(state.user.uid).collection(state.currentDate);
-            foodEntries.forEach(entry => batch.set(collectionRef.doc(), entry));
+            const ref = db.collection('users').doc(state.user.uid).collection(state.currentDate);
+            entries.forEach(entry => batch.set(ref.doc(), entry));
             await batch.commit();
             closeModal();
             fetchFoodEntriesForDate(state.currentDate);
         } catch (error) {
             alert('저장 실패: ' + error.message);
-            recordBtn.disabled = false; recordBtn.textContent = '선택 항목 기록하기';
+            btn.disabled = false; btn.textContent = '선택 항목 기록하기';
         }
     }
-    
-    const deleteFood = (entryId) => {
-        if (confirm('삭제하시겠습니까?')) {
-            db.collection('users').doc(state.user.uid).collection(state.currentDate).doc(entryId).delete()
-              .then(() => fetchFoodEntriesForDate(state.currentDate))
-              .catch(err => alert(err.message));
-        }
-    };
-    
-    const changeDate = (amount) => {
-        const date = new Date(state.currentDate);
-        date.setDate(date.getDate() + amount);
-        state.currentDate = date.toISOString().split('T')[0];
-        fetchFoodEntriesForDate(state.currentDate);
-    };
-    
+    const deleteFood = (id) => { if (confirm('삭제하시겠습니까?')) db.collection('users').doc(state.user.uid).collection(state.currentDate).doc(id).delete().then(() => fetchFoodEntriesForDate(state.currentDate)).catch(err => alert(err.message)); };
+    const changeDate = (amount) => { const d = new Date(state.currentDate); d.setDate(d.getDate() + amount); state.currentDate = d.toISOString().split('T')[0]; fetchFoodEntriesForDate(state.currentDate); };
     const openModal = () => document.getElementById('add-food-modal')?.classList.remove('hidden');
     const closeModal = () => document.getElementById('add-food-modal')?.classList.add('hidden');
-    
     const fetchFoodEntriesForDate = async (dateKey) => {
         if (!state.user?.uid) return;
         try {
             const snapshot = await db.collection('users').doc(state.user.uid).collection(dateKey).orderBy('createdAt').get();
             state.foodEntries[dateKey] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             render();
-        } catch (error) { console.error("Error fetching entries:", error); }
+        } catch (error) { console.error("Error fetching entries:", error); alert("데이터 로딩에 실패했습니다."); }
     };
 
     // --- 7. 앱의 시작점: Firebase 인증 상태 감지 ---
@@ -432,8 +387,8 @@
                 const userData = userDoc.data();
                 state.user = { uid: firebaseUser.uid, ...userData };
                 if (userData.goal) {
-                    state.currentPage = 'dashboard';
-                    fetchFoodEntriesForDate(state.currentDate);
+                    await fetchFoodEntriesForDate(state.currentDate);
+                    navigate('dashboard');
                 } else {
                     navigate('onboarding');
                 }
@@ -442,8 +397,8 @@
                 navigate('onboarding');
             }
         } else {
-            state = { ...state, isLoggedIn: false, user: null, foodEntries: {} };
-            navigate('login');
+            state = { ...state, isLoggedIn: false, user: null, foodEntries: {}, currentPage: 'login' };
+            render();
         }
     });
 </script>
