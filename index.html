@@ -296,15 +296,38 @@
         <!-- 통계 뷰 -->
         <section id="stats-view" class="hidden space-y-8">
             <div class="bg-white p-6 rounded-3xl custom-shadow">
-                <h2 class="text-xl font-jua text-orange-600 mb-4">주간 칼로리 섭취량</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-jua text-orange-600">통계 리포트</h2>
+                    <div class="flex rounded-full bg-slate-100 p-1 text-sm font-semibold">
+                        <button id="weekly-report-btn" class="px-4 py-1 rounded-full bg-white text-orange-600 shadow">주간</button>
+                        <button id="monthly-report-btn" class="px-4 py-1 rounded-full text-slate-500">월간</button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-3xl custom-shadow">
+                <h3 id="calorie-chart-title" class="text-lg font-jua text-orange-600 mb-4">주간 칼로리 섭취량</h3>
                 <div class="chart-container">
                     <canvas id="calorie-chart"></canvas>
                 </div>
             </div>
-            <div class="bg-white p-6 rounded-3xl custom-shadow">
-                <h2 class="text-xl font-jua text-orange-600 mb-4">주간 영양소 비율</h2>
-                <div class="chart-container" style="height: 300px; max-width: 300px; margin: auto;">
-                    <canvas id="macro-chart"></canvas>
+             <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-3xl custom-shadow">
+                    <h3 id="macro-chart-title" class="text-lg font-jua text-orange-600 mb-4">주간 영양소 비율</h3>
+                    <div class="chart-container" style="height: 300px; max-width: 300px; margin: auto;">
+                        <canvas id="macro-chart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-3xl custom-shadow">
+                    <h3 id="top-foods-title" class="text-lg font-jua text-orange-600 mb-4">자주 먹은 음식 TOP 5</h3>
+                    <div id="top-foods-list" class="space-y-2">
+                        <!-- Top foods list will be generated here -->
+                    </div>
+                </div>
+            </div>
+             <div class="bg-white p-6 rounded-3xl custom-shadow">
+                <h3 id="average-intake-title" class="text-lg font-jua text-orange-600 mb-4">일일 평균 섭취량</h3>
+                <div id="average-intake-content" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <!-- Average intake data will be generated here -->
                 </div>
             </div>
         </section>
@@ -572,6 +595,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, sendEmailVerification, sendPasswordResetEmail, deleteUser } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, updateDoc, arrayUnion, arrayRemove, collection, query, where, getDocs, documentId, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 
         // Firebase 설정
         const firebaseConfig = {
@@ -584,13 +608,15 @@
         };
         const appId = firebaseConfig.appId || 'default-diet-app';
 
-        // 🔑🔑🔑 AI API 키 🔑🔑🔑
-        const GEMINI_API_KEY = "AIzaSyB3H3RGnJlyypbdDuHHu-uCQBk3Dw6RW0c";
-
         // Firebase 초기화
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const functions = getFunctions(app);
+
+        // Firebase Functions 참조
+        const callGeminiAPI_server = httpsCallable(functions, 'callGeminiAPI');
+        const callGeminiVisionAPI_server = httpsCallable(functions, 'callGeminiVisionAPI');
 
         // UI 요소
         const authView = document.getElementById('auth-view');
@@ -643,6 +669,10 @@
         const manualPhotoInput = document.getElementById('manual-photo-input');
         const manualImagePreview = document.getElementById('manual-image-preview');
         const calculateNutrientsBtn = document.getElementById('calculate-nutrients-btn');
+        const calculateExerciseCaloriesBtn = document.getElementById('calculate-exercise-calories-btn');
+        const exerciseCalorieLoader = document.getElementById('exercise-calorie-loader');
+        const exerciseCalorieResult = document.getElementById('exercise-calorie-result');
+        const submitExerciseBtn = document.getElementById('submit-exercise-btn');
         const nutrientLoader = document.getElementById('nutrient-loader');
         const loader = document.getElementById('loader');
         const mealPlanContent = document.getElementById('meal-plan-content');
@@ -1122,7 +1152,7 @@
             const userInfoParts = [ `나이: ${userProfile.age}세`, userProfile.gender !== 'unspecified' ? `성별: ${userProfile.gender === 'male' ? '남성' : '여성'}` : '', `목표: ${userProfile.goal === 'loss' ? '체중 감량' : (userProfile.goal === 'gain' ? '체중 증가' : '체중 유지')}` ].filter(part => part).join(', ');
             const prompt = `당신은 전문 영양사입니다. 다음 사용자 정보와 영양 목표에 맞춰, 맛과 영양을 모두 고려한 한국식 위주의 하루 식단(아침, 점심, 저녁, 간식)을 추천해주세요. 사용자 정보: ${userInfoParts}. 일일 영양 목표: 칼로리 ${userProfile.nutritionGoals.calories}kcal, 탄수화물 ${userProfile.nutritionGoals.carbs}g, 단백질 ${userProfile.nutritionGoals.protein}g, 지방 ${userProfile.nutritionGoals.fat}g. 각 식사의 음식 이름과 예상 영양성분(칼로리,탄수화물,단백질,지방)을 계산하여 제공해주세요. 전체 식단의 영양소 총합이 목표치에 최대한 근접해야 합니다.`;
             try {
-                const responseText = await callGeminiAPI(prompt);
+                const responseText = await callGeminiAPI(prompt, { type: "OBJECT", properties: { breakfast: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, lunch: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, dinner: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, snack: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } } } });
                 const plan = JSON.parse(responseText);
                 const today = new Date().toISOString().slice(0, 10);
                 const mealPlanRef = doc(db, `artifacts/${appId}/users/${userId}/mealPlans`, today);
@@ -1252,39 +1282,38 @@
         }
 
         // --- Gemini API 호출 ---
-        async function callGeminiAPI(prompt) {
-            const apiKey = GEMINI_API_KEY;
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { breakfast: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, lunch: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, dinner: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, snack: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } } } } } };
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); 
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); 
-            const result = await response.json(); 
-            if (result.candidates && result.candidates.length > 0) return result.candidates[0].content.parts[0].text; 
-            else throw new Error("API 응답에 유효한 콘텐츠가 없습니다."); 
+        async function callGeminiAPI(prompt, schema) {
+            try {
+                const result = await callGeminiAPI_server({ prompt, schema });
+                return result.data.result;
+            } catch (error) {
+                console.error("Firebase Function 호출 실패:", error);
+                throw error;
+            }
         }
-
+        
         async function callGeminiNutritionAPI(foodString) {
-            const apiKey = GEMINI_API_KEY;
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             const prompt = `'${foodString}'의 예상 칼로리, 탄수화물, 단백질, 지방 함량을 계산해서 JSON 형식으로 알려줘. 값은 소수점 없이 정수로만 제공해야 해.`;
-            const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } } } };
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const result = await response.json();
-            if (result.candidates && result.candidates.length > 0) return result.candidates[0].content.parts[0].text;
-            else throw new Error("API 응답에 유효한 콘텐츠가 없습니다.");
+            const schema = { type: "OBJECT", properties: { calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } };
+             try {
+                const result = await callGeminiAPI_server({ prompt, schema });
+                return result.data.result;
+            } catch (error) {
+                console.error("Firebase Function 호출 실패 (Nutrition):", error);
+                throw error;
+            }
         }
         
         async function callGeminiVisionAPI(base64ImageData) {
-            const apiKey = GEMINI_API_KEY;
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
             const prompt = "이 음식 사진을 분석해서, 음식 이름, 예상 칼로리, 탄수화물, 단백질, 지방 함량, 그리고 이 음식에 대한 간단한 영양학적 조언이나 팁을 JSON 형식으로 알려줘.";
-            const payload = { contents: [{ parts: [ { text: prompt }, { inlineData: { mimeType: "image/jpeg", data: base64ImageData } } ] }], generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" }, tip: { type: "STRING" } } } } };
-            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const result = await response.json();
-            if (result.candidates && result.candidates.length > 0) return result.candidates[0].content.parts[0].text;
-            else throw new Error("API 응답에 유효한 콘텐츠가 없습니다.");
+            const schema = { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" }, tip: { type: "STRING" } } };
+            try {
+                const result = await callGeminiVisionAPI_server({ base64ImageData, prompt, schema });
+                return result.data.result;
+            } catch (error) {
+                console.error("Firebase Function 호출 실패 (Vision):", error);
+                throw error;
+            }
         }
         
         function renderPhotoAnalysisResult(data) {
