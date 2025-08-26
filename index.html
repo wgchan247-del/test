@@ -33,7 +33,7 @@
         apiKey: "AIzaSyCRax6rd1rlBIc3kVgg5OkHmSIQyzJmC8A",
         authDomain: "fitmeal-app-d1a97.firebaseapp.com",
         projectId: "fitmeal-app-d1a97",
-        storageBucket: "fitmeal-app-d1a97.appspot.com", // .firebasestorage 오타 수정
+        storageBucket: "fitmeal-app-d1a97.appspot.com", // storageBucket 주소 형식 수정
         messagingSenderId: "968711774677",
         appId: "1:968711774677:web:b3d3cb9ccc2388c3ba5d5c"
     };
@@ -157,13 +157,13 @@
                                 </svg>
                                 <div class="absolute flex flex-col items-center">
                                     <span class="text-3xl font-bold text-gray-800">${Math.round(totals.calories)}</span>
-                                    <span class="text-sm text-gray-500">/ ${state.user.goal} kcal</span>
+                                    <span class="text-sm text-gray-500">/ ${state.user.goal || 2000} kcal</span>
                                 </div>
                             </div>
                             <div class="w-full md:w-1/2 space-y-4">
-                                ${NutrientBar('탄수화물', totals.carbs, state.user.carbsGoal, 'bg-orange-500')}
-                                ${NutrientBar('단백질', totals.protein, state.user.proteinGoal, 'bg-sky-500')}
-                                ${NutrientBar('지방', totals.fat, state.user.fatGoal, 'bg-amber-400')}
+                                ${NutrientBar('탄수화물', totals.carbs, state.user.carbsGoal || 0, 'bg-orange-500')}
+                                ${NutrientBar('단백질', totals.protein, state.user.proteinGoal || 0, 'bg-sky-500')}
+                                ${NutrientBar('지방', totals.fat, state.user.fatGoal || 0, 'bg-amber-400')}
                             </div>
                         </div>
                     </div>
@@ -231,17 +231,12 @@
     const appContainer = document.getElementById('app-container');
 
     const render = () => {
-        if (state.currentPage === 'loading') {
-            appContainer.innerHTML = '<div class="flex items-center justify-center min-h-screen"><p class="text-gray-500">앱을 불러오는 중입니다...</p></div>';
-        } else if (state.currentPage === 'login') {
-            appContainer.innerHTML = LoginPage();
-        } else if (state.currentPage === 'register') {
-            appContainer.innerHTML = RegisterPage();
-        } else if (state.currentPage === 'onboarding') {
-            appContainer.innerHTML = OnboardingPage();
-        } else if (state.currentPage === 'dashboard') {
-            appContainer.innerHTML = DashboardPage();
-        }
+        const { currentPage } = state;
+        if (currentPage === 'loading') appContainer.innerHTML = '<div class="flex items-center justify-center min-h-screen"><p class="text-gray-500">앱을 불러오는 중입니다...</p></div>';
+        else if (currentPage === 'login') appContainer.innerHTML = LoginPage();
+        else if (currentPage === 'register') appContainer.innerHTML = RegisterPage();
+        else if (currentPage === 'onboarding') appContainer.innerHTML = OnboardingPage();
+        else if (currentPage === 'dashboard') appContainer.innerHTML = DashboardPage();
         addEventListeners();
     };
 
@@ -251,16 +246,17 @@
     };
     
     const addEventListeners = () => {
-        if (state.currentPage === 'login') document.getElementById('login-form')?.addEventListener('submit', handleLogin);
-        if (state.currentPage === 'register') document.getElementById('register-form')?.addEventListener('submit', handleRegister);
-        if (state.currentPage === 'onboarding') {
+        const { currentPage } = state;
+        if (currentPage === 'login') document.getElementById('login-form')?.addEventListener('submit', handleLogin);
+        if (currentPage === 'register') document.getElementById('register-form')?.addEventListener('submit', handleRegister);
+        if (currentPage === 'onboarding') {
             document.getElementById('onboarding-form')?.addEventListener('submit', handleOnboarding);
             document.querySelectorAll('.goal-btn').forEach(btn => btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('bg-teal-500', 'text-white', 'border-teal-500'));
                 e.currentTarget.classList.add('bg-teal-500', 'text-white', 'border-teal-500');
             }));
         }
-        if (state.currentPage === 'dashboard') {
+        if (currentPage === 'dashboard') {
             document.getElementById('ai-analyze-btn')?.addEventListener('click', handleAIAnalysis);
             document.getElementById('record-selected-btn')?.addEventListener('click', handleAddSelectedFoods);
         }
@@ -268,24 +264,24 @@
 
     // --- AI 분석 로직 ---
     async function handleAIAnalysis() {
-        if (!GEMINI_API_KEY || GEMINI_API_KEY.includes("TODO")) {
-            alert('Gemini API 키를 코드에 입력해주세요.');
-            return;
+        if (!GEMINI_API_KEY || GEMINI_API_KEY === "AIzaSyDI3SsZ3cLDWdAfoVVeMe1NplZxhB91wCk") {
+            return alert('Gemini API 키를 코드에 입력해주세요.');
         }
         const inputText = document.getElementById('ai-food-input').value;
-        if (!inputText.trim()) {
-            alert('분석할 음식 설명을 입력해주세요.');
-            return;
-        }
+        if (!inputText.trim()) return alert('분석할 음식 설명을 입력해주세요.');
+        
         const resultsContainer = document.getElementById('ai-results-container');
         const analyzeBtn = document.getElementById('ai-analyze-btn');
         const recordBtn = document.getElementById('record-selected-btn');
+        
         resultsContainer.innerHTML = '<p class="text-center text-gray-500">AI가 분석 중입니다... 🤖</p>';
         analyzeBtn.disabled = true;
         analyzeBtn.textContent = '분석 중...';
         recordBtn.classList.add('hidden');
+        
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
         const prompt = `다음 문장에서 음식 이름, 칼로리(kcal), 탄수화물(g), 단백질(g), 지방(g)을 추출해서 JSON 배열 형식으로 응답해줘. 각 음식은 별개의 JSON 객체로 만들고, 영양성분은 일반적인 예상치여야해. 숫자는 정수로 반올림하고 다른 설명 없이 순수 JSON 배열만 응답해줘. 입력 문장: "${inputText}"`;
+        
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
@@ -293,6 +289,7 @@
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
             if (!response.ok) throw new Error(`API 오류: ${response.status}`);
+            
             const data = await response.json();
             const jsonString = data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
             const foodItems = JSON.parse(jsonString);
@@ -354,8 +351,7 @@
         const selectedFoods = document.querySelectorAll('#ai-results-container input:checked');
         if (selectedFoods.length === 0) return alert('기록할 음식을 선택해주세요.');
         const recordBtn = document.getElementById('record-selected-btn');
-        recordBtn.disabled = true;
-        recordBtn.textContent = '저장 중...';
+        recordBtn.disabled = true; recordBtn.textContent = '저장 중...';
         const foodEntries = Array.from(selectedFoods).map(cb => ({ name: cb.dataset.name, calories: parseInt(cb.dataset.calories), carbs: parseInt(cb.dataset.carbs), protein: parseInt(cb.dataset.protein), fat: parseInt(cb.dataset.fat), mealType, createdAt: firebase.firestore.FieldValue.serverTimestamp() }));
         try {
             const batch = db.batch();
@@ -366,8 +362,7 @@
             fetchFoodEntriesForDate(state.currentDate);
         } catch (error) {
             alert('저장 실패: ' + error.message);
-            recordBtn.disabled = false;
-            recordBtn.textContent = '선택 항목 기록하기';
+            recordBtn.disabled = false; recordBtn.textContent = '선택 항목 기록하기';
         }
     }
     const deleteFood = (entryId) => { if (confirm('삭제하시겠습니까?')) db.collection('users').doc(state.user.uid).collection(state.currentDate).doc(entryId).delete().then(() => fetchFoodEntriesForDate(state.currentDate)).catch(err => alert(err.message)); };
@@ -377,7 +372,7 @@
         state.currentDate = date.toISOString().split('T')[0];
         fetchFoodEntriesForDate(state.currentDate);
     };
-    const openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
+    const openModal = () => document.getElementById('add-food-modal')?.classList.remove('hidden');
     const closeModal = () => document.getElementById('add-food-modal')?.classList.add('hidden');
     const fetchFoodEntriesForDate = async (dateKey) => {
         if (!state.user) return;
@@ -399,9 +394,7 @@
                 if (userData.goal) {
                     state.currentPage = 'dashboard';
                     fetchFoodEntriesForDate(state.currentDate);
-                } else {
-                    navigate('onboarding');
-                }
+                } else navigate('onboarding');
             } else {
                 state.isLoggedIn = true;
                 state.user = { uid: firebaseUser.uid, email: firebaseUser.email };
@@ -412,10 +405,7 @@
             navigate('login');
         }
     });
-    
-    // --- 앱 시작 ---
-    // 초기 렌더링은 onAuthStateChanged가 처리하므로 중복 호출 제거
-    // render(); 
     </script>
 </body>
 </html>
+
