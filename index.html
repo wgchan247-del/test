@@ -15,7 +15,7 @@
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f0fdf4; /* Very light green background */
+            background-color: #f0fdf4;
         }
         .font-jua {
             font-family: 'Jua', sans-serif;
@@ -77,237 +77,12 @@
 </head>
 <body class="text-slate-700">
 
-    <div id="auth-view" class="fixed inset-0 bg-green-50 flex items-center justify-center z-50 p-4">
-        <div class="w-full max-w-sm p-8 bg-white rounded-3xl shadow-xl">
-            <div class="flex justify-center mb-4">
-                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-200">
-                    <img src="http://googleusercontent.com/file_content/21" alt="피트밀 로고" class="w-10 h-10">
-                </div>
-            </div>
-            <h1 class="text-4xl font-jua text-green-600 text-center">피트밀</h1>
-            <p class="text-slate-500 text-center mb-8">나만의 AI 영양사, 피트밀</p>
-            
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-slate-600">이메일</label>
-                    <input type="email" id="email" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
-                </div>
-                <div>
-                    <label for="password" class="block text-sm font-medium text-slate-600">비밀번호</label>
-                    <input type="password" id="password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
-                </div>
-                 <div class="text-right text-sm">
-                    <a href="#" id="forgot-password-link" class="font-medium text-green-600 hover:text-green-500">비밀번호를 잊으셨나요?</a>
-                </div>
-                <div class="flex gap-3 pt-2">
-                    <button type="submit" id="login-btn" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition">로그인</button>
-                    <button type="button" id="go-to-register-btn" class="w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition">회원가입</button>
-                </div>
-            </form>
-
-            <form id="register-form" class="hidden space-y-4">
-                <div>
-                    <label for="register-email" class="block text-sm font-medium text-slate-600">이메일</label>
-                    <input type="email" id="register-email" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
-                </div>
-                <div>
-                    <label for="register-password" class="block text-sm font-medium text-slate-600">비밀번호</label>
-                    <input type="password" id="register-password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
-                    <p class="mt-1 text-xs text-slate-500">8자리 이상 영문 소문자, 숫자를 조합해주세요.</p>
-                </div>
-                 <div>
-                    <label for="confirm-password" class="block text-sm font-medium text-slate-600">비밀번호 확인</label>
-                    <input type="password" id="confirm-password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
-                </div>
-                <p id="password-error" class="hidden text-xs text-red-500">비밀번호가 일치하지 않거나 형식이 올바르지 않습니다.</p>
-                <div class="flex gap-3 pt-2">
-                    <button type="submit" id="register-btn" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition">회원가입</button>
-                </div>
-                 <button type="button" id="back-to-login-btn" class="w-full text-slate-500 py-2 rounded-full text-sm font-semibold hover:bg-slate-100 transition">로그인으로 돌아가기</button>
-            </form>
-
-            <div class="relative my-6">
-                <div class="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div class="w-full border-t border-slate-300"></div>
-                </div>
-                <div class="relative flex justify-center text-sm">
-                    <span class="bg-white px-2 text-slate-500">또는</span>
-                </div>
-            </div>
-            <button id="google-login-btn" class="w-full bg-white border border-slate-300 text-slate-700 py-3 rounded-full font-semibold hover:bg-slate-50 transition flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"></path><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"></path><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"></path><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C42.012 36.49 44 30.861 44 24c0-1.341-.138-2.65-.389-3.917z"></path></svg>
-                Google 계정으로 로그인
-            </button>
-            <div class="mt-6 text-center text-xs text-slate-400">
-                <a href="#" id="terms-link" class="underline hover:text-slate-600">이용약관</a>
-                <span class="mx-2">|</span>
-                <a href="#" id="privacy-link" class="underline hover:text-slate-600">개인정보 처리방침</a>
-            </div>
-        </div>
-    </div>
-
-    <div id="app-view" class="hidden max-w-4xl mx-auto p-4 md:p-6">
-        <header class="flex justify-between items-center mb-8">
-            <h1 class="text-4xl font-jua text-green-600">피트밀 🥗</h1>
-            <div class="flex items-center gap-4">
-                 <button id="stats-toggle-button" class="text-gray-400 hover:text-green-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                    </svg>
-                </button>
-                 <button id="calendar-toggle-button" class="text-gray-400 hover:text-green-500">
-                    </button>
-                <button id="profile-button" class="text-gray-400 hover:text-green-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-                 <button id="logout-button" class="text-gray-400 hover:text-green-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-            </div>
-        </header>
-
-        <main id="dashboard-view" class="space-y-8">
-            <section id="welcome-message" class="hidden bg-white p-6 rounded-3xl custom-shadow text-center">
-                <h2 class="text-2xl font-jua text-green-600 mb-2">피트밀에 오신 것을 환영합니다!</h2>
-                <p class="text-slate-600 mb-4">정확한 AI 식단 추천을 위해 프로필을 먼저 설정해주세요.</p>
-                <button id="setup-profile-btn" class="bg-green-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-600 transition">
-                    프로필 설정 시작하기
-                </button>
-            </section>
-
-            <section id="nutrition-progress" class="bg-white p-6 rounded-3xl custom-shadow">
-                <h2 class="text-xl font-jua text-green-600 mb-4">오늘의 영양 체크 📊</h2>
-                <div id="progress-content" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    <div class="flex flex-col items-center"><div id="calories-ring" class="nutrient-ring" style="--color: #f97316; --p: 0;"><span id="calories-current">0</span><small class="text-slate-400">/ <span id="calories-goal">0</span></small></div><p class="mt-2 font-semibold">칼로리 (kcal)</p></div><div class="flex flex-col items-center"><div id="carbs-ring" class="nutrient-ring" style="--color: #14b8a6; --p: 0;"><span id="carbs-current">0</span><small class="text-slate-400">/ <span id="carbs-goal">0</span></small></div><p class="mt-2 font-semibold">탄수화물 (g)</p></div><div class="flex flex-col items-center"><div id="protein-ring" class="nutrient-ring" style="--color: #f59e0b; --p: 0;"><span id="protein-current">0</span><small class="text-slate-400">/ <span id="protein-goal">0</span></small></div><p class="mt-2 font-semibold">단백질 (g)</p></div><div class="flex flex-col items-center"><div id="fat-ring" class="nutrient-ring" style="--color: #8b5cf6; --p: 0;"><span id="fat-current">0</span><small class="text-slate-400">/ <span id="fat-goal">0</span></small></div><p class="mt-2 font-semibold">지방 (g)</p></div>
-                </div>
-            </section>
-
-            <section id="daily-intake-log">
-                <h2 class="text-xl font-jua text-green-600 mb-4">오늘의 다이어트 기록 📝</h2>
-                <div id="daily-intake-list" class="space-y-3 mb-4">
-                    </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <button id="add-food-button" class="w-full bg-white border-2 border-dashed border-green-200 text-green-500 py-3 rounded-2xl font-semibold hover:bg-green-50 hover:border-green-400 transition duration-300">
-                        + 직접 입력
-                    </button>
-                    <button id="add-photo-button" class="w-full bg-green-500 text-white py-3 rounded-2xl font-semibold hover:bg-green-600 transition duration-300 flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>
-                        AI 카메라로 기록
-                    </button>
-                </div>
-            </section>
-            
-            <section id="daily-exercise-log">
-                <h2 class="text-xl font-jua text-green-600 mb-4">오늘 운동 기록 🏋️‍♀️</h2>
-                <div id="daily-exercise-list" class="space-y-3 mb-4">
-                    </div>
-                <button id="add-exercise-button" class="w-full bg-white border-2 border-dashed border-teal-200 text-teal-500 py-3 rounded-2xl font-semibold hover:bg-teal-50 hover:border-teal-400 transition duration-300">
-                    + 운동 추가하기
-                </button>
-            </section>
-
-            <section id="meal-plan">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-jua text-green-600">AI 추천 식단 ✨</h2>
-                    <button id="generate-plan-button" class="bg-green-500 text-white px-5 py-2 rounded-full font-semibold hover:bg-green-600 transition duration-300 disabled:bg-green-300 shadow-sm shadow-green-200">
-                        새 식단 받기
-                    </button>
-                </div>
-                <div id="meal-plan-content" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-                 <div id="loader" class="hidden text-center py-8"><div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div><p class="mt-4 text-slate-500">AI가 맞춤 식단을 생성 중입니다...</p></div>
-            </section>
-            
-            <section id="water-tracker" class="bg-white p-6 rounded-3xl custom-shadow">
-                <h2 class="text-xl font-jua text-green-600 mb-4">수분 섭취 💧</h2>
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-3xl font-bold text-sky-500"><span id="water-intake">0</span> / <span id="water-goal">8</span> 잔</p>
-                        <p class="text-slate-400 text-sm">2L 목표 (1잔 = 250ml)</p>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button id="add-water-button" class="bg-sky-400 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold hover:bg-sky-500 transition shadow-sm shadow-sky-200">+</button>
-                        <button id="remove-water-button" class="bg-slate-100 text-slate-500 rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold hover:bg-slate-200 transition">-</button>
-                    </div>
-                </div>
-            </section>
-            
-            <section id="ad-banner-container" class="mt-8 flex justify-center items-center h-24 bg-slate-100 rounded-2xl">
-                <p class="text-slate-400 text-sm">광고가 표시될 공간입니다.</p>
-            </section>
-
-            <footer class="text-center pt-8">
-                <button id="withdraw-footer-btn" class="text-xs text-slate-400 hover:text-red-500 hover:underline transition">회원 탈퇴</button>
-            </footer>
-
-        </main>
-
-        <section id="calendar-view" class="hidden space-y-4">
-            <div class="bg-white p-6 rounded-3xl custom-shadow">
-                <div class="flex justify-between items-center mb-4">
-                    <button id="prev-month-btn" class="p-2 rounded-full hover:bg-green-50"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
-                    <h2 id="calendar-month-year" class="text-xl font-jua text-green-600"></h2>
-                    <button id="next-month-btn" class="p-2 rounded-full hover:bg-green-50"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
-                </div>
-                <div class="grid grid-cols-7 gap-1 text-center font-semibold text-sm text-slate-500 mb-2">
-                    <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
-                </div>
-                <div id="calendar-grid" class="grid grid-cols-7 gap-1">
-                    </div>
-            </div>
-             <div id="premium-section" class="bg-white p-6 rounded-3xl custom-shadow text-center">
-                 <h2 class="text-xl font-jua text-green-600 mb-4">💎 피트밀 프리미엄</h2>
-                 <p class="text-slate-600 mb-4">프리미엄으로 업그레이드하고 광고 없이 더 상세한 리포트를 받아보세요!</p>
-                 <button id="report-btn" class="w-full bg-amber-400 text-amber-900 py-3 rounded-full font-semibold hover:bg-amber-500 transition duration-300 flex items-center justify-center gap-2">
-                    <span class="premium-crown">👑</span> 상세 리포트 보기
-                 </button>
-            </div>
-        </section>
-        
-        <section id="stats-view" class="hidden space-y-8">
-            <div class="bg-white p-6 rounded-3xl custom-shadow">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-jua text-green-600">통계 리포트</h2>
-                    <div class="flex rounded-full bg-slate-100 p-1 text-sm font-semibold">
-                        <button id="weekly-report-btn" class="px-4 py-1 rounded-full bg-white text-green-600 shadow">주간</button>
-                        <button id="monthly-report-btn" class="px-4 py-1 rounded-full text-slate-500">월간</button>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-3xl custom-shadow">
-                <h3 id="calorie-chart-title" class="text-lg font-jua text-green-600 mb-4">주간 칼로리 섭취량</h3>
-                <div class="chart-container">
-                    <canvas id="calorie-chart"></canvas>
-                </div>
-            </div>
-             <div class="grid md:grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-3xl custom-shadow">
-                    <h3 id="macro-chart-title" class="text-lg font-jua text-green-600 mb-4">주간 영양소 비율</h3>
-                    <div class="chart-container" style="height: 300px; max-width: 300px; margin: auto;">
-                        <canvas id="macro-chart"></canvas>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-3xl custom-shadow">
-                    <h3 id="top-foods-title" class="text-lg font-jua text-green-600 mb-4">자주 먹은 음식 TOP 5</h3>
-                    <div id="top-foods-list" class="space-y-2">
-                        </div>
-                </div>
-            </div>
-             <div class="bg-white p-6 rounded-3xl custom-shadow">
-                <h3 id="average-intake-title" class="text-lg font-jua text-green-600 mb-4">일일 평균 섭취량</h3>
-                <div id="average-intake-content" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    </div>
-            </div>
-        </section>
-        
+    <div id="app-root">
         </div>
 
     <div id="profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 md:p-8 transform scale-95 transition-transform duration-300">
-            <h2 class="text-2xl font-jua text-green-600 mb-6 text-center">내 정보 입력</h2>
+            <h2 class="text-2xl font-jua text-green-600 mb-6 text-center">내 정보 수정</h2>
             <form id="profile-form" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4"><div><label for="gender" class="block text-sm font-medium text-slate-600">성별</label><select id="gender" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500"><option value="female">여성</option><option value="male">남성</option><option value="unspecified">선택 안함</option></select></div><div><label for="age" class="block text-sm font-medium text-slate-600">나이</label><input type="number" id="age" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" placeholder="세"></div></div><div class="grid grid-cols-2 gap-4"><div><label for="height" class="block text-sm font-medium text-slate-600">신장</label><input type="number" id="height" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" placeholder="cm"></div><div><label for="weight" class="block text-sm font-medium text-slate-600">체중</label><input type="number" id="weight" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" placeholder="kg"></div></div><div><label for="activity" class="block text-sm font-medium text-slate-600">활동량</label><select id="activity" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500"><option value="1.2">거의 없음</option><option value="1.375">가벼운 활동</option><option value="1.55">보통 활동</option><option value="1.725">높은 활동</option><option value="1.9">매우 높은 활동</option></select></div><div><label for="goal" class="block text-sm font-medium text-slate-600">목표</label><select id="goal" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500"><option value="loss">체중 감량</option><option value="maintain">체중 유지</option><option value="gain">체중 증가</option></select></div><div class="pt-4"><button type="submit" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition duration-300">저장하기</button></div>
             </form>
@@ -384,7 +159,6 @@
         </div>
     </div>
 
-
     <div id="photo-analysis-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 md:p-8 transform scale-95 transition-transform duration-300">
             <h2 class="text-2xl font-jua text-green-600 mb-6 text-center">AI 음식 분석</h2>
@@ -405,7 +179,7 @@
                 <p class="mt-4 text-slate-500">AI가 사진을 분석하고 있어요...</p>
             </div>
             <div id="photo-result-view" class="hidden">
-                </div>
+            </div>
              <button type="button" id="cancel-photo-analysis" class="mt-4 w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition duration-300">취소</button>
         </div>
     </div>
@@ -414,7 +188,7 @@
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 md:p-8 transform scale-95 transition-transform duration-300">
             <h2 id="calendar-detail-title" class="text-2xl font-jua text-green-600 mb-6 text-center"></h2>
             <div id="calendar-detail-list" class="space-y-3 max-h-96 overflow-y-auto">
-                </div>
+            </div>
             <button type="button" id="close-calendar-detail" class="mt-6 w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition duration-300">닫기</button>
         </div>
     </div>
@@ -550,7 +324,7 @@
     <script type="module">
         // Firebase SDK 가져오기
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, sendEmailVerification, sendPasswordResetEmail, deleteUser } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut, sendPasswordResetEmail, deleteUser } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, updateDoc, arrayUnion, arrayRemove, collection, query, where, getDocs, documentId, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-functions.js";
 
@@ -575,80 +349,6 @@
         const callGeminiAPI_server = httpsCallable(functions, 'callGeminiAPI');
         const callGeminiVisionAPI_server = httpsCallable(functions, 'callGeminiVisionAPI');
 
-        // UI 요소
-        const authView = document.getElementById('auth-view');
-        const appView = document.getElementById('app-view');
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const goToRegisterBtn = document.getElementById('go-to-register-btn');
-        const backToLoginBtn = document.getElementById('back-to-login-btn');
-        const googleLoginBtn = document.getElementById('google-login-btn');
-        const logoutButton = document.getElementById('logout-button');
-        const forgotPasswordLink = document.getElementById('forgot-password-link');
-
-        const dashboardView = document.getElementById('dashboard-view');
-        const calendarView = document.getElementById('calendar-view');
-        const statsView = document.getElementById('stats-view');
-        const calendarToggleButton = document.getElementById('calendar-toggle-button');
-        const statsToggleButton = document.getElementById('stats-toggle-button');
-        const calendarGrid = document.getElementById('calendar-grid');
-        const calendarMonthYear = document.getElementById('calendar-month-year');
-        const prevMonthBtn = document.getElementById('prev-month-btn');
-        const nextMonthBtn = document.getElementById('next-month-btn');
-        const calendarDetailModal = document.getElementById('calendar-detail-modal');
-        const closeCalendarDetailBtn = document.getElementById('close-calendar-detail');
-
-        const profileModal = document.getElementById('profile-modal');
-        const addFoodModal = document.getElementById('add-food-modal');
-        const addExerciseModal = document.getElementById('add-exercise-modal');
-        const photoAnalysisModal = document.getElementById('photo-analysis-modal');
-        const premiumModal = document.getElementById('premium-modal');
-        const termsModal = document.getElementById('terms-modal');
-        const privacyModal = document.getElementById('privacy-modal');
-        const passwordResetModal = document.getElementById('password-reset-modal');
-        const withdrawModal = document.getElementById('withdraw-modal');
-        const profileForm = document.getElementById('profile-form');
-        const addFoodForm = document.getElementById('add-food-form');
-        const addExerciseForm = document.getElementById('add-exercise-form');
-        const passwordResetForm = document.getElementById('password-reset-form');
-        const profileButton = document.getElementById('profile-button');
-        const generatePlanButton = document.getElementById('generate-plan-button');
-        const addFoodButton = document.getElementById('add-food-button');
-        const addPhotoButton = document.getElementById('add-photo-button');
-        const addExerciseButton = document.getElementById('add-exercise-button');
-        const cancelAddFoodButton = document.getElementById('cancel-add-food');
-        const cancelAddExerciseButton = document.getElementById('cancel-add-exercise');
-        const cancelPhotoAnalysisButton = document.getElementById('cancel-photo-analysis');
-        const cancelResetPasswordBtn = document.getElementById('cancel-reset-password');
-        const analyzePhotoButton = document.getElementById('analyze-photo-button');
-        const photoInput = document.getElementById('photo-input');
-        const imagePreview = document.getElementById('image-preview');
-        const manualPhotoInput = document.getElementById('manual-photo-input');
-        const manualImagePreview = document.getElementById('manual-image-preview');
-        const calculateNutrientsBtn = document.getElementById('calculate-nutrients-btn');
-        const calculateExerciseCaloriesBtn = document.getElementById('calculate-exercise-calories-btn');
-        const exerciseCalorieLoader = document.getElementById('exercise-calorie-loader');
-        const exerciseCalorieResult = document.getElementById('exercise-calorie-result');
-        const submitExerciseBtn = document.getElementById('submit-exercise-btn');
-        const nutrientLoader = document.getElementById('nutrient-loader');
-        const loader = document.getElementById('loader');
-        const mealPlanContent = document.getElementById('meal-plan-content');
-        const dailyIntakeList = document.getElementById('daily-intake-list');
-        const dailyExerciseList = document.getElementById('daily-exercise-list');
-        const welcomeMessage = document.getElementById('welcome-message');
-        const setupProfileBtn = document.getElementById('setup-profile-btn');
-        const adBannerContainer = document.getElementById('ad-banner-container');
-        const reportBtn = document.getElementById('report-btn');
-        const closePremiumModalBtn = document.getElementById('close-premium-modal');
-        const termsLink = document.getElementById('terms-link');
-        const privacyLink = document.getElementById('privacy-link');
-        const closeTermsModalBtn = document.getElementById('close-terms-modal');
-        const closePrivacyModalBtn = document.getElementById('close-privacy-modal');
-        const withdrawBtn = document.getElementById('withdraw-btn');
-        const cancelWithdrawBtn = document.getElementById('cancel-withdraw');
-        const confirmWithdrawBtn = document.getElementById('confirm-withdraw-btn');
-        const withdrawConfirmText = document.getElementById('withdraw-confirm-text');
-        
         // 상태 관리
         let userProfile = null;
         let userId = null;
@@ -660,103 +360,581 @@
         let isPremium = false; // 프리미엄 상태 변수
         let calorieChartInstance = null;
         let macroChartInstance = null;
+        let currentPage = 'loading'; // 'loading', 'auth', 'profileSetup', 'main'
+
+        const appRoot = document.getElementById('app-root');
 
         const calendarIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>`;
         const homeIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>`;
         
-        // 초기 아이콘 설정
-        calendarToggleButton.innerHTML = calendarIconSVG;
+        // --- 페이지 템플릿 ---
+        const AuthPage = () => `
+            <div id="auth-view-content" class="fixed inset-0 bg-green-50 flex items-center justify-center z-50 p-4">
+                <div class="w-full max-w-sm p-8 bg-white rounded-3xl shadow-xl">
+                    <div class="flex justify-center mb-4">
+                        <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-200">
+                             <svg class="w-10 h-10 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 20V5C9 4.44772 8.55228 4 8 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                                <circle cx="12" cy="10" r="1.5" fill="currentColor"/>
+                                <path d="M15 20V10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                                <path d="M18 20V10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h1 class="text-4xl font-jua text-green-600 text-center">피트밀</h1>
+                    <p class="text-slate-500 text-center mb-8">나만의 AI 영양사, 피트밀</p>
+                    <form id="login-form" class="space-y-4">
+                        <div><label for="email" class="block text-sm font-medium text-slate-600">이메일</label><input type="email" id="email" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></div>
+                        <div><label for="password" class="block text-sm font-medium text-slate-600">비밀번호</label><input type="password" id="password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></div>
+                        <div class="text-right text-sm"><a href="#" id="forgot-password-link" class="font-medium text-green-600 hover:text-green-500">비밀번호를 잊으셨나요?</a></div>
+                        <div class="flex gap-3 pt-2"><button type="submit" id="login-btn" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition">로그인</button><button type="button" id="go-to-register-btn" class="w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition">회원가입</button></div>
+                    </form>
+                    <form id="register-form" class="hidden space-y-4">
+                        <div><label for="register-email" class="block text-sm font-medium text-slate-600">이메일</label><input type="email" id="register-email" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></div>
+                        <div><label for="register-password" class="block text-sm font-medium text-slate-600">비밀번호</label><input type="password" id="register-password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required><p class="mt-1 text-xs text-slate-500">8자리 이상 영문 소문자, 숫자를 조합해주세요.</p></div>
+                        <div><label for="confirm-password" class="block text-sm font-medium text-slate-600">비밀번호 확인</label><input type="password" id="confirm-password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></div>
+                        <p id="password-error" class="hidden text-xs text-red-500">비밀번호가 일치하지 않거나 형식이 올바르지 않습니다.</p>
+                        <div class="flex gap-3 pt-2"><button type="submit" id="register-btn" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition">회원가입</button></div>
+                        <button type="button" id="back-to-login-btn" class="w-full text-slate-500 py-2 rounded-full text-sm font-semibold hover:bg-slate-100 transition">로그인으로 돌아가기</button>
+                    </form>
+                    <div class="relative my-6"><div class="absolute inset-0 flex items-center" aria-hidden="true"><div class="w-full border-t border-slate-300"></div></div><div class="relative flex justify-center text-sm"><span class="bg-white px-2 text-slate-500">또는</span></div></div>
+                    <button id="google-login-btn" class="w-full bg-white border border-slate-300 text-slate-700 py-3 rounded-full font-semibold hover:bg-slate-50 transition flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"></path><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"></path><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"></path><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C42.012 36.49 44 30.861 44 24c0-1.341-.138-2.65-.389-3.917z"></path></svg>
+                        Google 계정으로 로그인
+                    </button>
+                    <div class="mt-6 text-center text-xs text-slate-400"><a href="#" id="terms-link" class="underline hover:text-slate-600">이용약관</a><span class="mx-2">|</span><a href="#" id="privacy-link" class="underline hover:text-slate-600">개인정보 처리방침</a></div>
+                </div>
+            </div>
+        `;
+        
+        const ProfileSetupPage = () => `
+            <div class="fixed inset-0 bg-green-50 flex items-center justify-center z-40 p-4">
+                 <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 md:p-8">
+                    <h2 class="text-2xl font-jua text-green-600 mb-2 text-center">피트밀에 오신 것을 환영합니다!</h2>
+                    <p class="text-slate-600 mb-6 text-center">정확한 AI 추천을 위해 프로필을 설정해주세요.</p>
+                    <form id="profile-setup-form" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4"><div><label for="gender-setup" class="block text-sm font-medium text-slate-600">성별</label><select id="gender-setup" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500"><option value="female">여성</option><option value="male">남성</option><option value="unspecified">선택 안함</option></select></div><div><label for="age-setup" class="block text-sm font-medium text-slate-600">나이</label><input type="number" id="age-setup" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" placeholder="세" required></div></div><div class="grid grid-cols-2 gap-4"><div><label for="height-setup" class="block text-sm font-medium text-slate-600">신장</label><input type="number" id="height-setup" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" placeholder="cm" required></div><div><label for="weight-setup" class="block text-sm font-medium text-slate-600">체중</label><input type="number" id="weight-setup" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" placeholder="kg" required></div></div><div><label for="activity-setup" class="block text-sm font-medium text-slate-600">활동량</label><select id="activity-setup" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500"><option value="1.2">거의 없음</option><option value="1.375">가벼운 활동</option><option value="1.55">보통 활동</option><option value="1.725">높은 활동</option><option value="1.9">매우 높은 활동</option></select></div><div><label for="goal-setup" class="block text-sm font-medium text-slate-600">목표</label><select id="goal-setup" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500"><option value="loss">체중 감량</option><option value="maintain">체중 유지</option><option value="gain">체중 증가</option></select></div><div class="pt-4"><button type="submit" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition duration-300">시작하기</button></div>
+                    </form>
+                </div>
+            </div>
+        `;
 
-        // --- 인증 및 데이터 로딩 ---
-        onAuthStateChanged(auth, (user) => {
-            // 이메일 인증 기능은 복잡성을 증가시키므로, 우선은 가입 즉시 로그인되는 흐름으로 구현합니다.
-            // 추후 필요시 sendEmailVerification을 사용하여 인증 로직을 추가할 수 있습니다.
+        const MainAppPage = () => `
+            <div id="app-view-content" class="max-w-4xl mx-auto p-4 md:p-6">
+                <header class="flex justify-between items-center mb-8">
+                    <h1 class="text-4xl font-jua text-green-600">피트밀 🥗</h1>
+                    <div class="flex items-center gap-4">
+                        <button id="stats-toggle-button" class="text-gray-400 hover:text-green-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg></button>
+                        <button id="calendar-toggle-button" class="text-gray-400 hover:text-green-500">${calendarIconSVG}</button>
+                        <button id="profile-button" class="text-gray-400 hover:text-green-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd" /></svg></button>
+                        <button id="logout-button" class="text-gray-400 hover:text-green-500"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" /></svg></button>
+                    </div>
+                </header>
+                <main id="dashboard-view" class="space-y-8">
+                    <section id="nutrition-progress" class="bg-white p-6 rounded-3xl custom-shadow">
+                        <h2 class="text-xl font-jua text-green-600 mb-4">오늘의 영양 체크 📊</h2>
+                        <div id="progress-content" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div class="flex flex-col items-center"><div id="calories-ring" class="nutrient-ring" style="--color: #f97316; --p: 0;"><span id="calories-current">0</span><small class="text-slate-400">/ <span id="calories-goal">0</span></small></div><p class="mt-2 font-semibold">칼로리 (kcal)</p></div><div class="flex flex-col items-center"><div id="carbs-ring" class="nutrient-ring" style="--color: #14b8a6; --p: 0;"><span id="carbs-current">0</span><small class="text-slate-400">/ <span id="carbs-goal">0</span></small></div><p class="mt-2 font-semibold">탄수화물 (g)</p></div><div class="flex flex-col items-center"><div id="protein-ring" class="nutrient-ring" style="--color: #f59e0b; --p: 0;"><span id="protein-current">0</span><small class="text-slate-400">/ <span id="protein-goal">0</span></small></div><p class="mt-2 font-semibold">단백질 (g)</p></div><div class="flex flex-col items-center"><div id="fat-ring" class="nutrient-ring" style="--color: #8b5cf6; --p: 0;"><span id="fat-current">0</span><small class="text-slate-400">/ <span id="fat-goal">0</span></small></div><p class="mt-2 font-semibold">지방 (g)</p></div>
+                        </div>
+                    </section>
+                    <section id="daily-intake-log">
+                        <h2 class="text-xl font-jua text-green-600 mb-4">오늘의 다이어트 기록 📝</h2>
+                        <div id="daily-intake-list" class="space-y-3 mb-4"></div>
+                        <div class="grid grid-cols-2 gap-3"><button id="add-food-button" class="w-full bg-white border-2 border-dashed border-green-200 text-green-500 py-3 rounded-2xl font-semibold hover:bg-green-50 hover:border-green-400 transition duration-300">+ 직접 입력</button><button id="add-photo-button" class="w-full bg-green-500 text-white py-3 rounded-2xl font-semibold hover:bg-green-600 transition duration-300 flex items-center justify-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>AI 카메라로 기록</button></div>
+                    </section>
+                    <section id="daily-exercise-log">
+                        <h2 class="text-xl font-jua text-green-600 mb-4">오늘 운동 기록 🏋️‍♀️</h2>
+                        <div id="daily-exercise-list" class="space-y-3 mb-4"></div>
+                        <button id="add-exercise-button" class="w-full bg-white border-2 border-dashed border-teal-200 text-teal-500 py-3 rounded-2xl font-semibold hover:bg-teal-50 hover:border-teal-400 transition duration-300">+ 운동 추가하기</button>
+                    </section>
+                    <section id="meal-plan">
+                        <div class="flex justify-between items-center mb-4"><h2 class="text-xl font-jua text-green-600">AI 추천 식단 ✨</h2><button id="generate-plan-button" class="bg-green-500 text-white px-5 py-2 rounded-full font-semibold hover:bg-green-600 transition duration-300 disabled:bg-green-300 shadow-sm shadow-green-200">새 식단 받기</button></div>
+                        <div id="meal-plan-content" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                        <div id="loader" class="hidden text-center py-8"><div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div><p class="mt-4 text-slate-500">AI가 맞춤 식단을 생성 중입니다...</p></div>
+                    </section>
+                    <section id="water-tracker" class="bg-white p-6 rounded-3xl custom-shadow">
+                        <h2 class="text-xl font-jua text-green-600 mb-4">수분 섭취 💧</h2>
+                        <div class="flex items-center justify-between">
+                            <div><p class="text-3xl font-bold text-sky-500"><span id="water-intake">0</span> / <span id="water-goal">8</span> 잔</p><p class="text-slate-400 text-sm">2L 목표 (1잔 = 250ml)</p></div>
+                            <div class="flex space-x-2"><button id="add-water-button" class="bg-sky-400 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold hover:bg-sky-500 transition shadow-sm shadow-sky-200">+</button><button id="remove-water-button" class="bg-slate-100 text-slate-500 rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold hover:bg-slate-200 transition">-</button></div>
+                        </div>
+                    </section>
+                    <section id="ad-banner-container" class="mt-8 flex justify-center items-center h-24 bg-slate-100 rounded-2xl"><p class="text-slate-400 text-sm">광고가 표시될 공간입니다.</p></section>
+                    <footer class="text-center pt-8"><button id="withdraw-footer-btn" class="text-xs text-slate-400 hover:text-red-500 hover:underline transition">회원 탈퇴</button></footer>
+                </main>
+                <section id="calendar-view" class="hidden space-y-4">
+                    <div class="bg-white p-6 rounded-3xl custom-shadow">
+                        <div class="flex justify-between items-center mb-4"><button id="prev-month-btn" class="p-2 rounded-full hover:bg-green-50"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button><h2 id="calendar-month-year" class="text-xl font-jua text-green-600"></h2><button id="next-month-btn" class="p-2 rounded-full hover:bg-green-50"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button></div>
+                        <div class="grid grid-cols-7 gap-1 text-center font-semibold text-sm text-slate-500 mb-2"><div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div></div>
+                        <div id="calendar-grid" class="grid grid-cols-7 gap-1"></div>
+                    </div>
+                    <div id="premium-section" class="bg-white p-6 rounded-3xl custom-shadow text-center"><h2 class="text-xl font-jua text-green-600 mb-4">💎 피트밀 프리미엄</h2><p class="text-slate-600 mb-4">프리미엄으로 업그레이드하고 광고 없이 더 상세한 리포트를 받아보세요!</p><button id="report-btn" class="w-full bg-amber-400 text-amber-900 py-3 rounded-full font-semibold hover:bg-amber-500 transition duration-300 flex items-center justify-center gap-2"><span class="premium-crown">👑</span> 상세 리포트 보기</button></div>
+                </section>
+                <section id="stats-view" class="hidden space-y-8">
+                    <div class="bg-white p-6 rounded-3xl custom-shadow"><div class="flex justify-between items-center mb-4"><h2 class="text-xl font-jua text-green-600">통계 리포트</h2><div class="flex rounded-full bg-slate-100 p-1 text-sm font-semibold"><button id="weekly-report-btn" class="px-4 py-1 rounded-full bg-white text-green-600 shadow">주간</button><button id="monthly-report-btn" class="px-4 py-1 rounded-full text-slate-500">월간</button></div></div></div>
+                    <div class="bg-white p-6 rounded-3xl custom-shadow"><h3 id="calorie-chart-title" class="text-lg font-jua text-green-600 mb-4">주간 칼로리 섭취량</h3><div class="chart-container"><canvas id="calorie-chart"></canvas></div></div>
+                    <div class="grid md:grid-cols-2 gap-8"><div class="bg-white p-6 rounded-3xl custom-shadow"><h3 id="macro-chart-title" class="text-lg font-jua text-green-600 mb-4">주간 영양소 비율</h3><div class="chart-container" style="height: 300px; max-width: 300px; margin: auto;"><canvas id="macro-chart"></canvas></div></div><div class="bg-white p-6 rounded-3xl custom-shadow"><h3 id="top-foods-title" class="text-lg font-jua text-green-600 mb-4">자주 먹은 음식 TOP 5</h3><div id="top-foods-list" class="space-y-2"></div></div></div>
+                    <div class="bg-white p-6 rounded-3xl custom-shadow"><h3 id="average-intake-title" class="text-lg font-jua text-green-600 mb-4">일일 평균 섭취량</h3><div id="average-intake-content" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center"></div></div>
+                </section>
+            </div>
+        `;
+
+        // --- 모달들 ---
+        const passwordResetModal = document.getElementById('password-reset-modal');
+        const withdrawModal = document.getElementById('withdraw-modal');
+        const termsModal = document.getElementById('terms-modal');
+        const privacyModal = document.getElementById('privacy-modal');
+        const premiumModal = document.getElementById('premium-modal');
+        const calendarDetailModal = document.getElementById('calendar-detail-modal');
+        const photoAnalysisModal = document.getElementById('photo-analysis-modal');
+        const addExerciseModal = document.getElementById('add-exercise-modal');
+        const addFoodModal = document.getElementById('add-food-modal');
+        const profileModal = document.getElementById('profile-modal');
+
+        // --- 페이지 렌더링 및 상태 관리 ---
+        function renderApp(page) {
+            currentPage = page;
+            appRoot.innerHTML = ''; // 이전 페이지 내용 삭제
+
+            switch (page) {
+                case 'auth':
+                    appRoot.innerHTML = AuthPage();
+                    attachAuthListeners();
+                    break;
+                case 'profileSetup':
+                    appRoot.innerHTML = ProfileSetupPage();
+                    attachProfileSetupListeners();
+                    break;
+                case 'main':
+                    appRoot.innerHTML = MainAppPage();
+                    attachMainAppListeners();
+                    // 메인 앱이 렌더링된 후, 필요한 데이터를 불러옵니다.
+                    loadInitialData();
+                    break;
+                default:
+                    appRoot.innerHTML = `<div class="text-center p-8">로딩 중...</div>`;
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 사용자가 로그인한 경우
                 userId = user.uid;
-                authView.classList.add('hidden');
-                appView.classList.remove('hidden');
-                
-                const today = new Date().toISOString().slice(0, 10);
-                
-                // 프리미엄 상태 확인
-                const premiumRef = doc(db, `artifacts/${appId}/users/${userId}/premium`, 'status');
-                onSnapshot(premiumRef, (docSnap) => {
-                    isPremium = docSnap.exists() && docSnap.data().active === true;
-                    updatePremiumUI();
-                });
-
                 const userProfileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'data');
-                onSnapshot(userProfileRef, (docSnap) => { 
-                    if (docSnap.exists()) { 
-                        userProfile = docSnap.data(); 
-                        showDashboard();
-                        updateNutritionGoalsUI(userProfile); 
-                        updateNutritionProgressUI(dailyIntake, userProfile.nutritionGoals); 
-                    } else { 
-                        showWelcomeMessage();
-                    } 
-                });
-                const mealPlanRef = doc(db, `artifacts/${appId}/users/${userId}/mealPlans`, today);
-                onSnapshot(mealPlanRef, (docSnap) => { if (docSnap.exists()) { renderMealPlan(docSnap.data().plan); } else { mealPlanContent.innerHTML = '<p class="text-center text-slate-500 md:col-span-2 py-4">오늘의 추천 식단을 받아보세요.</p>'; } });
-                const dailyIntakeRef = doc(db, `artifacts/${appId}/users/${userId}/dailyIntake`, today);
-                onSnapshot(dailyIntakeRef, (docSnap) => { dailyIntake = docSnap.exists() ? docSnap.data().foods : []; renderDailyIntake(dailyIntake); if (userProfile && userProfile.nutritionGoals) { updateNutritionProgressUI(dailyIntake, userProfile.nutritionGoals); } });
-                const dailyExerciseRef = doc(db, `artifacts/${appId}/users/${userId}/dailyExercise`, today);
-                onSnapshot(dailyExerciseRef, (docSnap) => { dailyExercise = docSnap.exists() ? docSnap.data().exercises : []; renderDailyExercise(dailyExercise); });
-                const waterRef = doc(db, `artifacts/${appId}/users/${userId}/water`, today);
-                onSnapshot(waterRef, (docSnap) => { updateWaterUI(docSnap.exists() ? docSnap.data().count : 0); });
-                
-                renderCalendar();
+                const docSnap = await getDocs(query(collection(db, `artifacts/${appId}/users/${userId}/profile`)));
+                if (docSnap.empty) {
+                    renderApp('profileSetup');
+                } else {
+                    renderApp('main');
+                }
             } else {
-                // 사용자가 로그아웃한 경우
                 userId = null;
                 userProfile = null;
-                authView.classList.remove('hidden');
-                appView.classList.add('hidden');
-                loginForm.classList.remove('hidden');
-                registerForm.classList.add('hidden');
+                renderApp('auth');
             }
         });
 
-        function showWelcomeMessage() {
-            welcomeMessage.classList.remove('hidden');
-            document.getElementById('nutrition-progress').classList.add('hidden');
-            document.getElementById('daily-intake-log').classList.add('hidden');
-            document.getElementById('daily-exercise-log').classList.add('hidden');
-            document.getElementById('meal-plan').classList.add('hidden');
-            document.getElementById('water-tracker').classList.add('hidden');
-            document.getElementById('ad-banner-container').classList.add('hidden');
+        // --- 이벤트 리스너 부착 함수들 ---
+        function attachAuthListeners() {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const goToRegisterBtn = document.getElementById('go-to-register-btn');
+            const backToLoginBtn = document.getElementById('back-to-login-btn');
+            const googleLoginBtn = document.getElementById('google-login-btn');
+            const forgotPasswordLink = document.getElementById('forgot-password-link');
+            const termsLink = document.getElementById('terms-link');
+            const privacyLink = document.getElementById('privacy-link');
+            const passwordResetForm = document.getElementById('password-reset-form');
+            const cancelResetPasswordBtn = document.getElementById('cancel-reset-password');
+
+            // 회원가입/로그인 폼 전환
+            goToRegisterBtn.addEventListener('click', () => {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+            });
+            backToLoginBtn.addEventListener('click', () => {
+                registerForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+            });
+
+            // 로그인
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    showToast('로그인 성공!');
+                } catch (error) {
+                    showToast(`로그인 실패: ${error.message}`);
+                }
+            });
+
+            // 회원가입
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('register-email').value;
+                const password = document.getElementById('register-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                const passwordError = document.getElementById('password-error');
+                
+                const passwordRegex = /^(?=.*[a-z])(?=.*\d)[a-z\d]{8,}$/;
+
+                if (password !== confirmPassword) {
+                    passwordError.textContent = '비밀번호가 일치하지 않습니다.';
+                    passwordError.classList.remove('hidden');
+                    return;
+                }
+                if (!passwordRegex.test(password)) {
+                    passwordError.textContent = '비밀번호는 8자리 이상 영문 소문자와 숫자를 조합해야 합니다.';
+                    passwordError.classList.remove('hidden');
+                    return;
+                }
+                passwordError.classList.add('hidden');
+
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    showToast('회원가입 성공! 프로필을 설정해주세요.');
+                } catch (error) {
+                    showToast(`회원가입 실패: ${error.message}`);
+                }
+            });
+            
+            // 구글 로그인
+            googleLoginBtn.addEventListener('click', async () => {
+                const provider = new GoogleAuthProvider();
+                try {
+                    await signInWithPopup(auth, provider);
+                    showToast('Google 로그인 성공!');
+                } catch (error) {
+                    showToast(`Google 로그인 실패: ${error.message}`);
+                }
+            });
+
+            // 비밀번호 재설정
+            forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); openModal(passwordResetModal); });
+            passwordResetForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('reset-email').value;
+                try {
+                    await sendPasswordResetEmail(auth, email);
+                    showToast('비밀번호 재설정 이메일을 보냈습니다.');
+                    closeModal(passwordResetModal);
+                } catch (error) {
+                    showToast(`이메일 전송 실패: ${error.message}`);
+                }
+            });
+            cancelResetPasswordBtn.addEventListener('click', () => closeModal(passwordResetModal));
+            
+            // 약관
+            termsLink.addEventListener('click', (e) => { e.preventDefault(); openModal(termsModal); });
+            privacyLink.addEventListener('click', (e) => { e.preventDefault(); openModal(privacyModal); });
+            document.getElementById('close-terms-modal').addEventListener('click', () => closeModal(termsModal));
+            document.getElementById('close-privacy-modal').addEventListener('click', () => closeModal(privacyModal));
+        }
+        
+        function attachProfileSetupListeners() {
+            const profileSetupForm = document.getElementById('profile-setup-form');
+            profileSetupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const profileData = {
+                    gender: document.getElementById('gender-setup').value,
+                    age: parseInt(document.getElementById('age-setup').value),
+                    height: parseFloat(document.getElementById('height-setup').value),
+                    weight: parseFloat(document.getElementById('weight-setup').value),
+                    activity: parseFloat(document.getElementById('activity-setup').value),
+                    goal: document.getElementById('goal-setup').value
+                };
+
+                if (Object.values(profileData).some(v => !v && v !== 0)) {
+                    showToast('모든 항목을 입력해주세요.');
+                    return;
+                }
+                
+                const userProfileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'data');
+                try {
+                    await setDoc(userProfileRef, profileData);
+                    showToast('프로필이 저장되었습니다. 앱을 시작합니다!');
+                    renderApp('main');
+                } catch (error) {
+                    console.error("Error saving profile: ", error);
+                    showToast('저장에 실패했습니다.');
+                }
+            });
+        }
+        
+        function attachMainAppListeners() {
+            // 헤더 버튼
+            document.getElementById('logout-button').addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    showToast('로그아웃되었습니다.');
+                } catch (error) {
+                    showToast(`로그아웃 실패: ${error.message}`);
+                }
+            });
+            document.getElementById('profile-button').addEventListener('click', openProfileModal);
+            
+            // 메인 기능 버튼
+            document.getElementById('add-food-button').addEventListener('click', openAddFoodModal);
+            document.getElementById('add-photo-button').addEventListener('click', openPhotoAnalysisModal);
+            document.getElementById('add-exercise-button').addEventListener('click', () => openModal(addExerciseModal));
+            document.getElementById('generate-plan-button').addEventListener('click', generateMealPlan);
+            document.getElementById('withdraw-footer-btn').addEventListener('click', () => openModal(withdrawModal));
+
+            // 네비게이션 (뷰 전환)
+            const calendarToggleButton = document.getElementById('calendar-toggle-button');
+            const statsToggleButton = document.getElementById('stats-toggle-button');
+            const dashboardView = document.getElementById('dashboard-view');
+            const calendarView = document.getElementById('calendar-view');
+            const statsView = document.getElementById('stats-view');
+
+            calendarToggleButton.addEventListener('click', () => {
+                const isDashboardVisible = !dashboardView.classList.contains('hidden');
+                dashboardView.classList.toggle('hidden');
+                calendarView.classList.toggle('hidden');
+                statsView.classList.add('hidden');
+                if (isDashboardVisible) {
+                    calendarToggleButton.innerHTML = homeIconSVG;
+                    renderCalendar();
+                } else {
+                    calendarToggleButton.innerHTML = calendarIconSVG;
+                }
+            });
+
+            statsToggleButton.addEventListener('click', () => {
+                const isDashboardVisible = !dashboardView.classList.contains('hidden');
+                dashboardView.classList.toggle('hidden');
+                statsView.classList.toggle('hidden');
+                calendarView.classList.add('hidden'); 
+                 if (isDashboardVisible) {
+                    statsToggleButton.innerHTML = homeIconSVG;
+                    renderCharts(); 
+                } else {
+                    statsToggleButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>`;
+                }
+            });
+
+            // 모달 관련 리스너
+            attachModalListeners();
         }
 
-        function showDashboard() {
-            welcomeMessage.classList.add('hidden');
-            document.getElementById('nutrition-progress').classList.remove('hidden');
-            document.getElementById('daily-intake-log').classList.remove('hidden');
-            document.getElementById('daily-exercise-log').classList.remove('hidden');
-            document.getElementById('meal-plan').classList.remove('hidden');
-            document.getElementById('water-tracker').classList.remove('hidden');
-            document.getElementById('ad-banner-container').classList.remove('hidden');
+        function attachModalListeners() {
+             // 공통 모달 닫기
+            document.querySelectorAll('.modal-backdrop').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal(modal);
+                });
+            });
+
+            // 프로필 모달
+            document.getElementById('profile-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const profileData = { gender: document.getElementById('gender').value, age: parseInt(document.getElementById('age').value), height: parseFloat(document.getElementById('height').value), weight: parseFloat(document.getElementById('weight').value), activity: parseFloat(document.getElementById('activity').value), goal: document.getElementById('goal').value };
+                if (Object.values(profileData).some(v => !v && v !== 0)) { showToast('모든 항목을 입력해주세요.'); return; }
+                const userProfileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'data');
+                try { await setDoc(userProfileRef, profileData); showToast('프로필이 저장되었습니다.'); closeModal(profileModal); } catch (error) { console.error("Error saving profile: ", error); showToast('저장에 실패했습니다.'); }
+            });
+
+            // 음식 추가 모달
+            document.getElementById('add-food-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const foodName = document.getElementById('food-name').value;
+                const foodWeight = document.getElementById('food-weight').value;
+                const foodItem = { name: `${foodName} (${foodWeight}g)`, calories: parseInt(document.getElementById('food-calories').value), carbs: parseInt(document.getElementById('food-carbs').value), protein: parseInt(document.getElementById('food-protein').value), fat: parseInt(document.getElementById('food-fat').value), timestamp: Date.now(), photo: manualImageBase64 };
+                if (Object.values(foodItem).some(v => (v !== null && v !== 0 && !v) || (typeof v === 'number' && isNaN(v)))) { showToast('모든 영양 정보를 올바르게 입력해주세요.'); return; }
+                logFoodItem(foodItem);
+                closeAddFoodModal();
+            });
+            document.getElementById('cancel-add-food').addEventListener('click', closeAddFoodModal);
+            document.getElementById('manual-photo-input').addEventListener('change', (event) => handleImageSelection(event, document.getElementById('manual-image-preview'), (base64) => { manualImageBase64 = base64; }));
+            document.getElementById('calculate-nutrients-btn').addEventListener('click', async () => {
+                const foodName = document.getElementById('food-name').value;
+                const foodWeight = document.getElementById('food-weight').value;
+                if (!foodName || !foodWeight) { showToast('음식 이름과 양(g)을 모두 입력해주세요.'); return; }
+                document.getElementById('nutrient-loader').classList.remove('hidden');
+                try {
+                    const resultText = await callGeminiNutritionAPI(`${foodName} ${foodWeight}g`);
+                    const data = JSON.parse(resultText);
+                    document.getElementById('food-calories').value = data.calories;
+                    document.getElementById('food-carbs').value = data.carbs;
+                    document.getElementById('food-protein').value = data.protein;
+                    document.getElementById('food-fat').value = data.fat;
+                } catch (error) { showToast('영양소 계산에 실패했어요.'); } finally { document.getElementById('nutrient-loader').classList.add('hidden'); }
+            });
+
+            // 운동 추가 모달
+             const addExerciseForm = document.getElementById('add-exercise-form');
+             addExerciseForm.addEventListener('submit', (e) => {
+                 e.preventDefault();
+                 const exerciseItem = { name: document.getElementById('exercise-name').value, duration: parseInt(document.getElementById('exercise-duration').value), calories: parseInt(document.getElementById('calculated-calories').textContent), timestamp: Date.now() };
+                 if (!exerciseItem.name || isNaN(exerciseItem.duration) || isNaN(exerciseItem.calories)) { showToast('모든 운동 정보를 올바르게 입력해주세요.'); return; }
+                 logExerciseItem(exerciseItem);
+                 closeModal(addExerciseModal);
+                 addExerciseForm.reset();
+                 document.getElementById('exercise-calorie-result').classList.add('hidden');
+                 document.getElementById('submit-exercise-btn').disabled = true;
+             });
+             document.getElementById('cancel-add-exercise').addEventListener('click', () => closeModal(addExerciseModal));
+             document.getElementById('calculate-exercise-calories-btn').addEventListener('click', async () => {
+                 const exerciseName = document.getElementById('exercise-name').value;
+                 const duration = document.getElementById('exercise-duration').value;
+                 if (!exerciseName || !duration || !userProfile) { showToast('운동 이름, 시간, 프로필 정보를 모두 입력해주세요.'); return; }
+                 document.getElementById('exercise-calorie-loader').classList.remove('hidden');
+                 document.getElementById('exercise-calorie-result').classList.add('hidden');
+                 try {
+                     const prompt = `'${userProfile.weight}kg'인 사람이 '${exerciseName}' 운동을 '${duration}'분 했을 때 예상 소모 칼로리를 계산해서 JSON 형식으로 알려줘. 값은 정수로만 제공해야 해.`;
+                     const schema = { type: "OBJECT", properties: { calories: { type: "NUMBER" } } };
+                     const resultText = await callGeminiAPI(prompt, schema);
+                     const data = JSON.parse(resultText);
+                     document.getElementById('calculated-calories').textContent = data.calories;
+                     document.getElementById('exercise-calorie-result').classList.remove('hidden');
+                     document.getElementById('submit-exercise-btn').disabled = false;
+                 } catch(e) { showToast('칼로리 계산에 실패했어요.'); } finally { document.getElementById('exercise-calorie-loader').classList.add('hidden'); }
+             });
+
+            // 사진 분석 모달
+            document.getElementById('photo-input').addEventListener('change', (event) => handleImageSelection(event, document.getElementById('image-preview'), (base64) => { selectedImageBase64 = base64; document.getElementById('analyze-photo-button').disabled = false; }));
+            document.getElementById('analyze-photo-button').addEventListener('click', async () => {
+                if (!selectedImageBase64) { showToast('먼저 사진을 선택해주세요.'); return; }
+                document.getElementById('photo-upload-view').classList.add('hidden');
+                document.getElementById('photo-loading-view').classList.remove('hidden');
+                try {
+                    const resultText = await callGeminiVisionAPI(selectedImageBase64.split(',')[1]);
+                    const resultData = JSON.parse(resultText);
+                    renderPhotoAnalysisResult(resultData);
+                    document.getElementById('photo-loading-view').classList.add('hidden');
+                    document.getElementById('photo-result-view').classList.remove('hidden');
+                } catch (error) {
+                    showToast('사진 분석에 실패했어요.');
+                    closePhotoAnalysisModal();
+                }
+            });
+            document.getElementById('cancel-photo-analysis').addEventListener('click', closePhotoAnalysisModal);
+
+            // 캘린더 상세 모달
+            document.getElementById('close-calendar-detail').addEventListener('click', () => closeModal(calendarDetailModal));
+            
+             // 프리미엄 모달
+            document.getElementById('close-premium-modal').addEventListener('click', () => closeModal(premiumModal));
+            document.getElementById('subscribe-now-btn').addEventListener('click', async () => {
+                const premiumRef = doc(db, `artifacts/${appId}/users/${userId}/premium`, 'status');
+                try {
+                    await setDoc(premiumRef, { active: true, subscribedAt: new Date() });
+                    showToast('👑 프리미엄 구독이 시작되었습니다!');
+                    closeModal(premiumModal);
+                } catch (error) { showToast('구독 처리 중 오류가 발생했습니다.'); }
+            });
+
+             // 회원 탈퇴 모달
+            document.getElementById('cancel-withdraw').addEventListener('click', () => closeModal(withdrawModal));
+            document.getElementById('withdraw-confirm-text').addEventListener('input', (e) => {
+                document.getElementById('confirm-withdraw-btn').disabled = e.target.value !== '탈퇴하겠습니다';
+            });
+            document.getElementById('confirm-withdraw-btn').addEventListener('click', async () => {
+                try {
+                    const user = auth.currentUser;
+                    // Firestore 데이터 삭제 (Batch)
+                    const batch = writeBatch(db);
+                    const intakeRef = collection(db, `artifacts/${appId}/users/${userId}/dailyIntake`);
+                    const exerciseRef = collection(db, `artifacts/${appId}/users/${userId}/dailyExercise`);
+                    const waterRef = collection(db, `artifacts/${appId}/users/${userId}/water`);
+                    const mealPlanRef = collection(db, `artifacts/${appId}/users/${userId}/mealPlans`);
+                    const profileRef = doc(db, `artifacts/${appId}/users/${userId}/profile/data`);
+
+                    // Batch에 삭제 작업 추가 (예시: 프로필만)
+                    batch.delete(profileRef); // 실제로는 모든 컬렉션 문서를 삭제해야 함
+                    
+                    await batch.commit();
+                    await deleteUser(user);
+                    showToast('회원 탈퇴가 완료되었습니다.');
+                    closeModal(withdrawModal);
+                } catch (error) {
+                    showToast(`탈퇴 처리 중 오류 발생: ${error.message}`);
+                    console.error("Withdrawal error: ", error);
+                }
+            });
         }
 
+
+        // --- 초기 데이터 로딩 함수 ---
+        function loadInitialData() {
+             const today = new Date().toISOString().slice(0, 10);
+            
+            // 프리미엄 상태
+             const premiumRef = doc(db, `artifacts/${appId}/users/${userId}/premium`, 'status');
+             onSnapshot(premiumRef, (docSnap) => {
+                 isPremium = docSnap.exists() && docSnap.data().active === true;
+                 updatePremiumUI();
+             });
+
+            // 프로필
+            const userProfileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'data');
+            onSnapshot(userProfileRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    userProfile = docSnap.data();
+                    updateNutritionGoalsUI(userProfile);
+                    updateNutritionProgressUI(dailyIntake, userProfile.nutritionGoals); 
+                }
+            });
+
+            // 식단 기록
+            const dailyIntakeRef = doc(db, `artifacts/${appId}/users/${userId}/dailyIntake`, today);
+            onSnapshot(dailyIntakeRef, (docSnap) => {
+                dailyIntake = docSnap.exists() ? docSnap.data().foods : [];
+                renderDailyIntake(dailyIntake);
+                if (userProfile && userProfile.nutritionGoals) {
+                    updateNutritionProgressUI(dailyIntake, userProfile.nutritionGoals);
+                }
+            });
+
+             // 운동 기록
+             const dailyExerciseRef = doc(db, `artifacts/${appId}/users/${userId}/dailyExercise`, today);
+             onSnapshot(dailyExerciseRef, (docSnap) => {
+                 dailyExercise = docSnap.exists() ? docSnap.data().exercises : [];
+                 renderDailyExercise(dailyExercise);
+             });
+
+             // AI 추천 식단
+             const mealPlanRef = doc(db, `artifacts/${appId}/users/${userId}/mealPlans`, today);
+             onSnapshot(mealPlanRef, (docSnap) => {
+                 const mealPlanContent = document.getElementById('meal-plan-content');
+                 if (docSnap.exists()) { renderMealPlan(docSnap.data().plan); } 
+                 else { mealPlanContent.innerHTML = '<p class="text-center text-slate-500 md:col-span-2 py-4">오늘의 추천 식단을 받아보세요.</p>'; }
+             });
+             
+             // 물 섭취
+             const waterRef = doc(db, `artifacts/${appId}/users/${userId}/water`, today);
+             onSnapshot(waterRef, (docSnap) => {
+                 updateWaterUI(docSnap.exists() ? docSnap.data().count : 0);
+             });
+        }
+        
+        // --- 나머지 함수들은 여기에 위치합니다 (renderMealPlan, logFoodItem 등) ---
+        
         function updatePremiumUI() {
-            if (isPremium) {
-                adBannerContainer.classList.add('hidden');
-            } else {
-                adBannerContainer.classList.remove('hidden');
-            }
+             const adBanner = document.getElementById('ad-banner-container');
+             if(adBanner) adBanner.classList.toggle('hidden', isPremium);
         }
 
-
-        // --- UI 업데이트 함수 ---
         function updateNutritionGoalsUI(profile) {
-            if (!profile) return;
+            if (!profile || !profile.weight || !profile.height || !profile.age) return;
             let bmr;
-            if (profile.gender === 'male') { bmr = (10 * profile.weight) + (6.25 * profile.height) - (5 * profile.age) + 5; } else if (profile.gender === 'female') { bmr = (10 * profile.weight) + (6.25 * profile.height) - (5 * profile.age) - 161; } else { bmr = (10 * profile.weight) + (6.25 * profile.height) - (5 * profile.age) - 78; }
+            if (profile.gender === 'male') { bmr = (10 * profile.weight) + (6.25 * profile.height) - (5 * profile.age) + 5; } 
+            else if (profile.gender === 'female') { bmr = (10 * profile.weight) + (6.25 * profile.height) - (5 * profile.age) - 161; } 
+            else { bmr = (10 * profile.weight) + (6.25 * profile.height) - (5 * profile.age) - 78; }
+            
             const tdee = bmr * profile.activity;
             let finalCalories = tdee;
             if (profile.goal === 'loss') finalCalories -= 500;
             if (profile.goal === 'gain') finalCalories += 300;
-            userProfile.nutritionGoals = { calories: Math.round(finalCalories), carbs: Math.round((finalCalories * 0.45) / 4), protein: Math.round((finalCalories * 0.30) / 4), fat: Math.round((finalCalories * 0.25) / 9) };
+            
+            userProfile.nutritionGoals = { 
+                calories: Math.round(finalCalories), 
+                carbs: Math.round((finalCalories * 0.45) / 4), 
+                protein: Math.round((finalCalories * 0.30) / 4), 
+                fat: Math.round((finalCalories * 0.25) / 9) 
+            };
+            
             document.getElementById('calories-goal').textContent = userProfile.nutritionGoals.calories;
             document.getElementById('carbs-goal').textContent = userProfile.nutritionGoals.carbs;
             document.getElementById('protein-goal').textContent = userProfile.nutritionGoals.protein;
@@ -765,22 +943,37 @@
 
         function updateNutritionProgressUI(intake, goals) {
             if (!goals) return;
-            const totals = intake.reduce((acc, food) => ({ calories: acc.calories + (food.calories || 0), carbs: acc.carbs + (food.carbs || 0), protein: acc.protein + (food.protein || 0), fat: acc.fat + (food.fat || 0) }), { calories: 0, carbs: 0, protein: 0, fat: 0 });
+            const totals = intake.reduce((acc, food) => ({ 
+                calories: acc.calories + (food.calories || 0), 
+                carbs: acc.carbs + (food.carbs || 0), 
+                protein: acc.protein + (food.protein || 0), 
+                fat: acc.fat + (food.fat || 0) 
+            }), { calories: 0, carbs: 0, protein: 0, fat: 0 });
+
             const updateRing = (type, current, goal) => {
-                document.getElementById(`${type}-current`).textContent = Math.round(current);
-                const percentage = goal > 0 ? Math.min(Math.round((current / goal) * 100), 100) : 0;
-                document.getElementById(`${type}-ring`).style.setProperty('--p', percentage);
+                const currentEl = document.getElementById(`${type}-current`);
+                const ringEl = document.getElementById(`${type}-ring`);
+                if(currentEl && ringEl) {
+                    currentEl.textContent = Math.round(current);
+                    const percentage = goal > 0 ? Math.min(Math.round((current / goal) * 100), 100) : 0;
+                    ringEl.style.setProperty('--p', percentage);
+                }
             };
-            updateRing('calories', totals.calories, goals.calories); updateRing('carbs', totals.carbs, goals.carbs); updateRing('protein', totals.protein, goals.protein); updateRing('fat', totals.fat, goals.fat);
+            
+            updateRing('calories', totals.calories, goals.calories); 
+            updateRing('carbs', totals.carbs, goals.carbs); 
+            updateRing('protein', totals.protein, goals.protein); 
+            updateRing('fat', totals.fat, goals.fat);
         }
 
         function renderMealPlan(plan) {
+            const mealPlanContent = document.getElementById('meal-plan-content');
             mealPlanContent.innerHTML = '';
             const mealTypes = { breakfast: '아침', lunch: '점심', dinner: '저녁', snack: '간식' };
             const orderedMealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
 
             orderedMealTypes.forEach(mealType => {
-                if (plan[mealType]) {
+                if (plan[mealType] && plan[mealType].name) {
                     const meal = plan[mealType];
                     const card = document.createElement('div');
                     card.className = 'bg-white p-5 rounded-2xl custom-shadow meal-card';
@@ -805,6 +998,7 @@
         }
 
         function renderDailyIntake(foods) {
+            const dailyIntakeList = document.getElementById('daily-intake-list');
             dailyIntakeList.innerHTML = '';
             if (foods.length === 0) { dailyIntakeList.innerHTML = '<p class="text-center text-slate-400 py-4">아직 기록된 음식이 없습니다.</p>'; return; }
             foods.forEach((food) => {
@@ -827,11 +1021,9 @@
         }
 
         function renderDailyExercise(exercises) {
+            const dailyExerciseList = document.getElementById('daily-exercise-list');
             dailyExerciseList.innerHTML = '';
-            if (exercises.length === 0) {
-                dailyExerciseList.innerHTML = '<p class="text-center text-slate-400 py-4">아직 기록된 운동이 없습니다.</p>';
-                return;
-            }
+            if (exercises.length === 0) { dailyExerciseList.innerHTML = '<p class="text-center text-slate-400 py-4">아직 기록된 운동이 없습니다.</p>'; return; }
             exercises.forEach((ex) => {
                 const item = document.createElement('div');
                 item.className = 'bg-white p-4 rounded-2xl custom-shadow flex justify-between items-center';
@@ -847,242 +1039,31 @@
             });
         }
         
-        // --- 이벤트 리스너 ---
-        profileButton.addEventListener('click', openProfileModal);
-        addFoodButton.addEventListener('click', openAddFoodModal);
-        addPhotoButton.addEventListener('click', openPhotoAnalysisModal);
-        addExerciseButton.addEventListener('click', () => openModal(addExerciseModal));
-        setupProfileBtn.addEventListener('click', openProfileModal);
-        
-        profileModal.addEventListener('click', (e) => e.target === profileModal && closeProfileModal());
-        addFoodModal.addEventListener('click', (e) => e.target === addFoodModal && closeAddFoodModal());
-        addExerciseModal.addEventListener('click', (e) => e.target === addExerciseModal && closeModal(addExerciseModal));
-        photoAnalysisModal.addEventListener('click', (e) => e.target === photoAnalysisModal && closePhotoAnalysisModal());
-        
-        cancelAddFoodButton.addEventListener('click', closeAddFoodModal);
-        cancelAddExerciseButton.addEventListener('click', () => closeModal(addExerciseModal));
-        cancelPhotoAnalysisButton.addEventListener('click', closePhotoAnalysisModal);
-        
-        profileForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const profileData = { gender: document.getElementById('gender').value, age: parseInt(document.getElementById('age').value), height: parseFloat(document.getElementById('height').value), weight: parseFloat(document.getElementById('weight').value), activity: parseFloat(document.getElementById('activity').value), goal: document.getElementById('goal').value };
-            if (Object.values(profileData).some(v => !v && v !== 0)) { showToast('모든 항목을 입력해주세요.'); return; }
-            const userProfileRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'data');
-            try { await setDoc(userProfileRef, profileData); showToast('프로필이 저장되었습니다.'); closeProfileModal(); } catch (error) { console.error("Error saving profile: ", error); showToast('저장에 실패했습니다.'); }
-        });
-
-        addFoodForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const foodName = document.getElementById('food-name').value;
-            const foodWeight = document.getElementById('food-weight').value;
-            const foodItem = { 
-                name: `${foodName} (${foodWeight}g)`, 
-                calories: parseInt(document.getElementById('food-calories').value), 
-                carbs: parseInt(document.getElementById('food-carbs').value), 
-                protein: parseInt(document.getElementById('food-protein').value), 
-                fat: parseInt(document.getElementById('food-fat').value), 
-                timestamp: Date.now(), 
-                photo: manualImageBase64 
-            };
-            if (Object.values(foodItem).some(v => (v !== null && v !== 0 && !v) || (typeof v === 'number' && isNaN(v)))) { showToast('모든 영양 정보를 올바르게 입력해주세요.'); return; }
-            logFoodItem(foodItem);
-            addFoodForm.reset();
-            closeAddFoodModal();
-        });
-
-        addExerciseForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const exerciseItem = {
-                name: document.getElementById('exercise-name').value,
-                duration: parseInt(document.getElementById('exercise-duration').value),
-                calories: parseInt(document.getElementById('exercise-calories').value),
-                timestamp: Date.now()
-            };
-            if (Object.values(exerciseItem).some(v => (v !== 0 && !v) || (typeof v === 'number' && isNaN(v)))) {
-                showToast('모든 운동 정보를 올바르게 입력해주세요.');
-                return;
-            }
-            logExerciseItem(exerciseItem);
-            addExerciseForm.reset();
-            closeModal(addExerciseModal);
-        });
-
-        generatePlanButton.addEventListener('click', generateMealPlan);
-
-        // --- AI 사진 분석 관련 이벤트 ---
-        photoInput.addEventListener('change', (event) => handleImageSelection(event, imagePreview, (base64) => { selectedImageBase64 = base64; analyzePhotoButton.disabled = false; }));
-        manualPhotoInput.addEventListener('change', (event) => handleImageSelection(event, manualImagePreview, (base64) => { manualImageBase64 = base64; }));
-
-        function handleImageSelection(event, previewElement, callback) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = reader.result.replace('data:', '').replace(/^.+,/, '');
-                callback(reader.result); // Save full data URL for display
-                previewElement.style.backgroundImage = `url('${reader.result}')`;
-                previewElement.style.backgroundSize = 'cover';
-                previewElement.style.backgroundPosition = 'center';
-                previewElement.innerHTML = '';
-            };
-            reader.readAsDataURL(file);
-        }
-
-        analyzePhotoButton.addEventListener('click', async () => {
-            if (!selectedImageBase64) { showToast('먼저 사진을 선택해주세요.'); return; }
-            document.getElementById('photo-upload-view').classList.add('hidden');
-            document.getElementById('photo-loading-view').classList.remove('hidden');
-            try {
-                const resultText = await callGeminiVisionAPI(selectedImageBase64.split(',')[1]);
-                const resultData = JSON.parse(resultText);
-                renderPhotoAnalysisResult(resultData);
-                document.getElementById('photo-loading-view').classList.add('hidden');
-                document.getElementById('photo-result-view').classList.remove('hidden');
-            } catch (error) {
-                console.error('Photo analysis failed:', error);
-                showToast('사진 분석에 실패했어요. 더 밝은 환경에서 다시 촬영해보세요!');
-                document.getElementById('photo-loading-view').classList.add('hidden');
-                document.getElementById('photo-upload-view').classList.remove('hidden');
-            }
-        });
-
-        calculateNutrientsBtn.addEventListener('click', async () => {
-            const foodName = document.getElementById('food-name').value;
-            const foodWeight = document.getElementById('food-weight').value;
-            if (!foodName || !foodWeight) { showToast('음식 이름과 양(g)을 모두 입력해주세요.'); return; }
-            
-            nutrientLoader.classList.remove('hidden');
-            try {
-                const resultText = await callGeminiNutritionAPI(`${foodName} ${foodWeight}g`);
-                const data = JSON.parse(resultText);
-                document.getElementById('food-calories').value = data.calories;
-                document.getElementById('food-carbs').value = data.carbs;
-                document.getElementById('food-protein').value = data.protein;
-                document.getElementById('food-fat').value = data.fat;
-            } catch (error) {
-                console.error('Nutrient calculation failed:', error);
-                showToast('영양소 계산에 실패했어요. 직접 입력해주세요.');
-            } finally {
-                nutrientLoader.classList.add('hidden');
-            }
-        });
-
-        // --- 캘린더 및 프리미엄 관련 이벤트 ---
-        calendarToggleButton.addEventListener('click', () => {
-            const isDashboardVisible = !dashboardView.classList.contains('hidden');
-            dashboardView.classList.toggle('hidden');
-            calendarView.classList.toggle('hidden');
-            statsView.classList.add('hidden'); // 다른 뷰로 전환 시 통계 뷰는 숨김
-            if (isDashboardVisible) {
-                // 대시보드 -> 캘린더 화면으로 전환
-                calendarToggleButton.innerHTML = homeIconSVG;
-                renderCalendar(); // 최신 데이터로 캘린더를 다시 그립니다.
-            } else {
-                // 캘린더 -> 대시보드 화면으로 전환
-                calendarToggleButton.innerHTML = calendarIconSVG;
-            }
-        });
-        
-        statsToggleButton.addEventListener('click', () => {
-            const isDashboardVisible = !dashboardView.classList.contains('hidden');
-            dashboardView.classList.toggle('hidden');
-            statsView.classList.toggle('hidden');
-            calendarView.classList.add('hidden'); // 다른 뷰로 전환 시 캘린더 뷰는 숨김
-             if (isDashboardVisible) {
-                // 대시보드 -> 통계 화면으로 전환
-                statsToggleButton.innerHTML = homeIconSVG;
-                renderCharts(); // 최신 데이터로 차트를 그립니다.
-            } else {
-                // 통계 -> 대시보드 화면으로 전환
-                statsToggleButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>`;
-            }
-        });
-
-
-        prevMonthBtn.addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            renderCalendar();
-        });
-
-        nextMonthBtn.addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            renderCalendar();
-        });
-        
-        closeCalendarDetailBtn.addEventListener('click', () => closeModal(calendarDetailModal));
-        calendarDetailModal.addEventListener('click', (e) => e.target === calendarDetailModal && closeModal(calendarDetailModal));
-        
-        reportBtn.addEventListener('click', () => {
-            if (isPremium) {
-                showToast('💎 프리미엄 리포트 기능이 곧 제공될 예정입니다!');
-            } else {
-                openModal(premiumModal);
-            }
-        });
-        
-        closePremiumModalBtn.addEventListener('click', () => closeModal(premiumModal));
-        premiumModal.addEventListener('click', (e) => e.target === premiumModal && closeModal(premiumModal));
-
-        document.getElementById('subscribe-now-btn').addEventListener('click', async () => {
-            // 실제 결제 로직은 여기에 추가됩니다. (e.g., Stripe, I'mport)
-            // 지금은 임시로 프리미엄 상태를 활성화합니다.
-            const premiumRef = doc(db, `artifacts/${appId}/users/${userId}/premium`, 'status');
-            try {
-                await setDoc(premiumRef, { active: true, subscribedAt: new Date() });
-                showToast('👑 프리미엄 구독이 시작되었습니다!');
-                closeModal(premiumModal);
-            } catch (error) {
-                showToast('구독 처리 중 오류가 발생했습니다.');
-            }
-        });
-
-
-        // --- 핵심 기능 함수 ---
         async function logFoodItem(foodItem) {
             const today = new Date().toISOString().slice(0, 10);
             const dailyIntakeRef = doc(db, `artifacts/${appId}/users/${userId}/dailyIntake`, today);
-            try { 
-                await updateDoc(dailyIntakeRef, { foods: arrayUnion(foodItem) }); 
-                showToast(`${foodItem.name} 기록 완료!`);
-            } catch (error) { 
-                if (error.code === 'not-found') { 
-                    await setDoc(dailyIntakeRef, { foods: [foodItem] }); 
-                    showToast(`${foodItem.name} 기록 완료!`);
-                } else { 
-                    console.error("Error logging food: ", error); 
-                    showToast('기록에 실패했습니다.'); 
-                } 
+            try { await updateDoc(dailyIntakeRef, { foods: arrayUnion(foodItem) }); showToast(`${foodItem.name} 기록 완료!`); } 
+            catch (error) { 
+                if (error.code === 'not-found') { await setDoc(dailyIntakeRef, { foods: [foodItem] }); showToast(`${foodItem.name} 기록 완료!`); } 
+                else { showToast('기록에 실패했습니다.'); } 
             }
-            renderCalendar(); // 캘린더 즉시 업데이트
+            renderCalendar();
         }
         
         async function removeFoodItem(foodToRemove) {
             const today = new Date().toISOString().slice(0, 10);
             const dailyIntakeRef = doc(db, `artifacts/${appId}/users/${userId}/dailyIntake`, today);
-            try { 
-                await updateDoc(dailyIntakeRef, { foods: arrayRemove(foodToRemove) }); 
-                showToast(`${foodToRemove.name} 삭제 완료!`);
-                renderCalendar(); // 캘린더 즉시 업데이트
-            } catch (error) { 
-                console.error("Error removing food: ", error); 
-                showToast('삭제에 실패했습니다.'); 
-            }
+            try { await updateDoc(dailyIntakeRef, { foods: arrayRemove(foodToRemove) }); showToast(`${foodToRemove.name} 삭제 완료!`); renderCalendar(); } 
+            catch (error) { showToast('삭제에 실패했습니다.'); }
         }
         
         async function logExerciseItem(exerciseItem) {
             const today = new Date().toISOString().slice(0, 10);
             const dailyExerciseRef = doc(db, `artifacts/${appId}/users/${userId}/dailyExercise`, today);
-            try {
-                await updateDoc(dailyExerciseRef, { exercises: arrayUnion(exerciseItem) });
-                showToast(`${exerciseItem.name} 운동 기록 완료!`);
-            } catch (error) {
-                if (error.code === 'not-found') {
-                    await setDoc(dailyExerciseRef, { exercises: [exerciseItem] });
-                    showToast(`${exerciseItem.name} 운동 기록 완료!`);
-                } else {
-                    console.error("Error logging exercise: ", error);
-                    showToast('운동 기록에 실패했습니다.');
-                }
+            try { await updateDoc(dailyExerciseRef, { exercises: arrayUnion(exerciseItem) }); showToast(`${exerciseItem.name} 운동 기록 완료!`); } 
+            catch (error) {
+                if (error.code === 'not-found') { await setDoc(dailyExerciseRef, { exercises: [exerciseItem] }); showToast(`${exerciseItem.name} 운동 기록 완료!`); } 
+                else { showToast('운동 기록에 실패했습니다.'); }
             }
             renderCalendar();
         }
@@ -1090,47 +1071,39 @@
         async function removeExerciseItem(exerciseToRemove) {
             const today = new Date().toISOString().slice(0, 10);
             const dailyExerciseRef = doc(db, `artifacts/${appId}/users/${userId}/dailyExercise`, today);
-            try {
-                await updateDoc(dailyExerciseRef, { exercises: arrayRemove(exerciseToRemove) });
-                showToast(`${exerciseToRemove.name} 운동 기록 삭제 완료!`);
-                renderCalendar();
-            } catch (error) {
-                console.error("Error removing exercise: ", error);
-                showToast('삭제에 실패했습니다.');
-            }
+            try { await updateDoc(dailyExerciseRef, { exercises: arrayRemove(exerciseToRemove) }); showToast(`${exerciseToRemove.name} 운동 기록 삭제 완료!`); renderCalendar(); } 
+            catch (error) { showToast('삭제에 실패했습니다.'); }
         }
-
 
         async function generateMealPlan() {
             if (!userProfile || !userProfile.nutritionGoals) { showToast('먼저 프로필을 저장해주세요.'); openProfileModal(); return; }
-            loader.classList.remove('hidden');
-            mealPlanContent.innerHTML = '';
-            generatePlanButton.disabled = true;
+            document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('meal-plan-content').innerHTML = '';
+            document.getElementById('generate-plan-button').disabled = true;
             const userInfoParts = [ `나이: ${userProfile.age}세`, userProfile.gender !== 'unspecified' ? `성별: ${userProfile.gender === 'male' ? '남성' : '여성'}` : '', `목표: ${userProfile.goal === 'loss' ? '체중 감량' : (userProfile.goal === 'gain' ? '체중 증가' : '체중 유지')}` ].filter(part => part).join(', ');
             const prompt = `당신은 전문 영양사입니다. 다음 사용자 정보와 영양 목표에 맞춰, 맛과 영양을 모두 고려한 한국식 위주의 하루 식단(아침, 점심, 저녁, 간식)을 추천해주세요. 사용자 정보: ${userInfoParts}. 일일 영양 목표: 칼로리 ${userProfile.nutritionGoals.calories}kcal, 탄수화물 ${userProfile.nutritionGoals.carbs}g, 단백질 ${userProfile.nutritionGoals.protein}g, 지방 ${userProfile.nutritionGoals.fat}g. 각 식사의 음식 이름과 예상 영양성분(칼로리,탄수화물,단백질,지방)을 계산하여 제공해주세요. 전체 식단의 영양소 총합이 목표치에 최대한 근접해야 합니다.`;
             try {
-                const responseText = await callGeminiAPI(prompt, { type: "OBJECT", properties: { breakfast: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, lunch: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, dinner: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, snack: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } } } });
+                const schema = { type: "OBJECT", properties: { breakfast: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, lunch: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, dinner: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } }, snack: { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } } } };
+                const responseText = await callGeminiAPI(prompt, schema);
                 const plan = JSON.parse(responseText);
                 const today = new Date().toISOString().slice(0, 10);
                 const mealPlanRef = doc(db, `artifacts/${appId}/users/${userId}/mealPlans`, today);
                 await setDoc(mealPlanRef, { plan: plan, createdAt: new Date() });
                 showToast('AI 맞춤 식단이 생성되었습니다!');
-            } catch (error) {
-                console.error("Error generating meal plan:", error);
-                mealPlanContent.innerHTML = '<p class="text-center text-red-500 md:col-span-2">식단 생성 실패. 다시 시도해주세요.</p>';
-                showToast('식단 생성에 실패했습니다.');
-            } finally {
-                loader.classList.add('hidden');
-                generatePlanButton.disabled = false;
+            } catch (error) { showToast('식단 생성에 실패했습니다.'); } 
+            finally { 
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('generate-plan-button').disabled = false;
             }
         }
         
         async function renderCalendar() {
             if (!userId) return;
+            const calendarGrid = document.getElementById('calendar-grid');
             calendarGrid.innerHTML = '';
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
-            calendarMonthYear.textContent = `${year}년 ${month + 1}월`;
+            document.getElementById('calendar-month-year').textContent = `${year}년 ${month + 1}월`;
 
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -1138,33 +1111,22 @@
             const startDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
             const endDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
             
-            // Fetch meal data for the current month
             const mealQuery = query(collection(db, `artifacts/${appId}/users/${userId}/dailyIntake`), where(documentId(), '>=', startDate), where(documentId(), '<=', endDate));
             const mealSnapshot = await getDocs(mealQuery);
             const monthMealData = {};
-            mealSnapshot.forEach(doc => {
-                monthMealData[doc.id] = doc.data();
-            });
+            mealSnapshot.forEach(doc => { monthMealData[doc.id] = doc.data(); });
 
-            // Fetch water data for the current month
             const waterQuery = query(collection(db, `artifacts/${appId}/users/${userId}/water`), where(documentId(), '>=', startDate), where(documentId(), '<=', endDate));
             const waterSnapshot = await getDocs(waterQuery);
             const monthWaterData = {};
-            waterSnapshot.forEach(doc => {
-                monthWaterData[doc.id] = doc.data();
-            });
+            waterSnapshot.forEach(doc => { monthWaterData[doc.id] = doc.data(); });
             
-            // Fetch exercise data for the current month
             const exerciseQuery = query(collection(db, `artifacts/${appId}/users/${userId}/dailyExercise`), where(documentId(), '>=', startDate), where(documentId(), '<=', endDate));
             const exerciseSnapshot = await getDocs(exerciseQuery);
             const monthExerciseData = {};
-            exerciseSnapshot.forEach(doc => {
-                monthExerciseData[doc.id] = doc.data();
-            });
+            exerciseSnapshot.forEach(doc => { monthExerciseData[doc.id] = doc.data(); });
 
-            for (let i = 0; i < firstDay; i++) {
-                calendarGrid.innerHTML += '<div></div>';
-            }
+            for (let i = 0; i < firstDay; i++) { calendarGrid.innerHTML += '<div></div>'; }
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -1183,10 +1145,10 @@
                 
                 dayCell.innerHTML = `<span class="text-sm">${day}</span><div class="flex">${iconsHTML}</div>`;
                 
-                if (isToday) dayCell.classList.add('bg-rose-100', 'font-bold', 'text-rose-600');
+                if (isToday) dayCell.classList.add('bg-green-100', 'font-bold', 'text-green-600');
                 
                 if (hasMealData || hasWaterData || hasExerciseData) {
-                    dayCell.classList.add('cursor-pointer', 'hover:bg-rose-50');
+                    dayCell.classList.add('cursor-pointer', 'hover:bg-green-50');
                     dayCell.addEventListener('click', () => openCalendarDetailModal(dayStr, monthMealData[dayStr]?.foods || [], monthWaterData[dayStr]?.count || 0, monthExerciseData[dayStr]?.exercises || []));
                 }
                 calendarGrid.appendChild(dayCell);
@@ -1204,14 +1166,12 @@
             listEl.appendChild(waterItem);
 
             const exerciseTitle = document.createElement('h3');
-            exerciseTitle.className = 'text-lg font-jua text-rose-600 mt-4 mb-2';
+            exerciseTitle.className = 'text-lg font-jua text-green-600 mt-4 mb-2';
             exerciseTitle.textContent = '운동 기록';
             listEl.appendChild(exerciseTitle);
 
-            if (exercises.length === 0) {
-                listEl.innerHTML += '<p class="text-center text-slate-400 py-4">기록된 운동이 없습니다.</p>';
-            } else {
-                exercises.forEach(ex => {
+            if (exercises.length === 0) { listEl.innerHTML += '<p class="text-center text-slate-400 py-4">기록된 운동이 없습니다.</p>'; } 
+            else { exercises.forEach(ex => {
                     const item = document.createElement('div');
                     item.className = 'bg-white p-4 rounded-2xl custom-shadow flex items-center';
                     item.innerHTML = `<span class="text-2xl mr-4">🏋️‍♀️</span><div class="flex-grow"><p class="font-semibold text-slate-800">${ex.name}</p><p class="text-sm text-slate-500">${ex.duration}분 | ${ex.calories}kcal 소모</p></div>`;
@@ -1220,17 +1180,15 @@
             }
 
             const foodTitle = document.createElement('h3');
-            foodTitle.className = 'text-lg font-jua text-rose-600 mt-4 mb-2';
+            foodTitle.className = 'text-lg font-jua text-green-600 mt-4 mb-2';
             foodTitle.textContent = '식단 기록';
             listEl.appendChild(foodTitle);
 
-            if (foods.length === 0) {
-                listEl.innerHTML += '<p class="text-center text-slate-400 py-4">기록된 음식이 없습니다.</p>';
-            } else {
-                foods.forEach(food => {
+            if (foods.length === 0) { listEl.innerHTML += '<p class="text-center text-slate-400 py-4">기록된 음식이 없습니다.</p>'; } 
+            else { foods.forEach(food => {
                     const item = document.createElement('div');
                     item.className = 'bg-white p-4 rounded-2xl custom-shadow flex items-center';
-                    const imageHtml = food.photo ? `<img src="${food.photo}" class="w-12 h-12 rounded-lg object-cover mr-4">` : `<div class="w-12 h-12 rounded-lg bg-rose-50 flex-shrink-0 mr-4"></div>`;
+                    const imageHtml = food.photo ? `<img src="${food.photo}" class="w-12 h-12 rounded-lg object-cover mr-4">` : `<div class="w-12 h-12 rounded-lg bg-green-50 flex-shrink-0 mr-4"></div>`;
                     item.innerHTML = `${imageHtml}<div class="flex-grow"><p class="font-semibold text-slate-800">${food.name}</p><p class="text-sm text-slate-500">${food.calories}kcal | 탄 ${food.carbs}g, 단 ${food.protein}g, 지 ${food.fat}g</p></div>`;
                     listEl.appendChild(item);
                 });
@@ -1238,59 +1196,56 @@
             openModal(calendarDetailModal);
         }
 
-        // --- Gemini API 호출 (보안 강화) ---
         async function callGeminiAPI(prompt, schema) {
-            try {
-                const result = await callGeminiAPI_server({ prompt, schema });
-                return result.data.result;
-            } catch (error) {
-                console.error("Firebase Function 호출 실패:", error);
-                throw error;
-            }
+            try { const result = await callGeminiAPI_server({ prompt, schema }); return result.data.result; } 
+            catch (error) { console.error("Firebase Function 호출 실패:", error); throw error; }
         }
         
         async function callGeminiNutritionAPI(foodString) {
             const prompt = `'${foodString}'의 예상 칼로리, 탄수화물, 단백질, 지방 함량을 계산해서 JSON 형식으로 알려줘. 값은 소수점 없이 정수로만 제공해야 해.`;
             const schema = { type: "OBJECT", properties: { calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" } } };
-             try {
-                const result = await callGeminiAPI_server({ prompt, schema });
-                return result.data.result;
-            } catch (error) {
-                console.error("Firebase Function 호출 실패 (Nutrition):", error);
-                throw error;
-            }
+             try { const result = await callGeminiAPI_server({ prompt, schema }); return result.data.result; } 
+             catch (error) { console.error("Firebase Function 호출 실패 (Nutrition):", error); throw error; }
         }
         
         async function callGeminiVisionAPI(base64ImageData) {
             const prompt = "이 음식 사진을 분석해서, 음식 이름, 예상 칼로리, 탄수화물, 단백질, 지방 함량, 그리고 이 음식에 대한 간단한 영양학적 조언이나 팁을 JSON 형식으로 알려줘.";
             const schema = { type: "OBJECT", properties: { name: { type: "STRING" }, calories: { type: "NUMBER" }, carbs: { type: "NUMBER" }, protein: { type: "NUMBER" }, fat: { type: "NUMBER" }, tip: { type: "STRING" } } };
-            try {
-                const result = await callGeminiVisionAPI_server({ base64ImageData, prompt, schema });
-                return result.data.result;
-            } catch (error) {
-                console.error("Firebase Function 호출 실패 (Vision):", error);
-                throw error;
-            }
+            try { const result = await callGeminiVisionAPI_server({ base64ImageData, prompt, schema }); return result.data.result; } 
+            catch (error) { console.error("Firebase Function 호출 실패 (Vision):", error); throw error; }
         }
         
         function renderPhotoAnalysisResult(data) {
             const resultView = document.getElementById('photo-result-view');
-            resultView.innerHTML = `<div class="text-center"><p class="text-sm text-slate-500">AI 분석 결과</p><p class="text-2xl font-jua text-rose-600 my-2">${data.name}</p></div><div class="my-4 bg-rose-50 p-4 rounded-2xl space-y-2 text-sm"><div class="flex justify-between"><span>🔥 칼로리</span><span class="font-semibold">${data.calories} kcal</span></div><div class="flex justify-between"><span>🍞 탄수화물</span><span class="font-semibold">${data.carbs} g</span></div><div class="flex justify-between"><span>🍗 단백질</span><span class="font-semibold">${data.protein} g</span></div><div class="flex justify-between"><span>🥑 지방</span><span class="font-semibold">${data.fat} g</span></div></div><div class="my-4 text-center text-sm bg-sky-50 text-sky-700 p-3 rounded-2xl"><p>💡 <strong>영양 팁:</strong> ${data.tip}</p></div><button id="log-photo-result" class="w-full bg-rose-500 text-white py-3 rounded-full font-semibold hover:bg-rose-600 transition">기록하기</button>`;
-            document.getElementById('log-photo-result').addEventListener('click', () => { logFoodItem({ name: `(사진) ${data.name}`, ...data, timestamp: Date.now() }); closePhotoAnalysisModal(); });
+            resultView.innerHTML = `<div class="text-center"><p class="text-sm text-slate-500">AI 분석 결과</p><p class="text-2xl font-jua text-green-600 my-2">${data.name}</p></div><div class="my-4 bg-green-50 p-4 rounded-2xl space-y-2 text-sm"><div class="flex justify-between"><span>🔥 칼로리</span><span class="font-semibold">${data.calories} kcal</span></div><div class="flex justify-between"><span>🍞 탄수화물</span><span class="font-semibold">${data.carbs} g</span></div><div class="flex justify-between"><span>🍗 단백질</span><span class="font-semibold">${data.protein} g</span></div><div class="flex justify-between"><span>🥑 지방</span><span class="font-semibold">${data.fat} g</span></div></div><div class="my-4 text-center text-sm bg-sky-50 text-sky-700 p-3 rounded-2xl"><p>💡 <strong>영양 팁:</strong> ${data.tip}</p></div><button id="log-photo-result" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition">기록하기</button>`;
+            document.getElementById('log-photo-result').addEventListener('click', () => { logFoodItem({ name: `(사진) ${data.name}`, ...data, timestamp: Date.now(), photo: selectedImageBase64 }); closePhotoAnalysisModal(); });
         }
 
-        // --- 유틸리티 함수 ---
+        function handleImageSelection(event, previewElement, callback) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                callback(reader.result);
+                previewElement.style.backgroundImage = `url('${reader.result}')`;
+                previewElement.style.backgroundSize = 'cover';
+                previewElement.style.backgroundPosition = 'center';
+                previewElement.innerHTML = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
         function openModal(modal) { modal.classList.remove('pointer-events-none', 'opacity-0'); modal.querySelector('div').classList.remove('scale-95'); }
         function closeModal(modal) { modal.classList.add('opacity-0'); modal.querySelector('div').classList.add('scale-95'); setTimeout(() => modal.classList.add('pointer-events-none'), 300); }
         function openProfileModal() { if(userProfile) { document.getElementById('gender').value = userProfile.gender || 'female'; document.getElementById('age').value = userProfile.age || ''; document.getElementById('height').value = userProfile.height || ''; document.getElementById('weight').value = userProfile.weight || ''; document.getElementById('activity').value = userProfile.activity || '1.55'; document.getElementById('goal').value = userProfile.goal || 'maintain'; } openModal(profileModal); }
-        function closeProfileModal() { closeModal(profileModal); }
         function openAddFoodModal() { openModal(addFoodModal); }
         function closeAddFoodModal() { 
             closeModal(addFoodModal);
             setTimeout(() => {
-                addFoodForm.reset();
+                document.getElementById('add-food-form').reset();
                 manualImageBase64 = null;
-                manualImagePreview.style.backgroundImage = 'url("data:image/svg+xml,%3csvg width=\'100%25\' height=\'100%25\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3crect width=\'100%25\' height=\'100%25\' fill=\'none\' rx=\'24\' ry=\'24\' stroke=\'%23FBCFE8FF\' stroke-width=\'4\' stroke-dasharray=\'6%2c 14\' stroke-dashoffset=\'0\' stroke-linecap=\'square\'/%3e%3c/svg%3e")';
+                const manualImagePreview = document.getElementById('manual-image-preview');
+                manualImagePreview.style.backgroundImage = '';
                 manualImagePreview.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg><p class="mt-2 text-sm font-semibold">사진 첨부 (선택)</p>';
             }, 300);
         }
@@ -1300,45 +1255,30 @@
             setTimeout(() => {
                 document.getElementById('photo-upload-view').classList.remove('hidden');
                 document.getElementById('photo-loading-view').classList.add('hidden');
-                document.getElementById('photo-result-view').classList.add('hidden').innerHTML = '';
-                imagePreview.style.backgroundImage = 'url("data:image/svg+xml,%3csvg width=\'100%25\' height=\'100%25\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3crect width=\'100%25\' height=\'100%25\' fill=\'none\' rx=\'24\' ry=\'24\' stroke=\'%23FBCFE8FF\' stroke-width=\'4\' stroke-dasharray=\'6%2c 14\' stroke-dashoffset=\'0\' stroke-linecap=\'square\'/%3e%3c/svg%3e")';
+                document.getElementById('photo-result-view').classList.add('hidden');
+                const imagePreview = document.getElementById('image-preview');
+                imagePreview.style.backgroundImage = '';
                 imagePreview.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg><p class="mt-2 font-semibold">사진을 여기에 올려주세요</p>';
-                photoInput.value = '';
+                document.getElementById('photo-input').value = '';
                 selectedImageBase64 = null;
-                analyzePhotoButton.disabled = true;
+                document.getElementById('analyze-photo-button').disabled = true;
             }, 300);
         }
         
         let toastTimer;
         function showToast(message) { const toast = document.getElementById('toast'); const toastMessage = document.getElementById('toast-message'); toastMessage.textContent = message; toast.classList.remove('opacity-0', 'translate-y-2'); clearTimeout(toastTimer); toastTimer = setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); }, 3000); }
 
-        // --- 물 섭취량 관련 ---
-        const addWaterBtn = document.getElementById('add-water-button');
-        const removeWaterBtn = document.getElementById('remove-water-button');
         let currentWaterIntake = 0;
         function updateWaterUI(count) { currentWaterIntake = count; document.getElementById('water-intake').textContent = count; }
         async function updateWaterInDB(newCount) { 
             if (newCount < 0) newCount = 0; 
             const today = new Date().toISOString().slice(0, 10); 
             const waterRef = doc(db, `artifacts/${appId}/users/${userId}/water`, today); 
-            try { 
-                await setDoc(waterRef, { count: newCount }); 
-                renderCalendar(); // 캘린더 즉시 업데이트
-            } catch (error) { 
-                console.error("Error updating water intake: ", error); 
-                showToast('물 섭취량 기록 실패.'); 
-            } 
+            try { await setDoc(waterRef, { count: newCount }); renderCalendar(); } 
+            catch (error) { showToast('물 섭취량 기록 실패.'); } 
         }
-        addWaterBtn.addEventListener('click', () => updateWaterInDB(currentWaterIntake + 1));
-        removeWaterBtn.addEventListener('click', () => updateWaterInDB(currentWaterIntake - 1));
-
-        // --- 약관 모달 관련 ---
-        termsLink.addEventListener('click', (e) => { e.preventDefault(); openModal(termsModal); });
-        privacyLink.addEventListener('click', (e) => { e.preventDefault(); openModal(privacyModal); });
-        closeTermsModalBtn.addEventListener('click', () => closeModal(termsModal));
-        closePrivacyModalBtn.addEventListener('click', () => closeModal(privacyModal));
-        termsModal.addEventListener('click', (e) => e.target === termsModal && closeModal(termsModal));
-        privacyModal.addEventListener('click', (e) => e.target === privacyModal && closeModal(privacyModal));
+        document.getElementById('add-water-button').addEventListener('click', () => updateWaterInDB(currentWaterIntake + 1));
+        document.getElementById('remove-water-button').addEventListener('click', () => updateWaterInDB(currentWaterIntake - 1));
 
     </script>
 </body>
