@@ -508,7 +508,8 @@
                 const userDocRef = doc(db, "users", auth.currentUser.uid);
                 await setDoc(userDocRef, userInfo);
                 state.userInfo = userInfo;
-                // onAuthStateChanged가 리스너를 설정하고 렌더링을 다시 호출합니다.
+                setupFoodListener(auth.currentUser.uid);
+                render(); // BUG FIX: 온보딩 완료 후 즉시 렌더링
             } catch (error) {
                 alert("정보 저장 실패: " + error.message);
             }
@@ -614,7 +615,6 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 // 로그인 상태
-                if (state.isLoggedIn) return; // 이미 로그인 처리된 경우 중복 실행 방지
                 state.isLoggedIn = true;
                 state.user = user;
                 
@@ -626,7 +626,6 @@
                     setupFoodListener(user.uid);
                 } else {
                     state.userInfo = null;
-                    render();
                 }
             } else {
                 // 로그아웃 상태
@@ -639,8 +638,9 @@
                     currentPage: 'login',
                     unsubscribeFoodListener: null,
                 });
-                render();
             }
+            // 인증 상태가 확인된 후에만 최종적으로 렌더링
+            render();
         });
         
         // --- 전역 스코프에 함수 노출 ---
