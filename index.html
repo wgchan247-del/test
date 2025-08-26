@@ -477,6 +477,8 @@
             const email = e.target.email.value;
             const password = e.target.password.value;
             try {
+                // Firebase는 탈퇴하여 완전히 삭제된 계정의 이메일로도
+                // 새로운 계정을 생성하는 것을 허용합니다.
                 await createUserWithEmailAndPassword(auth, email, password);
             } catch (error) {
                 alert("회원가입 실패: " + error.message);
@@ -540,6 +542,7 @@
                     // Firestore에서 사용자 데이터 먼저 삭제
                     await deleteUserData(user.uid);
                     // Firebase Authentication에서 사용자 삭제
+                    // 이 작업이 완료되면 해당 이메일로 다시 회원가입할 수 있습니다.
                     await deleteUser(user);
                     alert("회원 탈퇴가 완료되었습니다. 이용해주셔서 감사합니다.");
                     // onAuthStateChanged가 로그아웃 상태를 감지하고 UI를 업데이트합니다.
@@ -576,12 +579,12 @@
         };
 
         window.deleteFood = async (id) => {
-            if (confirm("정말로 이 기록을 삭제하시겠습니까?")) {
-                try {
-                    await deleteDoc(doc(db, "foodEntries", id));
-                } catch (error) {
-                    alert("삭제 실패: " + error.message);
-                }
+            // confirm()은 현재 환경에서 작동하지 않으므로, 바로 삭제 로직을 실행합니다.
+            // 실제 앱에서는 커스텀 모달을 사용하는 것이 좋습니다.
+            try {
+                await deleteDoc(doc(db, "foodEntries", id));
+            } catch (error) {
+                alert("삭제 실패: " + error.message);
             }
         };
 
