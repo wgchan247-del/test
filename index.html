@@ -110,6 +110,14 @@
                 console.error("인증 상태 설정 실패:", error);
             });
 
+        // --- 날짜 관련 헬퍼 함수 ---
+        const getLocalDateString = (date) => {
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
         // --- 앱 상태 관리 ---
         let state = {
             currentPage: 'login', // 초기 페이지를 'login'으로 설정
@@ -117,8 +125,11 @@
             user: null, 
             userInfo: null, 
             foodEntries: {},
-            currentDate: new Date().toISOString().split('T')[0],
+            currentDate: getLocalDateString(new Date()),
             unsubscribeFoodListener: null,
+            viewMode: 'list', // 'list' or 'calendar'
+            calendarDate: new Date(), // 캘린더가 보여주는 월
+            foodIdToDelete: null, // 삭제 확인을 위한 ID 저장
         };
 
         // --- HTML 템플릿 ---
@@ -178,6 +189,34 @@
         `;
         
         const DashboardPage = () => {
+            return `
+                <div class="min-h-screen bg-gray-50 animate-fade-in">
+                    <header class="bg-white shadow-sm sticky top-0 z-10">
+                        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+                            <h1 class="text-2xl font-bold text-teal-500">FitMeal</h1>
+                            <button onclick="window.handleLogout()" class="text-sm text-gray-600 hover:text-teal-500">로그아웃</button>
+                        </div>
+                    </header>
+                    <main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+                        ${state.viewMode === 'list' ? DailyView() : CalendarView()}
+                    </main>
+                    <div class="fixed bottom-6 right-6 z-20">
+                        <button onclick="window.openModal()" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300">+</button>
+                    </div>
+                    <div id="add-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+                        ${AddFoodModal()}
+                    </div>
+                    <div id="delete-account-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+                        ${DeleteAccountModal()}
+                    </div>
+                    <div id="delete-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+                        ${DeleteFoodModal()}
+                    </div>
+                </div>
+            `;
+        };
+
+        const DailyView = () => {
             const dateKey = state.currentDate;
             const todaysEntries = state.foodEntries[dateKey] || [];
             const userInfo = state.userInfo || { goal: 2000, carbsGoal: 250, proteinGoal: 120, fatGoal: 67 };
@@ -198,56 +237,96 @@
             const strokeDashoffset = circumference - (caloriePercentage / 100) * circumference;
 
             return `
-                <div class="min-h-screen bg-gray-50 animate-fade-in">
-                    <header class="bg-white shadow-sm sticky top-0 z-10">
-                        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                            <h1 class="text-2xl font-bold text-teal-500">FitMeal</h1>
-                            <button onclick="window.handleLogout()" class="text-sm text-gray-600 hover:text-teal-500">로그아웃</button>
-                        </div>
-                    </header>
-                    <main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
-                        <div class="flex items-center justify-between mb-6">
-                            <button onclick="window.changeDate(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&lt;</button>
-                            <h2 class="text-xl font-semibold text-gray-800">${new Date(dateKey + 'T00:00:00').toLocaleDateString('ko-KR')}</h2>
-                            <button onclick="window.changeDate(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&gt;</button>
-                        </div>
-                        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                            <div class="flex flex-col md:flex-row items-center justify-around gap-8">
-                                <div class="relative flex items-center justify-center w-48 h-48">
-                                    <svg class="w-full h-full" viewBox="0 0 120 120">
-                                        <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60"/>
-                                        <circle class="text-teal-500" stroke-width="10" stroke-dasharray="${circumference}" stroke-dashoffset="${strokeDashoffset}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60" transform="rotate(-90 60 60)"/>
-                                    </svg>
-                                    <div class="absolute flex flex-col items-center">
-                                        <span class="text-3xl font-bold text-gray-800">${totals.calories}</span>
-                                        <span class="text-sm text-gray-500">/ ${userInfo.goal} kcal</span>
-                                    </div>
-                                </div>
-                                <div class="w-full md:w-1/2 space-y-4">
-                                    ${NutrientBar('탄수화물', totals.carbs, userInfo.carbsGoal, 'bg-orange-500')}
-                                    ${NutrientBar('단백질', totals.protein, userInfo.proteinGoal, 'bg-sky-500')}
-                                    ${NutrientBar('지방', totals.fat, userInfo.fatGoal, 'bg-amber-400')}
+                <div>
+                    <div class="flex items-center justify-between mb-6">
+                        <button onclick="window.changeDate(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&lt;</button>
+                        <h2 class="text-xl font-semibold text-gray-800">${new Date(dateKey).toLocaleDateString('ko-KR', { timeZone: 'UTC' })}</h2>
+                        <button onclick="window.changeDate(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&gt;</button>
+                        <button onclick="window.toggleViewMode()" class="p-2 rounded-full hover:bg-gray-200">📅</button>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                        <div class="flex flex-col md:flex-row items-center justify-around gap-8">
+                            <div class="relative flex items-center justify-center w-48 h-48">
+                                <svg class="w-full h-full" viewBox="0 0 120 120">
+                                    <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60"/>
+                                    <circle class="text-teal-500" stroke-width="10" stroke-dasharray="${circumference}" stroke-dashoffset="${strokeDashoffset}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60" transform="rotate(-90 60 60)"/>
+                                </svg>
+                                <div class="absolute flex flex-col items-center">
+                                    <span class="text-3xl font-bold text-gray-800">${totals.calories}</span>
+                                    <span class="text-sm text-gray-500">/ ${userInfo.goal} kcal</span>
                                 </div>
                             </div>
+                            <div class="w-full md:w-1/2 space-y-4">
+                                ${NutrientBar('탄수화물', totals.carbs, userInfo.carbsGoal, 'bg-orange-500')}
+                                ${NutrientBar('단백질', totals.protein, userInfo.proteinGoal, 'bg-sky-500')}
+                                ${NutrientBar('지방', totals.fat, userInfo.fatGoal, 'bg-amber-400')}
+                            </div>
                         </div>
-                        <div class="space-y-6">
-                            ${Object.entries(meals).map(([mealType, entries]) => MealCard(mealType, entries)).join('')}
-                        </div>
-                         <footer class="mt-12 text-left">
-                            <button onclick="window.openDeleteModal()" class="text-xs text-gray-400 hover:text-red-500 hover:underline">회원 탈퇴</button>
-                        </footer>
-                    </main>
-                    <div class="fixed bottom-6 right-6">
-                        <button onclick="window.openModal()" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300">+</button>
                     </div>
-                    <div id="add-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-                        ${AddFoodModal()}
+                    <div class="space-y-6">
+                        ${Object.entries(meals).map(([mealType, entries]) => MealCard(mealType, entries)).join('')}
                     </div>
-                    <div id="delete-account-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-                        ${DeleteAccountModal()}
-                    </div>
+                     <footer class="mt-12 text-left">
+                        <button onclick="window.openDeleteModal()" class="text-xs text-gray-400 hover:text-red-500 hover:underline">회원 탈퇴</button>
+                    </footer>
                 </div>
             `;
+        };
+
+        const CalendarView = () => {
+            const date = state.calendarDate;
+            const year = date.getFullYear();
+            const month = date.getMonth();
+
+            const firstDayOfMonth = new Date(year, month, 1);
+            const firstDayOfWeek = firstDayOfMonth.getDay(); // 0 (Sun) to 6 (Sat)
+            
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            let calendarHtml = `
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="flex items-center justify-between mb-6">
+                        <button onclick="window.changeMonth(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&lt;</button>
+                        <h2 class="text-xl font-semibold text-gray-800">${year}년 ${month + 1}월</h2>
+                        <button onclick="window.changeMonth(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&gt;</button>
+                        <button onclick="window.toggleViewMode()" class="p-2 rounded-full hover:bg-gray-200">📋</button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-2 text-center text-sm">
+                        <div class="font-bold text-red-500">일</div>
+                        <div class="font-bold">월</div>
+                        <div class="font-bold">화</div>
+                        <div class="font-bold">수</div>
+                        <div class="font-bold">목</div>
+                        <div class="font-bold">금</div>
+                        <div class="font-bold text-blue-500">토</div>
+            `;
+
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                calendarHtml += `<div></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = getLocalDateString(new Date(year, month, day));
+                const entries = state.foodEntries[dateKey] || [];
+                const totalCalories = entries.reduce((sum, entry) => sum + entry.calories, 0);
+                
+                const isSelected = dateKey === state.currentDate;
+                const isToday = dateKey === getLocalDateString(new Date());
+
+                let dayClass = 'bg-gray-100'; // 기본
+                if (isSelected) dayClass = 'border-2 border-teal-500'; // 선택된 날짜
+                if (isToday) dayClass = 'bg-teal-500 text-white'; // 오늘 날짜 (우선순위 높음)
+
+                calendarHtml += `
+                    <div onclick="window.selectDateFromCalendar('${dateKey}')" class="cursor-pointer p-2 rounded-lg hover:bg-teal-100">
+                        <div class="w-8 h-8 mx-auto flex items-center justify-center rounded-full ${dayClass}">${day}</div>
+                        ${totalCalories > 0 ? `<div class="text-xs text-gray-500 mt-1">${totalCalories} kcal</div>` : ''}
+                    </div>
+                `;
+            }
+
+            calendarHtml += `</div></div>`;
+            return calendarHtml;
         };
 
         const NutrientBar = (label, consumed, goal, color) => {
@@ -276,7 +355,7 @@
                                     <p class="font-semibold text-gray-700">${entry.name}</p>
                                     <p class="text-sm text-gray-500">${entry.calories} kcal</p>
                                 </div>
-                                <button onclick="window.deleteFood('${entry.id}')" class="text-red-500 hover:text-red-700 font-bold text-xl">×</button>
+                                <button onclick="window.openDeleteFoodModal('${entry.id}')" class="text-red-500 hover:text-red-700 font-bold text-xl">×</button>
                             </li>
                         `).join('')}
                     </ul>
@@ -329,6 +408,17 @@
                  <div class="flex justify-center gap-4">
                     <button onclick="window.closeDeleteModal()" class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-300 transition">취소</button>
                     <button onclick="window.confirmDeleteAccount()" class="w-full bg-red-500 text-white font-bold py-3 rounded-lg hover:bg-red-600 transition">탈퇴 확인</button>
+                 </div>
+            </div>
+        `;
+        
+        const DeleteFoodModal = () => `
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in text-center">
+                 <h2 class="text-2xl font-bold mb-4 text-gray-800">기록 삭제</h2>
+                 <p class="text-gray-600 mb-6">정말로 이 기록을 삭제하시겠습니까?</p>
+                 <div class="flex justify-center gap-4">
+                    <button onclick="window.closeDeleteFoodModal()" class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-300 transition">취소</button>
+                    <button onclick="window.confirmDeleteFood()" class="w-full bg-red-500 text-white font-bold py-3 rounded-lg hover:bg-red-600 transition">삭제 확인</button>
                  </div>
             </div>
         `;
@@ -578,13 +668,15 @@
             }
         };
 
-        window.deleteFood = async (id) => {
-            // confirm()은 현재 환경에서 작동하지 않으므로, 바로 삭제 로직을 실행합니다.
-            // 실제 앱에서는 커스텀 모달을 사용하는 것이 좋습니다.
-            try {
-                await deleteDoc(doc(db, "foodEntries", id));
-            } catch (error) {
-                alert("삭제 실패: " + error.message);
+        window.confirmDeleteFood = async () => {
+            if (state.foodIdToDelete) {
+                try {
+                    await deleteDoc(doc(db, "foodEntries", state.foodIdToDelete));
+                } catch (error) {
+                    alert("삭제 실패: " + error.message);
+                } finally {
+                    window.closeDeleteFoodModal();
+                }
             }
         };
 
@@ -601,7 +693,7 @@
                         allEntries[entry.date] = [];
                     }
                     allEntries[entry.date].push(entry);
-                });
+});
                 state.foodEntries = allEntries;
                 // 데이터가 변경될 때마다 다시 렌더링
                 if(state.isLoggedIn) render();
@@ -625,6 +717,7 @@
                     setupFoodListener(user.uid);
                 } else {
                     state.userInfo = null;
+                    render();
                 }
             } else {
                 // 로그아웃 상태
@@ -637,23 +730,46 @@
                     currentPage: 'login',
                     unsubscribeFoodListener: null,
                 });
+                render();
             }
-            // 인증 상태가 확인된 후에만 최종적으로 렌더링
-            render();
         });
         
         // --- 전역 스코프에 함수 노출 ---
         window.navigate = navigate;
         window.changeDate = (amount) => {
-            const currentDateObj = new Date(state.currentDate + 'T00:00:00');
+            const currentDateObj = new Date(state.currentDate);
             currentDateObj.setDate(currentDateObj.getDate() + amount);
-            state.currentDate = currentDateObj.toISOString().split('T')[0];
+            state.currentDate = getLocalDateString(currentDateObj);
+            render();
+        };
+        window.changeMonth = (amount) => {
+            state.calendarDate.setMonth(state.calendarDate.getMonth() + amount);
+            render();
+        };
+        window.selectDateFromCalendar = (dateKey) => {
+            state.currentDate = dateKey;
+            state.viewMode = 'list';
+            render();
+        };
+        window.toggleViewMode = () => {
+            state.viewMode = state.viewMode === 'list' ? 'calendar' : 'list';
+            if (state.viewMode === 'calendar') {
+                state.calendarDate = new Date(state.currentDate);
+            }
             render();
         };
         window.openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
         window.closeModal = () => document.getElementById('add-food-modal').classList.add('hidden');
         window.openDeleteModal = () => document.getElementById('delete-account-modal').classList.remove('hidden');
         window.closeDeleteModal = () => document.getElementById('delete-account-modal').classList.add('hidden');
+        window.openDeleteFoodModal = (id) => {
+            state.foodIdToDelete = id;
+            document.getElementById('delete-food-modal').classList.remove('hidden');
+        };
+        window.closeDeleteFoodModal = () => {
+            state.foodIdToDelete = null;
+            document.getElementById('delete-food-modal').classList.add('hidden');
+        };
 
     </script>
 </body>
