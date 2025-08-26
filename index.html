@@ -35,7 +35,8 @@
             signOut, 
             onAuthStateChanged,
             setPersistence,
-            browserSessionPersistence
+            browserSessionPersistence,
+            deleteUser
         } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
         import { 
             getFirestore, 
@@ -47,7 +48,9 @@
             doc,
             deleteDoc,
             setDoc,
-            getDoc
+            getDoc,
+            writeBatch,
+            getDocs
         } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
         // ===================================================================================
@@ -230,12 +233,18 @@
                         <div class="space-y-6">
                             ${Object.entries(meals).map(([mealType, entries]) => MealCard(mealType, entries)).join('')}
                         </div>
+                         <footer class="mt-12 text-right">
+                            <button onclick="window.openDeleteModal()" class="text-xs text-gray-400 hover:text-red-500 hover:underline">회원 탈퇴</button>
+                        </footer>
                     </main>
                     <div class="fixed bottom-6 right-6">
                         <button onclick="window.openModal()" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300">+</button>
                     </div>
                     <div id="add-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
                         ${AddFoodModal()}
+                    </div>
+                    <div id="delete-account-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+                        ${DeleteAccountModal()}
                     </div>
                 </div>
             `;
@@ -310,6 +319,17 @@
                     </div>
                     <button id="add-food-btn" type="submit" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition">기록 추가</button>
                 </form>
+            </div>
+        `;
+
+        const DeleteAccountModal = () => `
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in text-center">
+                 <h2 class="text-2xl font-bold mb-4 text-gray-800">회원 탈퇴</h2>
+                 <p class="text-gray-600 mb-6">정말로 탈퇴하시겠습니까?<br>모든 식단 기록이 영구적으로 삭제되며 복구할 수 없습니다.</p>
+                 <div class="flex justify-center gap-4">
+                    <button onclick="window.closeDeleteModal()" class="w-full bg-gray-200 text-gray-800 font-bold py-3 rounded-lg hover:bg-gray-300 transition">취소</button>
+                    <button onclick="window.confirmDeleteAccount()" class="w-full bg-red-500 text-white font-bold py-3 rounded-lg hover:bg-red-600 transition">탈퇴 확인</button>
+                 </div>
             </div>
         `;
         
@@ -486,7 +506,7 @@
                 const userDocRef = doc(db, "users", auth.currentUser.uid);
                 await setDoc(userDocRef, userInfo);
                 state.userInfo = userInfo;
-                // 온보딩 완료 후에는 onAuthStateChanged가 리스너를 설정하고 렌더링을 다시 호출합니다.
+                // onAuthStateChanged가 리스너를 설정하고 렌더링을 다시 호출합니다.
             } catch (error) {
                 alert("정보 저장 실패: " + error.message);
             }
@@ -494,6 +514,44 @@
 
         window.handleLogout = async () => {
             await signOut(auth);
+        };
+
+        const deleteUserData = async (uid) => {
+            const batch = writeBatch(db);
+
+            // 사용자의 모든 음식 기록 삭제
+            const foodEntriesQuery = query(collection(db, "foodEntries"), where("uid", "==", uid));
+            const foodEntriesSnapshot = await getDocs(foodEntriesQuery);
+            foodEntriesSnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+
+            // 사용자 정보 문서 삭제
+            const userDocRef = doc(db, "users", uid);
+            batch.delete(userDocRef);
+
+            await batch.commit();
+        };
+
+        window.confirmDeleteAccount = async () => {
+            const user = auth.currentUser;
+            if (user) {
+                try {
+                    // Firestore에서 사용자 데이터 먼저 삭제
+                    await deleteUserData(user.uid);
+                    // Firebase Authentication에서 사용자 삭제
+                    await deleteUser(user);
+                    alert("회원 탈퇴가 완료되었습니다. 이용해주셔서 감사합니다.");
+                    // onAuthStateChanged가 로그아웃 상태를 감지하고 UI를 업데이트합니다.
+                } catch (error) {
+                    console.error("회원 탈퇴 오류:", error);
+                    alert(`오류가 발생하여 탈퇴를 완료하지 못했습니다. ${error.message}`);
+                    if (error.code === 'auth/requires-recent-login') {
+                        alert("보안을 위해 다시 로그인한 후 회원 탈퇴를 시도해주세요.");
+                        await signOut(auth);
+                    }
+                }
+            }
         };
         
         window.handleAddFood = async (e) => {
@@ -553,6 +611,7 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 // 로그인 상태
+                if (state.isLoggedIn) return; // 이미 로그인 처리된 경우 중복 실행 방지
                 state.isLoggedIn = true;
                 state.user = user;
                 
@@ -561,10 +620,10 @@
 
                 if (docSnap.exists()) {
                     state.userInfo = docSnap.data();
-                    setupFoodListener(user.uid); // 리스너는 여기서 한번만 설정
+                    setupFoodListener(user.uid);
                 } else {
                     state.userInfo = null;
-                    render(); // 온보딩 페이지를 보여주기 위해 렌더링
+                    render();
                 }
             } else {
                 // 로그아웃 상태
@@ -591,6 +650,8 @@
         };
         window.openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
         window.closeModal = () => document.getElementById('add-food-modal').classList.add('hidden');
+        window.openDeleteModal = () => document.getElementById('delete-account-modal').classList.remove('hidden');
+        window.closeDeleteModal = () => document.getElementById('delete-account-modal').classList.add('hidden');
 
     </script>
 </body>
