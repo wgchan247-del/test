@@ -52,16 +52,16 @@
         } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
 
         // ===================================================================================
-        // 중요! 여기에 자신의 Firebase 프로젝트 설정 값을 붙여넣으세요.
+        // 사용자가 제공한 Firebase 프로젝트 설정 값
         // ===================================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyCRax6rd1rlBIc3kVgg5OkHmSIQyzJmC8A",
             authDomain: "fitmeal-app-d1a97.firebaseapp.com",
             projectId: "fitmeal-app-d1a97",
-            storageBucket: "fitmeal-app-d1a97.firebasestorage.app",
+            storageBucket: "fitmeal-app-d1a97.appspot.com", // .appspot.com 으로 끝나는 것이 일반적입니다.
             messagingSenderId: "968711774677",
             appId: "1:968711774677:web:b3d3cb9ccc2388c3ba5d5c"
-            };
+        };
 
         // Firebase 앱 초기화
         const app = initializeApp(firebaseConfig);
@@ -80,9 +80,60 @@
         };
 
         // --- HTML 템플릿 ---
-        const LoginPage = () => `...`; // (이전과 동일, 생략)
-        const RegisterPage = () => `...`; // (이전과 동일, 생략)
-        const OnboardingPage = () => `...`; // (이전과 동일, 생략)
+        const LoginPage = () => `
+            <div class="flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in">
+                <div class="w-full max-w-sm">
+                    <h1 class="text-4xl font-bold text-center text-teal-500 mb-2">FitMeal</h1>
+                    <p class="text-center text-gray-600 mb-8">AI 식단 관리, 피트밀과 함께</p>
+                    <form id="login-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="email">이메일</label>
+                            <input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="email" type="email" placeholder="email@example.com" required>
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="password">비밀번호</label>
+                            <input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="password" type="password" placeholder="********" required>
+                        </div>
+                        <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300" type="submit">로그인</button>
+                    </form>
+                    <p class="text-center text-gray-500 text-sm">계정이 없으신가요? <button onclick="window.navigate('register')" class="font-bold text-teal-500 hover:text-teal-700">회원가입</button></p>
+                </div>
+            </div>
+        `;
+
+        const RegisterPage = () => `
+            <div class="flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in">
+                <div class="w-full max-w-sm">
+                    <h1 class="text-4xl font-bold text-center text-teal-500 mb-8">회원가입</h1>
+                    <form id="register-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4">
+                        <div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">이메일</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="email" type="email" required></div>
+                        <div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="password" type="password" required></div>
+                        <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg" type="submit">다음</button>
+                    </form>
+                    <p class="text-center text-gray-500 text-sm">이미 계정이 있으신가요? <button onclick="window.navigate('login')" class="font-bold text-teal-500 hover:text-teal-700">로그인</button></p>
+                </div>
+            </div>
+        `;
+        
+        const OnboardingPage = () => `
+            <div class="flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in">
+                <div class="w-full max-w-md text-center">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">FitMeal에 오신 것을 환영합니다!</h1>
+                    <p class="text-gray-600 mb-8">정확한 추천을 위해 목표를 알려주세요.</p>
+                    <form id="onboarding-form" class="bg-white shadow-lg rounded-lg p-8">
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-lg font-bold mb-4">가장 중요한 목표는 무엇인가요?</label>
+                            <div id="goal-options" class="flex flex-col sm:flex-row justify-center gap-4">
+                                <button type="button" data-goal="체중 감량" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition bg-teal-500 border-teal-500 text-white">체중 감량</button>
+                                <button type="button" data-goal="체중 유지" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition border-gray-300 text-gray-700">체중 유지</button>
+                                <button type="button" data-goal="근육 증가" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition border-gray-300 text-gray-700">근육 증가</button>
+                            </div>
+                        </div>
+                        <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg" type="submit">피트밀 시작하기</button>
+                    </form>
+                </div>
+            </div>
+        `;
         
         const DashboardPage = () => {
             const dateKey = state.currentDate;
@@ -150,6 +201,64 @@
                 </div>
             `;
         };
+
+        const NutrientBar = (label, consumed, goal, color) => {
+            const percentage = goal > 0 ? Math.min((consumed / goal) * 100, 100) : 0;
+            return `
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium text-gray-700">${label}</span>
+                        <span class="text-xs text-gray-500">${consumed}g / ${goal}g</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="${color} h-2.5 rounded-full" style="width: ${percentage}%"></div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const MealCard = (mealType, entries) => `
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">${mealType}</h3>
+                ${entries.length > 0 ? `
+                    <ul class="divide-y divide-gray-200">
+                        ${entries.map(entry => `
+                            <li class="py-3 flex justify-between items-center">
+                                <div>
+                                    <p class="font-semibold text-gray-700">${entry.name}</p>
+                                    <p class="text-sm text-gray-500">${entry.calories} kcal</p>
+                                </div>
+                                <button onclick="window.deleteFood('${entry.id}')" class="text-red-500 hover:text-red-700 font-bold text-xl">×</button>
+                            </li>
+                        `).join('')}
+                    </ul>
+                ` : `<p class="text-gray-500 text-sm">기록된 식단이 없어요.</p>`}
+            </div>
+        `;
+
+        const AddFoodModal = () => `
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in">
+                <button onclick="window.closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-xl">×</button>
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">식단 기록하기</h2>
+                <form id="add-food-form">
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-2">식사 종류</label>
+                        <select id="mealType" class="w-full p-3 border rounded-lg bg-gray-50">
+                            <option>아침</option><option>점심</option><option>저녁</option><option>간식</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold mb-2">음식 이름</label>
+                        <input id="foodName" type="text" placeholder="예: 닭가슴살 샐러드" class="w-full p-3 border rounded-lg" required>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-bold mb-2">칼로리 (kcal)</label>
+                        <input id="calories" type="number" placeholder="예: 350" class="w-full p-3 border rounded-lg" required>
+                    </div>
+                    <button type="submit" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition">기록 추가</button>
+                </form>
+            </div>
+        `;
         
         // --- 렌더링 및 이벤트 핸들러 ---
         const appContainer = document.getElementById('app-container');
@@ -203,7 +312,6 @@
             const password = e.target.password.value;
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged가 나머지를 처리
             } catch (error) {
                 alert("로그인 실패: " + error.message);
             }
@@ -215,7 +323,6 @@
             const password = e.target.password.value;
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged가 나머지를 처리
             } catch (error) {
                 alert("회원가입 실패: " + error.message);
             }
@@ -223,7 +330,12 @@
         
         window.handleOnboarding = async (e) => {
             e.preventDefault();
-            const selectedGoal = document.querySelector('.goal-btn.bg-teal-500').dataset.goal;
+            const selectedGoalEl = document.querySelector('.goal-btn.bg-teal-500');
+            if (!selectedGoalEl) {
+                alert("목표를 선택해주세요.");
+                return;
+            }
+            const selectedGoal = selectedGoalEl.dataset.goal;
             let calorieGoal = 2000;
             if (selectedGoal === '체중 감량') calorieGoal = 1800;
             if (selectedGoal === '근육 증가') calorieGoal = 2500;
@@ -236,7 +348,6 @@
             };
             
             try {
-                // Firestore에 사용자 정보 저장
                 const userDocRef = doc(db, "users", auth.currentUser.uid);
                 await setDoc(userDocRef, userInfo);
                 state.userInfo = userInfo;
@@ -248,7 +359,6 @@
 
         window.handleLogout = async () => {
             await signOut(auth);
-            // onAuthStateChanged가 나머지를 처리
         };
         
         window.handleAddFood = async (e) => {
@@ -266,23 +376,25 @@
             
             try {
                 await addDoc(collection(db, "foodEntries"), newEntry);
-                closeModal();
+                window.closeModal();
             } catch (error) {
                 alert("기록 추가 실패: " + error.message);
             }
         };
 
         window.deleteFood = async (id) => {
-            try {
-                await deleteDoc(doc(db, "foodEntries", id));
-            } catch (error) {
-                alert("삭제 실패: " + error.message);
+            if (confirm("정말로 이 기록을 삭제하시겠습니까?")) {
+                try {
+                    await deleteDoc(doc(db, "foodEntries", id));
+                } catch (error) {
+                    alert("삭제 실패: " + error.message);
+                }
             }
         };
 
         const setupFoodListener = (uid) => {
             if (state.unsubscribeFoodListener) {
-                state.unsubscribeFoodListener(); // 이전 리스너 구독 해제
+                state.unsubscribeFoodListener();
             }
             const q = query(collection(db, "foodEntries"), where("uid", "==", uid));
             state.unsubscribeFoodListener = onSnapshot(q, (querySnapshot) => {
@@ -295,41 +407,39 @@
                     allEntries[entry.date].push(entry);
                 });
                 state.foodEntries = allEntries;
-                render(); // 데이터 변경 시 다시 렌더링
+                render();
             });
         };
 
         // --- 앱 시작 및 인증 상태 감지 ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // 사용자가 로그인한 경우
                 state.isLoggedIn = true;
                 state.user = user;
                 
-                // Firestore에서 사용자 정보 가져오기
                 const userDocRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(userDocRef);
 
                 if (docSnap.exists()) {
                     state.userInfo = docSnap.data();
-                    setupFoodListener(user.uid); // 실시간 식단 리스너 설정
+                    setupFoodListener(user.uid);
                 } else {
-                    state.userInfo = null; // 온보딩 필요
+                    state.userInfo = null;
+                    navigate('onboarding');
                 }
+                render();
             } else {
-                // 사용자가 로그아웃한 경우
                 if (state.unsubscribeFoodListener) state.unsubscribeFoodListener();
-                state = {
-                    ...state,
+                Object.assign(state, {
                     isLoggedIn: false,
                     user: null,
                     userInfo: null,
                     foodEntries: {},
                     currentPage: 'login',
                     unsubscribeFoodListener: null,
-                };
+                });
+                render();
             }
-            render();
         });
         
         // 전역 스코프에 함수 노출
@@ -342,9 +452,6 @@
         };
         window.openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
         window.closeModal = () => document.getElementById('add-food-modal').classList.add('hidden');
-        
-        // LoginPage, RegisterPage 등 이전과 동일한 HTML 템플릿 함수들을 여기에 포함시켜야 합니다.
-        // ... (이전 코드의 템플릿 함수들) ...
 
     </script>
 </body>
