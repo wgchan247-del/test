@@ -546,7 +546,6 @@
                 render();
             }, (error) => {
                 console.error("Snapshot listener error:", error);
-                // 여기서 오류 처리를 할 수 있습니다. 예를 들어 사용자에게 알림.
             });
         };
 
@@ -564,6 +563,7 @@
                     setupFoodListener(user.uid);
                 } else {
                     state.userInfo = null;
+                    render(); // 온보딩을 위해 렌더링
                 }
             } else {
                 if (state.unsubscribeFoodListener) state.unsubscribeFoodListener();
@@ -575,9 +575,8 @@
                     currentPage: 'login',
                     unsubscribeFoodListener: null,
                 });
+                render();
             }
-            // 인증 상태가 확인된 후에만 렌더링
-            render();
         });
         
         // --- 전역 스코프에 함수 노출 및 초기 렌더링 ---
@@ -590,6 +589,9 @@
         };
         window.openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
         window.closeModal = () => document.getElementById('add-food-modal').classList.add('hidden');
+
+        // 페이지가 로드되면 바로 첫 화면을 렌더링합니다.
+        render();
 
     </script>
 </body>
