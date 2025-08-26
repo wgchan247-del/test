@@ -430,22 +430,6 @@
                         <button id="add-food-btn" type="submit" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition">기록 추가</button>
                     </form>
                 </div>
-
-                <div id="ai-results-section" class="hidden">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">AI 분석 결과</h3>
-                    <p class="text-sm text-gray-600 mb-4">기록할 음식을 선택하고 식사 종류를 확인해주세요.</p>
-                    <div id="ai-results-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto">
-                        <!-- AI results will be injected here -->
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold mb-2">식사 종류</label>
-                        <select id="ai-mealType" class="w-full p-3 border rounded-lg bg-gray-50">
-                            <option>아침</option><option>점심</option><option>저녁</option><option>간식</option>
-                        </select>
-                    </div>
-                    <button id="add-selected-foods-btn" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition">선택 항목 기록</button>
-                    <button onclick="window.resetModalView()" class="w-full mt-2 text-sm text-gray-600 hover:text-teal-500">다른 사진으로 분석 / 직접 입력</button>
-                </div>
             </div>
         `;
 
@@ -529,7 +513,6 @@
             document.getElementById('add-food-form')?.addEventListener('submit', window.handleAddFood);
             document.getElementById('image-upload')?.addEventListener('change', window.handleImageUpload);
             document.getElementById('profile-form')?.addEventListener('submit', window.handleUpdateProfile);
-            document.getElementById('add-selected-foods-btn')?.addEventListener('click', window.handleAddSelectedFoods);
             
             if (state.currentPage === 'onboarding' || (state.isLoggedIn && !state.userInfo) || document.getElementById('profile-modal')) {
                  document.querySelectorAll('.goal-btn').forEach(btn => {
@@ -580,13 +563,14 @@
             }
 
             const statusEl = document.getElementById('ai-status');
-            const aiSection = document.getElementById('ai-section');
-            const manualFormSection = document.getElementById('manual-form-section');
-            const aiResultsSection = document.getElementById('ai-results-section');
-            const aiResultsList = document.getElementById('ai-results-list');
+            const foodNameInput = document.getElementById('foodName');
+            const caloriesInput = document.getElementById('calories');
+            const addFoodBtn = document.getElementById('add-food-btn');
 
             statusEl.textContent = 'AI가 사진을 분석하고 있습니다...';
-            
+            addFoodBtn.disabled = true;
+            addFoodBtn.textContent = '분석 중...';
+
             try {
                 const base64Image = await fileToBase64(file);
                 const mimeType = getMimeType(file);
@@ -598,7 +582,7 @@
                     body: JSON.stringify({
                         contents: [{
                             parts: [
-                                { text: "이 음식 사진에 있는 모든 음식을 각각 식별하고, 1인분 기준 예상 칼로리와 함께 JSON 배열 형식으로 알려주세요. 각 객체는 'name'과 'calories' 키를 가져야 합니다. 예시: [{'name': '김치찌개', 'calories': 450}, {'name': '계란후라이', 'calories': 180}]" },
+                                { text: "이 음식 사진을 보고 가장 대표적인 음식 이름 한 가지와 1인분 기준 예상 칼로리를 알려주세요. 답변은 '음식명: [이름], 칼로리: [숫자]' 형식으로만 정확히 답변해주세요." },
                                 { inline_data: { mime_type: mimeType, data: base64Image } }
                             ]
                         }]
@@ -618,32 +602,29 @@
                 }
 
                 const text = data.candidates[0].content.parts[0].text;
-                
-                const jsonString = text.replace(/```json|```/g, '').trim();
-                const results = JSON.parse(jsonString);
 
-                if (results.length === 0) {
-                    throw new Error('AI가 사진에서 음식을 찾지 못했습니다.');
+                const foodNameMatch = text.match(/음식명: (.*?)(,|$)/);
+                const caloriesMatch = text.match(/칼로리: (\d+)/);
+
+                if (foodNameMatch && caloriesMatch) {
+                    const foodName = foodNameMatch[1].trim();
+                    const calories = parseInt(caloriesMatch[1]);
+                    
+                    foodNameInput.value = foodName;
+                    caloriesInput.value = calories;
+                    statusEl.textContent = `분석 완료: ${foodName} (${calories}kcal)`;
+                } else {
+                    console.warn("AI 응답 형식 불일치:", text);
+                    throw new Error('AI가 음식 정보를 정확히 분석하지 못했습니다. 직접 입력해주세요.');
                 }
-                
-                aiResultsList.innerHTML = results.map((item, index) => `
-                    <label for="food-item-${index}" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100">
-                        <div>
-                            <span class="font-semibold text-gray-800">${item.name}</span>
-                            <span class="text-sm text-gray-500 ml-2">${item.calories} kcal</span>
-                        </div>
-                        <input type="checkbox" id="food-item-${index}" class="form-checkbox h-5 w-5 text-teal-600 rounded focus:ring-teal-500" data-name="${item.name}" data-calories="${item.calories}" checked>
-                    </label>
-                `).join('');
-                
-                aiSection.classList.add('hidden');
-                manualFormSection.classList.add('hidden');
-                aiResultsSection.classList.remove('hidden');
 
             } catch (error) {
                 console.error("AI 분석 오류:", error);
                 statusEl.textContent = `분석 실패. 직접 입력해주세요.`;
                 alert(`AI 분석 중 오류가 발생했습니다: ${error.message}`);
+            } finally {
+                addFoodBtn.disabled = false;
+                addFoodBtn.textContent = '기록 추가';
             }
         };
 
@@ -778,50 +759,6 @@
             }
         };
 
-        window.handleAddSelectedFoods = async () => {
-            const mealTypeSelect = document.getElementById('ai-mealType');
-            const checkboxes = document.querySelectorAll('#ai-results-list input[type="checkbox"]');
-            const selectedFoods = document.querySelectorAll('#ai-results-list input[type="checkbox"]:checked');
-
-            if (selectedFoods.length === 0) {
-                alert('기록할 음식을 하나 이상 선택해주세요.');
-                return;
-            }
-
-            const button = document.getElementById('add-selected-foods-btn');
-            button.disabled = true;
-            button.textContent = '저장 중...';
-            checkboxes.forEach(c => c.disabled = true);
-            mealTypeSelect.disabled = true;
-            
-            try {
-                const batch = writeBatch(db);
-                selectedFoods.forEach(checkbox => {
-                    const newEntry = {
-                        uid: auth.currentUser.uid,
-                        date: state.currentDate,
-                        name: checkbox.dataset.name,
-                        calories: parseInt(checkbox.dataset.calories),
-                        mealType: mealTypeSelect.value,
-                        carbs: Math.round(parseInt(checkbox.dataset.calories) * 0.5 / 4),
-                        protein: Math.round(parseInt(checkbox.dataset.calories) * 0.2 / 4),
-                        fat: Math.round(parseInt(checkbox.dataset.calories) * 0.3 / 9),
-                    };
-                    const docRef = doc(collection(db, "foodEntries"));
-                    batch.set(docRef, newEntry);
-                });
-                await batch.commit();
-                window.closeModal();
-
-            } catch (error) {
-                alert("기록 추가 실패: " + error.message);
-                button.disabled = false;
-                button.textContent = '선택 항목 기록';
-                checkboxes.forEach(c => c.disabled = false);
-                mealTypeSelect.disabled = false;
-            }
-        };
-
         window.confirmDeleteFood = async () => {
             if (state.foodIdToDelete) {
                 try {
@@ -911,14 +848,6 @@
         window.openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
         window.closeModal = () => {
             document.getElementById('add-food-modal').classList.add('hidden');
-            if (document.getElementById('ai-results-section')) {
-                window.resetModalView();
-            }
-        };
-        window.resetModalView = () => {
-            document.getElementById('ai-section')?.classList.remove('hidden');
-            document.getElementById('manual-form-section')?.classList.remove('hidden');
-            document.getElementById('ai-results-section')?.classList.add('hidden');
             const aiStatus = document.getElementById('ai-status');
             if(aiStatus) aiStatus.textContent = '';
             const imageUpload = document.getElementById('image-upload');
