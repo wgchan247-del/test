@@ -10,15 +10,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- 
-        ↓↓↓ STEP 1: 구글 애드센스 코드 (1/2) ↓↓↓
-    -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8389343171492169"
      crossorigin="anonymous"></script>
     <style>
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: #FFFBF9; /* Very light pink background */
+            background-color: #f0fdf4; /* Very light green background */
         }
         .font-jua {
             font-family: 'Jua', sans-serif;
@@ -28,7 +25,7 @@
         }
         .meal-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px -5px rgba(235, 99, 70, 0.15);
+            box-shadow: 0 10px 20px -5px rgba(34, 197, 94, 0.15);
         }
         .nutrient-ring {
             --size: 80px;
@@ -48,7 +45,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: conic-gradient(var(--color, #f97316) calc(var(--p, 0) * 1%), #fee2e2 0);
+            background: conic-gradient(var(--color, #22c55e) calc(var(--p, 0) * 1%), #dcfce7 0);
             border-radius: 50%;
             mask: radial-gradient(farthest-side, transparent calc(99% - var(--thickness)), #fff calc(100% - var(--thickness)));
             -webkit-mask: radial-gradient(farthest-side, transparent calc(99% - var(--thickness)), #fff calc(100% - var(--thickness)));
@@ -58,10 +55,10 @@
             transition: opacity 0.3s ease-in-out;
         }
         .custom-shadow {
-            box-shadow: 0 4px 12px 0 rgba(235, 99, 70, 0.1);
+            box-shadow: 0 4px 12px 0 rgba(34, 197, 94, 0.1);
         }
         .dashed-border {
-             background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='24' ry='24' stroke='%23fed7aa' stroke-width='3' stroke-dasharray='6%2c 14' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+             background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='24' ry='24' stroke='%23bbf7d0' stroke-width='3' stroke-dasharray='6%2c 14' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
         }
         .calendar-day {
             transition: background-color 0.2s ease-in-out;
@@ -80,56 +77,51 @@
 </head>
 <body class="text-slate-700">
 
-    <!-- 로그인/회원가입 뷰 -->
-    <div id="auth-view" class="fixed inset-0 bg-rose-50 flex items-center justify-center z-50 p-4">
+    <div id="auth-view" class="fixed inset-0 bg-green-50 flex items-center justify-center z-50 p-4">
         <div class="w-full max-w-sm p-8 bg-white rounded-3xl shadow-xl">
             <div class="flex justify-center mb-4">
-                <div class="w-16 h-16 bg-orange-400 rounded-full flex items-center justify-center shadow-lg shadow-orange-200">
-                    <svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 19V5C8 4.44772 8.44772 4 9 4H10C10.5523 4 11 4.44772 11 5V12M11 12C11 10.3431 12.3431 9 14 9C15.6569 9 17 10.3431 17 12V19M11 12H8" />
-                    </svg>
+                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-200">
+                    <img src="http://googleusercontent.com/file_content/21" alt="피트밀 로고" class="w-10 h-10">
                 </div>
             </div>
-            <h1 class="text-4xl font-jua text-orange-500 text-center">피트밀</h1>
+            <h1 class="text-4xl font-jua text-green-600 text-center">피트밀</h1>
             <p class="text-slate-500 text-center mb-8">나만의 AI 영양사, 피트밀</p>
             
-            <!-- 로그인 폼 -->
             <form id="login-form" class="space-y-4">
                 <div>
                     <label for="email" class="block text-sm font-medium text-slate-600">이메일</label>
-                    <input type="email" id="email" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required>
+                    <input type="email" id="email" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
                 </div>
                 <div>
                     <label for="password" class="block text-sm font-medium text-slate-600">비밀번호</label>
-                    <input type="password" id="password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required>
+                    <input type="password" id="password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
                 </div>
                  <div class="text-right text-sm">
-                    <a href="#" id="forgot-password-link" class="font-medium text-orange-600 hover:text-orange-500">비밀번호를 잊으셨나요?</a>
+                    <a href="#" id="forgot-password-link" class="font-medium text-green-600 hover:text-green-500">비밀번호를 잊으셨나요?</a>
                 </div>
                 <div class="flex gap-3 pt-2">
-                    <button type="submit" id="login-btn" class="w-full bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 transition">로그인</button>
+                    <button type="submit" id="login-btn" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition">로그인</button>
                     <button type="button" id="go-to-register-btn" class="w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition">회원가입</button>
                 </div>
             </form>
 
-            <!-- 회원가입 폼 (숨겨짐) -->
             <form id="register-form" class="hidden space-y-4">
                 <div>
                     <label for="register-email" class="block text-sm font-medium text-slate-600">이메일</label>
-                    <input type="email" id="register-email" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required>
+                    <input type="email" id="register-email" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
                 </div>
                 <div>
                     <label for="register-password" class="block text-sm font-medium text-slate-600">비밀번호</label>
-                    <input type="password" id="register-password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required>
+                    <input type="password" id="register-password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
                     <p class="mt-1 text-xs text-slate-500">8자리 이상 영문 소문자, 숫자를 조합해주세요.</p>
                 </div>
                  <div>
                     <label for="confirm-password" class="block text-sm font-medium text-slate-600">비밀번호 확인</label>
-                    <input type="password" id="confirm-password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required>
+                    <input type="password" id="confirm-password" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
                 </div>
                 <p id="password-error" class="hidden text-xs text-red-500">비밀번호가 일치하지 않거나 형식이 올바르지 않습니다.</p>
                 <div class="flex gap-3 pt-2">
-                    <button type="submit" id="register-btn" class="w-full bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 transition">회원가입</button>
+                    <button type="submit" id="register-btn" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition">회원가입</button>
                 </div>
                  <button type="button" id="back-to-login-btn" class="w-full text-slate-500 py-2 rounded-full text-sm font-semibold hover:bg-slate-100 transition">로그인으로 돌아가기</button>
             </form>
@@ -155,29 +147,22 @@
     </div>
 
     <div id="app-view" class="hidden max-w-4xl mx-auto p-4 md:p-6">
-        <!-- 헤더 -->
         <header class="flex justify-between items-center mb-8">
-            <h1 class="text-4xl font-jua text-orange-500">피트밀 🥗</h1>
+            <h1 class="text-4xl font-jua text-green-600">피트밀 🥗</h1>
             <div class="flex items-center gap-4">
-                 <!-- <button id="friends-toggle-button" class="text-gray-400 hover:text-orange-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.963A3.003 3.003 0 006 15a3 3 0 100-5.998 3.003 3.003 0 00-1.548 2.963m12.022 3.083A9.034 9.034 0 0118 15a3 3 0 10-5.998 0 3.003 3.003 0 002.963 1.548 9.034 9.034 0 013.035-1.548zM4 21a15.923 15.923 0 0016 0" />
-                    </svg>
-                 </button> -->
-                 <button id="stats-toggle-button" class="text-gray-400 hover:text-orange-500">
+                 <button id="stats-toggle-button" class="text-gray-400 hover:text-green-500">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
                     </svg>
                 </button>
-                 <button id="calendar-toggle-button" class="text-gray-400 hover:text-orange-500">
-                    <!-- 아이콘은 스크립트에서 동적으로 변경됩니다 -->
-                </button>
-                <button id="profile-button" class="text-gray-400 hover:text-orange-500">
+                 <button id="calendar-toggle-button" class="text-gray-400 hover:text-green-500">
+                    </button>
+                <button id="profile-button" class="text-gray-400 hover:text-green-500">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
                       <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd" />
                     </svg>
                 </button>
-                 <button id="logout-button" class="text-gray-400 hover:text-orange-500">
+                 <button id="logout-button" class="text-gray-400 hover:text-green-500">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 20 20" fill="currentColor">
                       <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
                     </svg>
@@ -185,69 +170,59 @@
             </div>
         </header>
 
-        <!-- 메인 대시보드 -->
         <main id="dashboard-view" class="space-y-8">
-            <!-- 프로필 설정 유도 메시지 -->
             <section id="welcome-message" class="hidden bg-white p-6 rounded-3xl custom-shadow text-center">
-                <h2 class="text-2xl font-jua text-orange-600 mb-2">피트밀에 오신 것을 환영합니다!</h2>
+                <h2 class="text-2xl font-jua text-green-600 mb-2">피트밀에 오신 것을 환영합니다!</h2>
                 <p class="text-slate-600 mb-4">정확한 AI 식단 추천을 위해 프로필을 먼저 설정해주세요.</p>
-                <button id="setup-profile-btn" class="bg-orange-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-orange-600 transition">
+                <button id="setup-profile-btn" class="bg-green-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-600 transition">
                     프로필 설정 시작하기
                 </button>
             </section>
 
-            <!-- 일일 섭취 현황 -->
             <section id="nutrition-progress" class="bg-white p-6 rounded-3xl custom-shadow">
-                <h2 class="text-xl font-jua text-orange-600 mb-4">오늘의 영양 체크 📊</h2>
+                <h2 class="text-xl font-jua text-green-600 mb-4">오늘의 영양 체크 📊</h2>
                 <div id="progress-content" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    <!-- Nutrients rings here -->
                     <div class="flex flex-col items-center"><div id="calories-ring" class="nutrient-ring" style="--color: #f97316; --p: 0;"><span id="calories-current">0</span><small class="text-slate-400">/ <span id="calories-goal">0</span></small></div><p class="mt-2 font-semibold">칼로리 (kcal)</p></div><div class="flex flex-col items-center"><div id="carbs-ring" class="nutrient-ring" style="--color: #14b8a6; --p: 0;"><span id="carbs-current">0</span><small class="text-slate-400">/ <span id="carbs-goal">0</span></small></div><p class="mt-2 font-semibold">탄수화물 (g)</p></div><div class="flex flex-col items-center"><div id="protein-ring" class="nutrient-ring" style="--color: #f59e0b; --p: 0;"><span id="protein-current">0</span><small class="text-slate-400">/ <span id="protein-goal">0</span></small></div><p class="mt-2 font-semibold">단백질 (g)</p></div><div class="flex flex-col items-center"><div id="fat-ring" class="nutrient-ring" style="--color: #8b5cf6; --p: 0;"><span id="fat-current">0</span><small class="text-slate-400">/ <span id="fat-goal">0</span></small></div><p class="mt-2 font-semibold">지방 (g)</p></div>
                 </div>
             </section>
 
-            <!-- 오늘 섭취 기록 -->
             <section id="daily-intake-log">
-                <h2 class="text-xl font-jua text-orange-600 mb-4">오늘의 다이어트 기록 📝</h2>
+                <h2 class="text-xl font-jua text-green-600 mb-4">오늘의 다이어트 기록 📝</h2>
                 <div id="daily-intake-list" class="space-y-3 mb-4">
-                    <!-- 섭취 기록 아이템 -->
-                </div>
+                    </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <button id="add-food-button" class="w-full bg-white border-2 border-dashed border-orange-200 text-orange-500 py-3 rounded-2xl font-semibold hover:bg-orange-50 hover:border-orange-400 transition duration-300">
+                    <button id="add-food-button" class="w-full bg-white border-2 border-dashed border-green-200 text-green-500 py-3 rounded-2xl font-semibold hover:bg-green-50 hover:border-green-400 transition duration-300">
                         + 직접 입력
                     </button>
-                    <button id="add-photo-button" class="w-full bg-orange-500 text-white py-3 rounded-2xl font-semibold hover:bg-orange-600 transition duration-300 flex items-center justify-center gap-2">
+                    <button id="add-photo-button" class="w-full bg-green-500 text-white py-3 rounded-2xl font-semibold hover:bg-green-600 transition duration-300 flex items-center justify-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>
                         AI 카메라로 기록
                     </button>
                 </div>
             </section>
             
-            <!-- 오늘 운동 기록 -->
             <section id="daily-exercise-log">
-                <h2 class="text-xl font-jua text-orange-600 mb-4">오늘 운동 기록 🏋️‍♀️</h2>
+                <h2 class="text-xl font-jua text-green-600 mb-4">오늘 운동 기록 🏋️‍♀️</h2>
                 <div id="daily-exercise-list" class="space-y-3 mb-4">
-                    <!-- 운동 기록 아이템 -->
-                </div>
+                    </div>
                 <button id="add-exercise-button" class="w-full bg-white border-2 border-dashed border-teal-200 text-teal-500 py-3 rounded-2xl font-semibold hover:bg-teal-50 hover:border-teal-400 transition duration-300">
                     + 운동 추가하기
                 </button>
             </section>
 
-            <!-- AI 추천 식단 -->
             <section id="meal-plan">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-jua text-orange-600">AI 추천 식단 ✨</h2>
-                    <button id="generate-plan-button" class="bg-orange-500 text-white px-5 py-2 rounded-full font-semibold hover:bg-orange-600 transition duration-300 disabled:bg-orange-300 shadow-sm shadow-orange-200">
+                    <h2 class="text-xl font-jua text-green-600">AI 추천 식단 ✨</h2>
+                    <button id="generate-plan-button" class="bg-green-500 text-white px-5 py-2 rounded-full font-semibold hover:bg-green-600 transition duration-300 disabled:bg-green-300 shadow-sm shadow-green-200">
                         새 식단 받기
                     </button>
                 </div>
                 <div id="meal-plan-content" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-                 <div id="loader" class="hidden text-center py-8"><div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div><p class="mt-4 text-slate-500">AI가 맞춤 식단을 생성 중입니다...</p></div>
+                 <div id="loader" class="hidden text-center py-8"><div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div><p class="mt-4 text-slate-500">AI가 맞춤 식단을 생성 중입니다...</p></div>
             </section>
             
-            <!-- 물 섭취량 추적 -->
             <section id="water-tracker" class="bg-white p-6 rounded-3xl custom-shadow">
-                <h2 class="text-xl font-jua text-orange-600 mb-4">수분 섭취 💧</h2>
+                <h2 class="text-xl font-jua text-green-600 mb-4">수분 섭취 💧</h2>
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-3xl font-bold text-sky-500"><span id="water-intake">0</span> / <span id="water-goal">8</span> 잔</p>
@@ -260,14 +235,7 @@
                 </div>
             </section>
             
-            <!-- 광고 배너 -->
             <section id="ad-banner-container" class="mt-8 flex justify-center items-center h-24 bg-slate-100 rounded-2xl">
-                <!-- 
-                    ↓↓↓ STEP 2: 구글 애드센스 코드 (2/2) ↓↓↓
-                    구글 애드센스에서 생성한 '광고 단위' 코드를 여기에 붙여넣으세요.
-                    <ins class="adsbygoogle" ...></ins>
-                    <script> (adsbygoogle = window.adsbygoogle || []).push({}); </script>
-                -->
                 <p class="text-slate-400 text-sm">광고가 표시될 공간입니다.</p>
             </section>
 
@@ -277,24 +245,21 @@
 
         </main>
 
-        <!-- 캘린더 뷰 -->
         <section id="calendar-view" class="hidden space-y-4">
             <div class="bg-white p-6 rounded-3xl custom-shadow">
                 <div class="flex justify-between items-center mb-4">
-                    <button id="prev-month-btn" class="p-2 rounded-full hover:bg-orange-50"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
-                    <h2 id="calendar-month-year" class="text-xl font-jua text-orange-600"></h2>
-                    <button id="next-month-btn" class="p-2 rounded-full hover:bg-orange-50"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
+                    <button id="prev-month-btn" class="p-2 rounded-full hover:bg-green-50"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button>
+                    <h2 id="calendar-month-year" class="text-xl font-jua text-green-600"></h2>
+                    <button id="next-month-btn" class="p-2 rounded-full hover:bg-green-50"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button>
                 </div>
                 <div class="grid grid-cols-7 gap-1 text-center font-semibold text-sm text-slate-500 mb-2">
                     <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
                 </div>
                 <div id="calendar-grid" class="grid grid-cols-7 gap-1">
-                    <!-- Calendar days will be generated here -->
-                </div>
+                    </div>
             </div>
-             <!-- 프리미엄 기능 섹션 -->
-            <div id="premium-section" class="bg-white p-6 rounded-3xl custom-shadow text-center">
-                 <h2 class="text-xl font-jua text-orange-600 mb-4">💎 피트밀 프리미엄</h2>
+             <div id="premium-section" class="bg-white p-6 rounded-3xl custom-shadow text-center">
+                 <h2 class="text-xl font-jua text-green-600 mb-4">💎 피트밀 프리미엄</h2>
                  <p class="text-slate-600 mb-4">프리미엄으로 업그레이드하고 광고 없이 더 상세한 리포트를 받아보세요!</p>
                  <button id="report-btn" class="w-full bg-amber-400 text-amber-900 py-3 rounded-full font-semibold hover:bg-amber-500 transition duration-300 flex items-center justify-center gap-2">
                     <span class="premium-crown">👑</span> 상세 리포트 보기
@@ -302,84 +267,59 @@
             </div>
         </section>
         
-        <!-- 통계 뷰 -->
         <section id="stats-view" class="hidden space-y-8">
             <div class="bg-white p-6 rounded-3xl custom-shadow">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-jua text-orange-600">통계 리포트</h2>
+                    <h2 class="text-xl font-jua text-green-600">통계 리포트</h2>
                     <div class="flex rounded-full bg-slate-100 p-1 text-sm font-semibold">
-                        <button id="weekly-report-btn" class="px-4 py-1 rounded-full bg-white text-orange-600 shadow">주간</button>
+                        <button id="weekly-report-btn" class="px-4 py-1 rounded-full bg-white text-green-600 shadow">주간</button>
                         <button id="monthly-report-btn" class="px-4 py-1 rounded-full text-slate-500">월간</button>
                     </div>
                 </div>
             </div>
             <div class="bg-white p-6 rounded-3xl custom-shadow">
-                <h3 id="calorie-chart-title" class="text-lg font-jua text-orange-600 mb-4">주간 칼로리 섭취량</h3>
+                <h3 id="calorie-chart-title" class="text-lg font-jua text-green-600 mb-4">주간 칼로리 섭취량</h3>
                 <div class="chart-container">
                     <canvas id="calorie-chart"></canvas>
                 </div>
             </div>
              <div class="grid md:grid-cols-2 gap-8">
                 <div class="bg-white p-6 rounded-3xl custom-shadow">
-                    <h3 id="macro-chart-title" class="text-lg font-jua text-orange-600 mb-4">주간 영양소 비율</h3>
+                    <h3 id="macro-chart-title" class="text-lg font-jua text-green-600 mb-4">주간 영양소 비율</h3>
                     <div class="chart-container" style="height: 300px; max-width: 300px; margin: auto;">
                         <canvas id="macro-chart"></canvas>
                     </div>
                 </div>
                 <div class="bg-white p-6 rounded-3xl custom-shadow">
-                    <h3 id="top-foods-title" class="text-lg font-jua text-orange-600 mb-4">자주 먹은 음식 TOP 5</h3>
+                    <h3 id="top-foods-title" class="text-lg font-jua text-green-600 mb-4">자주 먹은 음식 TOP 5</h3>
                     <div id="top-foods-list" class="space-y-2">
-                        <!-- Top foods list will be generated here -->
-                    </div>
+                        </div>
                 </div>
             </div>
              <div class="bg-white p-6 rounded-3xl custom-shadow">
-                <h3 id="average-intake-title" class="text-lg font-jua text-orange-600 mb-4">일일 평균 섭취량</h3>
+                <h3 id="average-intake-title" class="text-lg font-jua text-green-600 mb-4">일일 평균 섭취량</h3>
                 <div id="average-intake-content" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    <!-- Average intake data will be generated here -->
-                </div>
+                    </div>
             </div>
         </section>
         
-        <!-- 친구 뷰 -->
-        <!-- 
-        <section id="friends-view" class="hidden space-y-8">
-            <div class="bg-white p-6 rounded-3xl custom-shadow">
-                <h2 class="text-xl font-jua text-orange-600 mb-4">친구 찾기</h2>
-                <div class="flex gap-2">
-                    <input type="email" id="friend-search-input" class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" placeholder="친구의 이메일을 입력하세요">
-                    <button id="friend-search-btn" class="bg-orange-500 text-white px-5 py-2 rounded-lg font-semibold hover:bg-orange-600 transition">검색</button>
-                </div>
-                <div id="friend-search-result" class="mt-4"></div>
-            </div>
-            <div class="bg-white p-6 rounded-3xl custom-shadow">
-                <h2 class="text-xl font-jua text-orange-600 mb-4">내 친구 목록</h2>
-                <div id="friend-list" class="space-y-3">
-                    <p class="text-center text-slate-400 py-4">아직 추가된 친구가 없습니다.</p>
-                </div>
-            </div>
-        </section>
-        -->
+        </div>
 
-    </div>
-
-    <!-- 사용자 정보 입력 모달 -->
     <div id="profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 md:p-8 transform scale-95 transition-transform duration-300">
-            <h2 class="text-2xl font-jua text-orange-600 mb-6 text-center">내 정보 입력</h2>
+            <h2 class="text-2xl font-jua text-green-600 mb-6 text-center">내 정보 입력</h2>
             <form id="profile-form" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4"><div><label for="gender" class="block text-sm font-medium text-slate-600">성별</label><select id="gender" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"><option value="female">여성</option><option value="male">남성</option><option value="unspecified">선택 안함</option></select></div><div><label for="age" class="block text-sm font-medium text-slate-600">나이</label><input type="number" id="age" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" placeholder="세"></div></div><div class="grid grid-cols-2 gap-4"><div><label for="height" class="block text-sm font-medium text-slate-600">신장</label><input type="number" id="height" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" placeholder="cm"></div><div><label for="weight" class="block text-sm font-medium text-slate-600">체중</label><input type="number" id="weight" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" placeholder="kg"></div></div><div><label for="activity" class="block text-sm font-medium text-slate-600">활동량</label><select id="activity" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"><option value="1.2">거의 없음</option><option value="1.375">가벼운 활동</option><option value="1.55">보통 활동</option><option value="1.725">높은 활동</option><option value="1.9">매우 높은 활동</option></select></div><div><label for="goal" class="block text-sm font-medium text-slate-600">목표</label><select id="goal" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"><option value="loss">체중 감량</option><option value="maintain">체중 유지</option><option value="gain">체중 증가</option></select></div><div class="pt-4"><button type="submit" class="w-full bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 transition duration-300">저장하기</button></div>
+                <div class="grid grid-cols-2 gap-4"><div><label for="gender" class="block text-sm font-medium text-slate-600">성별</label><select id="gender" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500"><option value="female">여성</option><option value="male">남성</option><option value="unspecified">선택 안함</option></select></div><div><label for="age" class="block text-sm font-medium text-slate-600">나이</label><input type="number" id="age" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" placeholder="세"></div></div><div class="grid grid-cols-2 gap-4"><div><label for="height" class="block text-sm font-medium text-slate-600">신장</label><input type="number" id="height" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" placeholder="cm"></div><div><label for="weight" class="block text-sm font-medium text-slate-600">체중</label><input type="number" id="weight" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" placeholder="kg"></div></div><div><label for="activity" class="block text-sm font-medium text-slate-600">활동량</label><select id="activity" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500"><option value="1.2">거의 없음</option><option value="1.375">가벼운 활동</option><option value="1.55">보통 활동</option><option value="1.725">높은 활동</option><option value="1.9">매우 높은 활동</option></select></div><div><label for="goal" class="block text-sm font-medium text-slate-600">목표</label><select id="goal" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500"><option value="loss">체중 감량</option><option value="maintain">체중 유지</option><option value="gain">체중 증가</option></select></div><div class="pt-4"><button type="submit" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition duration-300">저장하기</button></div>
             </form>
         </div>
     </div>
     
-    <!-- 음식 추가 모달 -->
     <div id="add-food-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 md:p-8 transform scale-95 transition-transform duration-300">
-            <h2 class="text-2xl font-jua text-orange-600 mb-6 text-center">음식 기록하기</h2>
+            <h2 class="text-2xl font-jua text-green-600 mb-6 text-center">음식 기록하기</h2>
             <form id="add-food-form" class="space-y-4">
                 <label for="manual-photo-input" class="cursor-pointer">
-                    <div id="manual-image-preview" class="w-full h-32 bg-orange-50 rounded-2xl flex flex-col items-center justify-center text-orange-400 dashed-border">
+                    <div id="manual-image-preview" class="w-full h-32 bg-green-50 rounded-2xl flex flex-col items-center justify-center text-green-400 dashed-border">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                         <p class="mt-2 text-sm font-semibold">사진 첨부 (선택)</p>
                     </div>
@@ -389,105 +329,99 @@
                 <div class="grid grid-cols-3 gap-2">
                     <div class="col-span-2">
                         <label for="food-name" class="block text-sm font-medium text-slate-600">음식 이름</label>
-                        <input type="text" id="food-name" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required>
+                        <input type="text" id="food-name" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
                     </div>
                     <div>
                         <label for="food-weight" class="block text-sm font-medium text-slate-600">양 (g)</label>
-                        <input type="number" id="food-weight" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required>
+                        <input type="number" id="food-weight" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
                     </div>
                 </div>
-                 <button type="button" id="calculate-nutrients-btn" class="w-full bg-orange-100 text-orange-600 py-2.5 rounded-lg text-sm font-semibold hover:bg-orange-200">AI 영양소 자동 계산</button>
+                 <button type="button" id="calculate-nutrients-btn" class="w-full bg-green-100 text-green-600 py-2.5 rounded-lg text-sm font-semibold hover:bg-green-200">AI 영양소 자동 계산</button>
                 
                 <div id="nutrient-loader" class="hidden text-center py-2">
-                    <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                    <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label for="food-calories" class="block text-sm font-medium text-slate-600">칼로리 (kcal)</label><input type="number" id="food-calories" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required></div>
-                    <div><label for="food-protein" class="block text-sm font-medium text-slate-600">단백질 (g)</label><input type="number" id="food-protein" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required></div>
+                    <div><label for="food-calories" class="block text-sm font-medium text-slate-600">칼로리 (kcal)</label><input type="number" id="food-calories" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></div>
+                    <div><label for="food-protein" class="block text-sm font-medium text-slate-600">단백질 (g)</label><input type="number" id="food-protein" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label for="food-carbs" class="block text-sm font-medium text-slate-600">탄수화물 (g)</label><input type="number" id="food-carbs" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required></div>
-                    <div><label for="food-fat" class="block text-sm font-medium text-slate-600">지방 (g)</label><input type="number" id="food-fat" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required></div>
+                    <div><label for="food-carbs" class="block text-sm font-medium text-slate-600">탄수화물 (g)</label><input type="number" id="food-carbs" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></div>
+                    <div><label for="food-fat" class="block text-sm font-medium text-slate-600">지방 (g)</label><input type="number" id="food-fat" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required></div>
                 </div>
                 <div class="pt-4 flex space-x-3">
                     <button type="button" id="cancel-add-food" class="w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition duration-300">취소</button>
-                    <button type="submit" class="w-full bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 transition duration-300">기록하기</button>
+                    <button type="submit" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition duration-300">기록하기</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- 운동 추가 모달 -->
     <div id="add-exercise-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 md:p-8 transform scale-95 transition-transform duration-300">
-            <h2 class="text-2xl font-jua text-orange-600 mb-6 text-center">운동 기록하기</h2>
+            <h2 class="text-2xl font-jua text-green-600 mb-6 text-center">운동 기록하기</h2>
             <form id="add-exercise-form" class="space-y-4">
                 <div>
                     <label for="exercise-name" class="block text-sm font-medium text-slate-600">운동 이름</label>
-                    <input type="text" id="exercise-name" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required placeholder="예: 달리기, 요가">
+                    <input type="text" id="exercise-name" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required placeholder="예: 달리기, 요가">
                 </div>
                 <div>
                     <label for="exercise-duration" class="block text-sm font-medium text-slate-600">운동 시간 (분)</label>
-                    <input type="number" id="exercise-duration" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required>
+                    <input type="number" id="exercise-duration" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
                 </div>
                 <button type="button" id="calculate-exercise-calories-btn" class="w-full bg-teal-100 text-teal-600 py-2.5 rounded-lg text-sm font-semibold hover:bg-teal-200">AI 예상 소모 칼로리 계산</button>
                 <div id="exercise-calorie-loader" class="hidden text-center py-2">
-                    <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                    <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
                 </div>
-                <div id="exercise-calorie-result" class="hidden text-center bg-orange-50 p-3 rounded-lg">
-                    <p class="text-slate-600">예상 소모 칼로리: <span id="calculated-calories" class="font-bold text-orange-600">0</span> kcal</p>
+                <div id="exercise-calorie-result" class="hidden text-center bg-green-50 p-3 rounded-lg">
+                    <p class="text-slate-600">예상 소모 칼로리: <span id="calculated-calories" class="font-bold text-green-600">0</span> kcal</p>
                 </div>
                 <div class="pt-4 flex space-x-3">
                     <button type="button" id="cancel-add-exercise" class="w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition duration-300">취소</button>
-                    <button type="submit" id="submit-exercise-btn" class="w-full bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 transition disabled:bg-orange-300" disabled>기록하기</button>
+                    <button type="submit" id="submit-exercise-btn" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition disabled:bg-green-300" disabled>기록하기</button>
                 </div>
             </form>
         </div>
     </div>
 
 
-    <!-- AI 사진 분석 모달 -->
     <div id="photo-analysis-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 md:p-8 transform scale-95 transition-transform duration-300">
-            <h2 class="text-2xl font-jua text-orange-600 mb-6 text-center">AI 음식 분석</h2>
+            <h2 class="text-2xl font-jua text-green-600 mb-6 text-center">AI 음식 분석</h2>
             <div id="photo-upload-view">
                 <label for="photo-input" class="cursor-pointer">
-                    <div id="image-preview" class="w-full h-48 bg-orange-50 rounded-2xl flex flex-col items-center justify-center text-orange-400 dashed-border">
+                    <div id="image-preview" class="w-full h-48 bg-green-50 rounded-2xl flex flex-col items-center justify-center text-green-400 dashed-border">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         <p class="mt-2 font-semibold">사진을 여기에 올려주세요</p>
                     </div>
                 </label>
                 <input type="file" id="photo-input" accept="image/*" class="hidden">
-                <button id="analyze-photo-button" class="mt-4 w-full bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 transition duration-300 disabled:bg-orange-300">
+                <button id="analyze-photo-button" class="mt-4 w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition duration-300 disabled:bg-green-300">
                     분석 시작하기
                 </button>
             </div>
             <div id="photo-loading-view" class="hidden text-center py-8">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
                 <p class="mt-4 text-slate-500">AI가 사진을 분석하고 있어요...</p>
             </div>
             <div id="photo-result-view" class="hidden">
-                <!-- AI 분석 결과가 여기에 표시됩니다 -->
-            </div>
+                </div>
              <button type="button" id="cancel-photo-analysis" class="mt-4 w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition duration-300">취소</button>
         </div>
     </div>
 
-    <!-- 캘린더 상세 기록 모달 -->
     <div id="calendar-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 md:p-8 transform scale-95 transition-transform duration-300">
-            <h2 id="calendar-detail-title" class="text-2xl font-jua text-orange-600 mb-6 text-center"></h2>
+            <h2 id="calendar-detail-title" class="text-2xl font-jua text-green-600 mb-6 text-center"></h2>
             <div id="calendar-detail-list" class="space-y-3 max-h-96 overflow-y-auto">
-                <!-- 섭취 기록이 여기에 표시됩니다 -->
-            </div>
+                </div>
             <button type="button" id="close-calendar-detail" class="mt-6 w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition duration-300">닫기</button>
         </div>
     </div>
     
-    <!-- 프리미엄 구독 유도 모달 -->
     <div id="premium-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 md:p-8 transform scale-95 transition-transform duration-300 text-center">
-            <h2 class="text-2xl font-jua text-orange-600 mb-4">💎 피트밀 프리미엄</h2>
+            <h2 class="text-2xl font-jua text-green-600 mb-4">💎 피트밀 프리미엄</h2>
             <p class="text-slate-600 mb-6">상세 리포트 기능은 프리미엄 구독자 전용입니다. 지금 구독하고 모든 기능을 제한 없이 이용해 보세요!</p>
             <button id="subscribe-now-btn" class="w-full bg-amber-400 text-amber-900 py-3 rounded-full font-semibold hover:bg-amber-500 transition duration-300">
                 프리미엄 구독하기
@@ -496,10 +430,9 @@
         </div>
     </div>
 
-    <!-- 이용약관 모달 -->
     <div id="terms-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-2xl p-6 md:p-8 transform scale-95 transition-transform duration-300">
-            <h2 class="text-2xl font-jua text-orange-600 mb-6 text-center">이용약관</h2>
+            <h2 class="text-2xl font-jua text-green-600 mb-6 text-center">이용약관</h2>
             <div class="prose prose-sm max-h-96 overflow-y-auto text-slate-600">
                 <h3>제1조 (목적)</h3>
                 <p>본 약관은 에프앤앤(이하 "회사")가 제공하는 피트밀 앱(이하 "서비스")의 이용과 관련하여, 회사와 이용자 간의 권리와 의무, 책임사항 등을 정함을 목적으로 합니다.</p>
@@ -532,10 +465,9 @@
         </div>
     </div>
 
-    <!-- 개인정보 처리방침 모달 -->
     <div id="privacy-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-2xl p-6 md:p-8 transform scale-95 transition-transform duration-300">
-            <h2 class="text-2xl font-jua text-orange-600 mb-6 text-center">개인정보 처리방침</h2>
+            <h2 class="text-2xl font-jua text-green-600 mb-6 text-center">개인정보 처리방침</h2>
             <div class="prose prose-sm max-h-96 overflow-y-auto text-slate-600">
                 <h3>1. 수집하는 개인정보 항목</h3>
                 <p>회사는 회원가입 및 서비스 제공을 위해 아래와 같은 개인정보를 수집합니다.<br>
@@ -575,25 +507,23 @@
         </div>
     </div>
     
-    <!-- 비밀번호 재설정 모달 -->
     <div id="password-reset-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-sm p-8 transform scale-95 transition-transform duration-300">
-            <h2 class="text-2xl font-jua text-orange-600 mb-6 text-center">비밀번호 재설정</h2>
+            <h2 class="text-2xl font-jua text-green-600 mb-6 text-center">비밀번호 재설정</h2>
             <p class="text-center text-slate-600 mb-4">가입하신 이메일 주소를 입력하시면, 비밀번호를 재설정할 수 있는 링크를 보내드립니다.</p>
             <form id="password-reset-form">
                 <div>
                     <label for="reset-email" class="block text-sm font-medium text-slate-600">이메일</label>
-                    <input type="email" id="reset-email" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required>
+                    <input type="email" id="reset-email" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-green-500 focus:ring-green-500" required>
                 </div>
                 <div class="pt-4 flex flex-col gap-3">
-                    <button type="submit" class="w-full bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 transition">재설정 이메일 받기</button>
+                    <button type="submit" class="w-full bg-green-500 text-white py-3 rounded-full font-semibold hover:bg-green-600 transition">재설정 이메일 받기</button>
                     <button type="button" id="cancel-reset-password" class="w-full text-slate-500 py-2 rounded-full font-semibold hover:bg-slate-100 transition">취소</button>
                 </div>
             </form>
         </div>
     </div>
     
-    <!-- 회원탈퇴 확인 모달 -->
     <div id="withdraw-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 modal-backdrop opacity-0 pointer-events-none z-50">
         <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6 md:p-8 transform scale-95 transition-transform duration-300 text-center">
             <h2 class="text-2xl font-jua text-rose-600 mb-4">정말로 탈퇴하시겠어요? 😢</h2>
@@ -612,7 +542,6 @@
     </div>
 
 
-    <!-- 메시지 알림창 -->
     <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 text-white px-6 py-3 rounded-full shadow-lg opacity-0 transform translate-y-2 transition-all duration-300 font-semibold">
         <p id="toast-message"></p>
     </div>
@@ -858,10 +787,10 @@
                     card.innerHTML = `
                         <div class="flex justify-between items-start">
                             <div>
-                                <h3 class="text-lg font-jua text-orange-500">${mealTypes[mealType]}</h3>
+                                <h3 class="text-lg font-jua text-green-500">${mealTypes[mealType]}</h3>
                                 <p class="text-xl font-semibold my-2 text-slate-800">${meal.name}</p>
                             </div>
-                            <button class="log-ai-meal-btn bg-orange-100 text-orange-600 w-10 h-10 rounded-full text-xl font-semibold hover:bg-orange-200 flex items-center justify-center">+</button>
+                            <button class="log-ai-meal-btn bg-green-100 text-green-600 w-10 h-10 rounded-full text-xl font-semibold hover:bg-green-200 flex items-center justify-center">+</button>
                         </div>
                         <div class="flex justify-between text-sm text-slate-500 border-t border-slate-100 pt-3 mt-3">
                             <span>🔥 ${meal.calories} kcal</span>
@@ -881,7 +810,7 @@
             foods.forEach((food) => {
                 const item = document.createElement('div');
                 item.className = 'bg-white p-4 rounded-2xl custom-shadow flex justify-between items-center';
-                const imageHtml = food.photo ? `<img src="${food.photo}" class="w-12 h-12 rounded-lg object-cover mr-4">` : `<div class="w-12 h-12 rounded-lg bg-orange-50 flex-shrink-0 mr-4"></div>`;
+                const imageHtml = food.photo ? `<img src="${food.photo}" class="w-12 h-12 rounded-lg object-cover mr-4">` : `<div class="w-12 h-12 rounded-lg bg-green-50 flex-shrink-0 mr-4"></div>`;
                 item.innerHTML = `
                     <div class="flex items-center flex-grow">
                         ${imageHtml}
