@@ -58,7 +58,7 @@
             apiKey: "AIzaSyCRax6rd1rlBIc3kVgg5OkHmSIQyzJmC8A",
             authDomain: "fitmeal-app-d1a97.firebaseapp.com",
             projectId: "fitmeal-app-d1a97",
-            storageBucket: "fitmeal-app-d1a97.appspot.com", // .appspot.com 으로 끝나는 것이 일반적입니다.
+            storageBucket: "fitmeal-app-d1a97.appspot.com",
             messagingSenderId: "968711774677",
             appId: "1:968711774677:web:b3d3cb9ccc2388c3ba5d5c"
         };
@@ -240,7 +240,27 @@
             <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative animate-fade-in">
                 <button onclick="window.closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-xl">×</button>
                 <h2 class="text-2xl font-bold mb-4 text-gray-800">식단 기록하기</h2>
-                <form id="add-food-form">
+                
+                <!-- AI 분석 섹션 -->
+                <div class="mb-4 p-4 border border-dashed rounded-lg text-center">
+                    <label for="image-upload" class="cursor-pointer text-teal-500 font-semibold hover:text-teal-600">
+                        📷 사진으로 기록하기 (AI 분석)
+                    </label>
+                    <input id="image-upload" type="file" accept="image/*" class="hidden">
+                    <p id="ai-status" class="text-sm text-gray-500 mt-2"></p>
+                </div>
+                
+                <div class="relative py-2">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center">
+                        <span class="bg-white px-2 text-sm text-gray-500">또는</span>
+                    </div>
+                </div>
+
+                <!-- 수동 입력 폼 -->
+                <form id="add-food-form" class="mt-4">
                     <div class="mb-4">
                         <label class="block text-sm font-bold mb-2">식사 종류</label>
                         <select id="mealType" class="w-full p-3 border rounded-lg bg-gray-50">
@@ -294,6 +314,7 @@
             document.getElementById('register-form')?.addEventListener('submit', window.handleRegister);
             document.getElementById('onboarding-form')?.addEventListener('submit', window.handleOnboarding);
             document.getElementById('add-food-form')?.addEventListener('submit', window.handleAddFood);
+            document.getElementById('image-upload')?.addEventListener('change', window.handleImageUpload);
             
             if (state.currentPage === 'onboarding' || (state.isLoggedIn && !state.userInfo)) {
                  document.querySelectorAll('.goal-btn').forEach(btn => {
@@ -390,6 +411,31 @@
                     alert("삭제 실패: " + error.message);
                 }
             }
+        };
+
+        window.handleImageUpload = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const statusEl = document.getElementById('ai-status');
+            statusEl.textContent = 'AI가 사진을 분석하고 있습니다...';
+            
+            // AI 분석 시뮬레이션
+            setTimeout(() => {
+                // 실제 AI라면 여기서 분석 결과를 받아옵니다.
+                // 지금은 무작위 음식으로 결과를 시뮬레이션합니다.
+                const mockResults = [
+                    { name: '계란 후라이', calories: 180 },
+                    { name: '김치찌개', calories: 450 },
+                    { name: '샐러드', calories: 250 },
+                    { name: '피자 한 조각', calories: 300 }
+                ];
+                const result = mockResults[Math.floor(Math.random() * mockResults.length)];
+
+                statusEl.textContent = `분석 완료: ${result.name}`;
+                document.getElementById('foodName').value = result.name;
+                document.getElementById('calories').value = result.calories;
+            }, 2500); // 2.5초 딜레이
         };
 
         const setupFoodListener = (uid) => {
