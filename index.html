@@ -8,6 +8,9 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         html { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         ::-webkit-scrollbar { width: 8px; }
@@ -15,9 +18,6 @@
         ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
 
@@ -27,25 +27,24 @@
         </div>
     </div>
 
-    <script>
-    // --- Firebase 구성 ---
+<script>
+    // --- 1. 구성 설정 ---
     const firebaseConfig = {
         apiKey: "AIzaSyCRax6rd1rlBIc3kVgg5OkHmSIQyzJmC8A",
         authDomain: "fitmeal-app-d1a97.firebaseapp.com",
         projectId: "fitmeal-app-d1a97",
-        storageBucket: "fitmeal-app-d1a97.appspot.com", // storageBucket 주소 형식 수정
+        storageBucket: "fitmeal-app-d1a97.appspot.com",
         messagingSenderId: "968711774677",
         appId: "1:968711774677:web:b3d3cb9ccc2388c3ba5d5c"
     };
-    // 🔥 AI 기능 사용을 위한 API 키 설정
     const GEMINI_API_KEY = "AIzaSyDI3SsZ3cLDWdAfoVVeMe1NplZxhB91wCk";
 
-    // Firebase 앱 초기화
+    // --- 2. 앱 초기화 ---
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // --- 앱 상태 관리 ---
+    // --- 3. 앱 상태 관리 ---
     let state = {
         currentPage: 'loading',
         isLoggedIn: false,
@@ -54,7 +53,7 @@
         currentDate: new Date().toISOString().split('T')[0],
     };
 
-    // --- 템플릿 (HTML 조각) ---
+    // --- 4. HTML 템플릿 함수 ---
     const LoginPage = () => `
         <div class="flex flex-col items-center justify-center min-h-screen p-4">
             <div class="w-full max-w-sm">
@@ -111,29 +110,20 @@
     `;
 
     const DashboardPage = () => {
-        if (!state.user) return '<div class="flex items-center justify-center min-h-screen"><p class="text-gray-500">사용자 정보를 불러오는 중입니다...</p></div>';
-
+        if (!state.user) return '<div class="flex items-center justify-center min-h-screen"><p>사용자 정보를 불러오는 중입니다...</p></div>';
         const dateKey = state.currentDate;
         const todaysEntries = state.foodEntries[dateKey] || [];
-        
-        const totals = todaysEntries.reduce((acc, entry) => {
-            acc.calories += entry.calories;
-            acc.carbs += entry.carbs;
-            acc.protein += entry.protein;
-            acc.fat += entry.fat;
-            return acc;
-        }, { calories: 0, carbs: 0, protein: 0, fat: 0 });
-
+        const totals = todaysEntries.reduce((acc, entry) => ({
+            calories: acc.calories + entry.calories,
+            carbs: acc.carbs + entry.carbs,
+            protein: acc.protein + entry.protein,
+            fat: acc.fat + entry.fat,
+        }), { calories: 0, carbs: 0, protein: 0, fat: 0 });
         const meals = { '아침': [], '점심': [], '저녁': [], '간식': [] };
-        todaysEntries.forEach(entry => {
-            if (!meals[entry.mealType]) meals[entry.mealType] = [];
-            meals[entry.mealType].push(entry);
-        });
-
-        const caloriePercentage = state.user.goal > 0 ? Math.min((totals.calories / state.user.goal) * 100, 100) : 0;
+        todaysEntries.forEach(entry => meals[entry.mealType]?.push(entry));
+        const caloriePercentage = (state.user.goal > 0) ? Math.min((totals.calories / state.user.goal) * 100, 100) : 0;
         const circumference = 2 * Math.PI * 50;
         const strokeDashoffset = circumference - (caloriePercentage / 100) * circumference;
-
         return `
             <div class="min-h-screen bg-gray-50">
                 <header class="bg-white shadow-sm sticky top-0 z-10">
@@ -212,14 +202,15 @@
     const AddFoodModal = () => `
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
             <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-xl">×</button>
-            <h2 class="text-2xl font-bold mb-4 text-gray-800">AI 식단 기록</h2>
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">AI 사진으로 식단 기록</h2>
             <div class="mb-4">
                 <label class="block text-sm font-bold mb-2">식사 종류</label>
                 <select id="mealType" class="w-full p-3 border rounded-lg bg-gray-50"><option>아침</option><option>점심</option><option>저녁</option><option>간식</option></select>
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-bold mb-2" for="ai-food-input">음식 설명</label>
-                <textarea id="ai-food-input" placeholder="예: 점심으로 된장찌개랑 흰쌀밥 먹었어요" class="w-full p-3 border rounded-lg" rows="3"></textarea>
+                <label class="block text-sm font-bold mb-2" for="food-image-input">음식 사진 업로드 (JPG, PNG, WEBP)</label>
+                <input type="file" id="food-image-input" accept="image/jpeg, image/png, image/webp" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                <img id="image-preview" class="hidden rounded-lg mt-4 w-full h-auto object-cover"/>
             </div>
             <button id="ai-analyze-btn" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition">AI로 분석하기</button>
             <div id="ai-results-container" class="mt-6"></div>
@@ -227,7 +218,7 @@
         </div>
     `;
 
-    // --- 렌더링 및 이벤트 핸들러 ---
+    // --- 5. 핵심 로직: 렌더링 및 이벤트 처리 ---
     const appContainer = document.getElementById('app-container');
 
     const render = () => {
@@ -257,37 +248,53 @@
             }));
         }
         if (currentPage === 'dashboard') {
-            document.getElementById('ai-analyze-btn')?.addEventListener('click', handleAIAnalysis);
+            document.getElementById('food-image-input')?.addEventListener('change', handleImagePreview);
+            document.getElementById('ai-analyze-btn')?.addEventListener('click', handlePhotoAnalysis);
             document.getElementById('record-selected-btn')?.addEventListener('click', handleAddSelectedFoods);
         }
     };
 
-    // --- AI 분석 로직 ---
-    async function handleAIAnalysis() {
-        if (!GEMINI_API_KEY || GEMINI_API_KEY === "AIzaSyDI3SsZ3cLDWdAfoVVeMe1NplZxhB91wCk") {
-            return alert('Gemini API 키를 코드에 입력해주세요.');
-        }
-        const inputText = document.getElementById('ai-food-input').value;
-        if (!inputText.trim()) return alert('분석할 음식 설명을 입력해주세요.');
+    // --- 6. 기능별 함수 ---
+    const handleImagePreview = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        const preview = document.getElementById('image-preview');
+        reader.onload = (event) => {
+            preview.src = event.target.result;
+            preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const fileToBase64 = (file) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = error => reject(error);
+    });
+
+    async function handlePhotoAnalysis() {
+        const fileInput = document.getElementById('food-image-input');
+        if (fileInput.files.length === 0) return alert('분석할 음식 사진을 업로드해주세요.');
         
+        const file = fileInput.files[0];
         const resultsContainer = document.getElementById('ai-results-container');
         const analyzeBtn = document.getElementById('ai-analyze-btn');
         const recordBtn = document.getElementById('record-selected-btn');
         
-        resultsContainer.innerHTML = '<p class="text-center text-gray-500">AI가 분석 중입니다... 🤖</p>';
+        resultsContainer.innerHTML = '<p class="text-center text-gray-500">AI가 사진을 분석 중입니다... 🤖</p>';
         analyzeBtn.disabled = true;
         analyzeBtn.textContent = '분석 중...';
         recordBtn.classList.add('hidden');
-        
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-        const prompt = `다음 문장에서 음식 이름, 칼로리(kcal), 탄수화물(g), 단백질(g), 지방(g)을 추출해서 JSON 배열 형식으로 응답해줘. 각 음식은 별개의 JSON 객체로 만들고, 영양성분은 일반적인 예상치여야해. 숫자는 정수로 반올림하고 다른 설명 없이 순수 JSON 배열만 응답해줘. 입력 문장: "${inputText}"`;
-        
+
         try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
+            const base64Image = await fileToBase64(file);
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`;
+            const prompt = "이 사진에 있는 모든 음식 각각에 대해 이름, 예상 칼로리(kcal), 탄수화물(g), 단백질(g), 지방(g)을 추출해서 JSON 배열 형식으로 응답해줘. 음식과 관련없는 객체는 제외해줘. 숫자는 정수로 반올림하고, 다른 설명 없이 순수 JSON 배열만 응답해줘.";
+            const requestBody = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64Image } }] }] };
+            const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+            
             if (!response.ok) throw new Error(`API 오류: ${response.status}`);
             
             const data = await response.json();
@@ -295,8 +302,8 @@
             const foodItems = JSON.parse(jsonString);
             displayAIResults(foodItems);
         } catch (error) {
-            console.error("AI 분석 중 오류 발생:", error);
-            resultsContainer.innerHTML = '<p class="text-center text-red-500">분석에 실패했습니다. 직접 입력해주세요.</p>';
+            console.error("AI 사진 분석 중 오류:", error);
+            resultsContainer.innerHTML = '<p class="text-center text-red-500">사진 분석에 실패했습니다. 다른 사진으로 시도해주세요.</p>';
         } finally {
             analyzeBtn.disabled = false;
             analyzeBtn.textContent = 'AI로 분석하기';
@@ -312,7 +319,7 @@
             return;
         }
         resultsContainer.innerHTML = `
-            <h4 class="font-bold mb-2 text-gray-700">분석 결과</h4>
+            <h4 class="font-bold mb-2 text-gray-700">분석 결과 (기록할 항목 선택)</h4>
             <ul class="space-y-2">
                 ${foodItems.map((item, index) => `
                     <li class="flex items-center p-3 bg-gray-50 rounded-lg">
@@ -330,13 +337,30 @@
         recordBtn.classList.remove('hidden');
     }
 
-    // --- Firebase 기능 로직 ---
-    const handleLogin = (e) => { e.preventDefault(); auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value).catch(err => alert(err.message)); };
-    const handleRegister = (e) => { e.preventDefault(); auth.createUserWithEmailAndPassword(e.target.email.value, e.target.password.value).then(cred => db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, name: '새 사용자' })).catch(err => alert(err.message)); };
+    const handleLogin = (e) => {
+        e.preventDefault();
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+        console.log(`로그인 시도: ${email}`);
+        auth.signInWithEmailAndPassword(email, password)
+            .catch(error => {
+                console.error("Firebase 로그인 오류:", error); 
+                alert(`로그인 실패: ${error.message}`);
+            });
+    };
+    
+    const handleRegister = (e) => {
+        e.preventDefault();
+        auth.createUserWithEmailAndPassword(e.target.email.value, e.target.password.value)
+            .then(cred => db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, name: '새 사용자' }))
+            .catch(err => alert(err.message));
+    };
+    
     const handleLogout = () => auth.signOut();
+    
     const handleOnboarding = (e) => {
         e.preventDefault();
-        if (!state.user || !state.user.uid) return alert("사용자 정보가 없습니다.");
+        if (!state.user?.uid) return alert("사용자 정보가 없습니다. 다시 로그인해주세요.");
         const selectedGoalEl = document.querySelector('.goal-btn.bg-teal-500');
         if (!selectedGoalEl) return alert('목표를 선택해주세요.');
         const selectedGoal = selectedGoalEl.dataset.goal;
@@ -344,15 +368,21 @@
         if (selectedGoal === '체중 감량') calorieGoal = 1800;
         if (selectedGoal === '근육 증가') calorieGoal = 2500;
         const userData = { goal: calorieGoal, carbsGoal: Math.round(calorieGoal*0.5/4), proteinGoal: Math.round(calorieGoal*0.3/4), fatGoal: Math.round(calorieGoal*0.2/9) };
-        db.collection('users').doc(state.user.uid).update(userData).then(() => { state.user = { ...state.user, ...userData }; navigate('dashboard'); }).catch(err => alert(err.message));
+        db.collection('users').doc(state.user.uid).update(userData)
+          .then(() => { state.user = { ...state.user, ...userData }; navigate('dashboard'); })
+          .catch(err => alert(err.message));
     };
+
     async function handleAddSelectedFoods() {
         const mealType = document.getElementById('mealType').value;
         const selectedFoods = document.querySelectorAll('#ai-results-container input:checked');
         if (selectedFoods.length === 0) return alert('기록할 음식을 선택해주세요.');
+        
         const recordBtn = document.getElementById('record-selected-btn');
         recordBtn.disabled = true; recordBtn.textContent = '저장 중...';
+        
         const foodEntries = Array.from(selectedFoods).map(cb => ({ name: cb.dataset.name, calories: parseInt(cb.dataset.calories), carbs: parseInt(cb.dataset.carbs), protein: parseInt(cb.dataset.protein), fat: parseInt(cb.dataset.fat), mealType, createdAt: firebase.firestore.FieldValue.serverTimestamp() }));
+        
         try {
             const batch = db.batch();
             const collectionRef = db.collection('users').doc(state.user.uid).collection(state.currentDate);
@@ -365,17 +395,27 @@
             recordBtn.disabled = false; recordBtn.textContent = '선택 항목 기록하기';
         }
     }
-    const deleteFood = (entryId) => { if (confirm('삭제하시겠습니까?')) db.collection('users').doc(state.user.uid).collection(state.currentDate).doc(entryId).delete().then(() => fetchFoodEntriesForDate(state.currentDate)).catch(err => alert(err.message)); };
+    
+    const deleteFood = (entryId) => {
+        if (confirm('삭제하시겠습니까?')) {
+            db.collection('users').doc(state.user.uid).collection(state.currentDate).doc(entryId).delete()
+              .then(() => fetchFoodEntriesForDate(state.currentDate))
+              .catch(err => alert(err.message));
+        }
+    };
+    
     const changeDate = (amount) => {
         const date = new Date(state.currentDate);
         date.setDate(date.getDate() + amount);
         state.currentDate = date.toISOString().split('T')[0];
         fetchFoodEntriesForDate(state.currentDate);
     };
+    
     const openModal = () => document.getElementById('add-food-modal')?.classList.remove('hidden');
     const closeModal = () => document.getElementById('add-food-modal')?.classList.add('hidden');
+    
     const fetchFoodEntriesForDate = async (dateKey) => {
-        if (!state.user) return;
+        if (!state.user?.uid) return;
         try {
             const snapshot = await db.collection('users').doc(state.user.uid).collection(dateKey).orderBy('createdAt').get();
             state.foodEntries[dateKey] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -383,20 +423,21 @@
         } catch (error) { console.error("Error fetching entries:", error); }
     };
 
-    // --- Firebase 인증 상태 리스너 ---
+    // --- 7. 앱의 시작점: Firebase 인증 상태 감지 ---
     auth.onAuthStateChanged(async (firebaseUser) => {
         if (firebaseUser) {
             const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
+            state.isLoggedIn = true;
             if (userDoc.exists) {
                 const userData = userDoc.data();
-                state.isLoggedIn = true;
                 state.user = { uid: firebaseUser.uid, ...userData };
                 if (userData.goal) {
                     state.currentPage = 'dashboard';
                     fetchFoodEntriesForDate(state.currentDate);
-                } else navigate('onboarding');
+                } else {
+                    navigate('onboarding');
+                }
             } else {
-                state.isLoggedIn = true;
                 state.user = { uid: firebaseUser.uid, email: firebaseUser.email };
                 navigate('onboarding');
             }
@@ -405,7 +446,7 @@
             navigate('login');
         }
     });
-    </script>
+</script>
+
 </body>
 </html>
-
