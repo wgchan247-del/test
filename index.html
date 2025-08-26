@@ -159,6 +159,11 @@
         <header class="flex justify-between items-center mb-8">
             <h1 class="text-4xl font-jua text-orange-500">피트밀 🥗</h1>
             <div class="flex items-center gap-4">
+                 <!-- <button id="friends-toggle-button" class="text-gray-400 hover:text-orange-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.963A3.003 3.003 0 006 15a3 3 0 100-5.998 3.003 3.003 0 00-1.548 2.963m12.022 3.083A9.034 9.034 0 0118 15a3 3 0 10-5.998 0 3.003 3.003 0 002.963 1.548 9.034 9.034 0 013.035-1.548zM4 21a15.923 15.923 0 0016 0" />
+                    </svg>
+                 </button> -->
                  <button id="stats-toggle-button" class="text-gray-400 hover:text-orange-500">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
@@ -331,6 +336,26 @@
                 </div>
             </div>
         </section>
+        
+        <!-- 친구 뷰 -->
+        <!-- 
+        <section id="friends-view" class="hidden space-y-8">
+            <div class="bg-white p-6 rounded-3xl custom-shadow">
+                <h2 class="text-xl font-jua text-orange-600 mb-4">친구 찾기</h2>
+                <div class="flex gap-2">
+                    <input type="email" id="friend-search-input" class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" placeholder="친구의 이메일을 입력하세요">
+                    <button id="friend-search-btn" class="bg-orange-500 text-white px-5 py-2 rounded-lg font-semibold hover:bg-orange-600 transition">검색</button>
+                </div>
+                <div id="friend-search-result" class="mt-4"></div>
+            </div>
+            <div class="bg-white p-6 rounded-3xl custom-shadow">
+                <h2 class="text-xl font-jua text-orange-600 mb-4">내 친구 목록</h2>
+                <div id="friend-list" class="space-y-3">
+                    <p class="text-center text-slate-400 py-4">아직 추가된 친구가 없습니다.</p>
+                </div>
+            </div>
+        </section>
+        -->
 
     </div>
 
@@ -341,7 +366,6 @@
             <form id="profile-form" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4"><div><label for="gender" class="block text-sm font-medium text-slate-600">성별</label><select id="gender" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"><option value="female">여성</option><option value="male">남성</option><option value="unspecified">선택 안함</option></select></div><div><label for="age" class="block text-sm font-medium text-slate-600">나이</label><input type="number" id="age" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" placeholder="세"></div></div><div class="grid grid-cols-2 gap-4"><div><label for="height" class="block text-sm font-medium text-slate-600">신장</label><input type="number" id="height" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" placeholder="cm"></div><div><label for="weight" class="block text-sm font-medium text-slate-600">체중</label><input type="number" id="weight" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" placeholder="kg"></div></div><div><label for="activity" class="block text-sm font-medium text-slate-600">활동량</label><select id="activity" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"><option value="1.2">거의 없음</option><option value="1.375">가벼운 활동</option><option value="1.55">보통 활동</option><option value="1.725">높은 활동</option><option value="1.9">매우 높은 활동</option></select></div><div><label for="goal" class="block text-sm font-medium text-slate-600">목표</label><select id="goal" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"><option value="loss">체중 감량</option><option value="maintain">체중 유지</option><option value="gain">체중 증가</option></select></div><div class="pt-4"><button type="submit" class="w-full bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 transition duration-300">저장하기</button></div>
             </form>
-             <button id="withdraw-btn" class="mt-4 w-full text-xs text-slate-400 hover:text-red-500 hover:underline transition">회원 탈퇴</button>
         </div>
     </div>
     
@@ -1281,7 +1305,7 @@
             openModal(calendarDetailModal);
         }
 
-        // --- Gemini API 호출 ---
+        // --- Gemini API 호출 (보안 강화) ---
         async function callGeminiAPI(prompt, schema) {
             try {
                 const result = await callGeminiAPI_server({ prompt, schema });
