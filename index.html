@@ -4,102 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitMeal - AI 식단 관리</title>
-    <!-- Tailwind CSS CDN 로드 -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
-        /* 기본 폰트 및 부드러운 스크롤 적용 */
-        html {
-            font-family: 'Inter', sans-serif;
-            scroll-behavior: smooth;
-        }
-        /* 커스텀 스크롤바 (선택 사항) */
+        html { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
-        /* 깜빡임 방지를 위해 초기에 숨김 */
-        body { visibility: hidden; }
     </style>
-    <!-- Google Fonts (Inter) 로드 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
 
-    <!-- 이 div가 전체 앱의 컨테이너 역할을 합니다. -->
-    <div id="app-container"></div>
+    <div id="app-container">
+        <div class="flex items-center justify-center min-h-screen">
+            <p class="text-gray-500">앱을 불러오는 중입니다...</p>
+        </div>
+    </div>
 
-    <!-- Firebase SDK 스크립트 -->
-    <script type="module">
-        // Firebase v9+ 모듈러 SDK 임포트
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { 
-            getAuth, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut, 
-            onAuthStateChanged,
-            setPersistence,
-            browserSessionPersistence
-        } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            query, 
-            where, 
-            onSnapshot,
-            doc,
-            deleteDoc,
-            setDoc,
-            getDoc
-        } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-
-        // ===================================================================================
-        // !!! 중요: 여기에 자신의 Firebase 프로젝트 설정 값을 붙여넣으세요. !!!
-        // Firebase 콘솔 > 프로젝트 설정 > 일반 탭에서 찾을 수 있습니다.
-        // ===================================================================================
+    <script>
+        // --- Firebase 구성 ---
         const firebaseConfig = {
-            apiKey: "AIzaSyCRax6rd1rlBIc3kVgg5OkHmSIQyzJmC8A",
-            authDomain: "fitmeal-app-d1a97.firebaseapp.com",
-            projectId: "fitmeal-app-d1a97",
-            storageBucket: "fitmeal-app-d1a97.firebasestorage.app",
-            messagingSenderId: "968711774677",
-            appId: "1:968711774677:web:b3d3cb9ccc2388c3ba5d5c"
-            };
+  apiKey: "AIzaSyCRax6rd1rlBIc3kVgg5OkHmSIQyzJmC8A",
+  authDomain: "fitmeal-app-d1a97.firebaseapp.com",
+  projectId: "fitmeal-app-d1a97",
+  storageBucket: "fitmeal-app-d1a97.firebasestorage.app",
+  messagingSenderId: "968711774677",
+  appId: "1:968711774677:web:b3d3cb9ccc2388c3ba5d5c"
+};
 
         // Firebase 앱 초기화
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // --- 세션 기반 인증 설정 ---
-        setPersistence(auth, browserSessionPersistence)
-            .catch((error) => {
-                console.error("인증 상태 설정 실패:", error);
-            });
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
         // --- 앱 상태 관리 ---
         let state = {
-            authReady: false,
-            currentPage: 'login',
+            currentPage: 'loading', // 시작 페이지는 로딩
             isLoggedIn: false,
-            user: null, 
-            userInfo: null, 
-            foodEntries: {},
+            user: null, // { uid, email, name, goal, carbsGoal, proteinGoal, fatGoal }
+            foodEntries: {}, // { 'YYYY-MM-DD': [...] }
             currentDate: new Date().toISOString().split('T')[0],
-            unsubscribeFoodListener: null,
-            unsubscribeUserListener: null,
         };
 
-        // --- HTML 템플릿 ---
-        const LoadingSpinner = () => `
-            <div class="flex items-center justify-center min-h-screen">
-                <div class="w-16 h-16 border-4 border-teal-500 border-dashed rounded-full animate-spin"></div>
-            </div>
-        `;
-
+        // --- 템플릿 (HTML 조각) ---
+        // LoginPage, RegisterPage, OnboardingPage, DashboardPage 등 템플릿 함수는 이전과 동일...
         const LoginPage = () => `
             <div class="flex flex-col items-center justify-center min-h-screen p-4">
                 <div class="w-full max-w-sm">
@@ -108,15 +62,15 @@
                     <form id="login-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4">
                         <div class="mb-4">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="email">이메일</label>
-                            <input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="email" type="email" placeholder="email@example.com" required>
+                            <input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="email" type="email" value="test@fitmeal.com" required>
                         </div>
                         <div class="mb-6">
                             <label class="block text-gray-700 text-sm font-bold mb-2" for="password">비밀번호</label>
-                            <input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="password" type="password" placeholder="********" required>
+                            <input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="password" type="password" value="password123" required>
                         </div>
                         <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300" type="submit">로그인</button>
                     </form>
-                    <p class="text-center text-gray-500 text-sm">계정이 없으신가요? <button onclick="window.navigate('register')" class="font-bold text-teal-500 hover:text-teal-700">회원가입</button></p>
+                    <p class="text-center text-gray-500 text-sm">계정이 없으신가요? <button onclick="navigate('register')" class="font-bold text-teal-500 hover:text-teal-700">회원가입</button></p>
                 </div>
             </div>
         `;
@@ -130,11 +84,11 @@
                         <div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="password" type="password" required></div>
                         <button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg" type="submit">다음</button>
                     </form>
-                    <p class="text-center text-gray-500 text-sm">이미 계정이 있으신가요? <button onclick="window.navigate('login')" class="font-bold text-teal-500 hover:text-teal-700">로그인</button></p>
+                    <p class="text-center text-gray-500 text-sm">이미 계정이 있으신가요? <button onclick="navigate('login')" class="font-bold text-teal-500 hover:text-teal-700">로그인</button></p>
                 </div>
             </div>
         `;
-        
+
         const OnboardingPage = () => `
             <div class="flex flex-col items-center justify-center min-h-screen p-4">
                 <div class="w-full max-w-md text-center">
@@ -154,11 +108,12 @@
                 </div>
             </div>
         `;
-        
+
         const DashboardPage = () => {
+            if (!state.user) return '<div class="flex items-center justify-center min-h-screen"><p class="text-gray-500">사용자 정보를 불러오는 중입니다...</p></div>';
+
             const dateKey = state.currentDate;
             const todaysEntries = state.foodEntries[dateKey] || [];
-            const userInfo = state.userInfo || { goal: 2000, carbsGoal: 250, proteinGoal: 120, fatGoal: 67 };
             
             const totals = todaysEntries.reduce((acc, entry) => {
                 acc.calories += entry.calories;
@@ -169,9 +124,12 @@
             }, { calories: 0, carbs: 0, protein: 0, fat: 0 });
 
             const meals = { '아침': [], '점심': [], '저녁': [], '간식': [] };
-            todaysEntries.forEach(entry => meals[entry.mealType].push(entry));
+            todaysEntries.forEach(entry => {
+                if (!meals[entry.mealType]) meals[entry.mealType] = [];
+                meals[entry.mealType].push(entry);
+            });
 
-            const caloriePercentage = userInfo.goal > 0 ? Math.min((totals.calories / userInfo.goal) * 100, 100) : 0;
+            const caloriePercentage = state.user.goal > 0 ? Math.min((totals.calories / state.user.goal) * 100, 100) : 0;
             const circumference = 2 * Math.PI * 50;
             const strokeDashoffset = circumference - (caloriePercentage / 100) * circumference;
 
@@ -180,15 +138,17 @@
                     <header class="bg-white shadow-sm sticky top-0 z-10">
                         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
                             <h1 class="text-2xl font-bold text-teal-500">FitMeal</h1>
-                            <button onclick="window.handleLogout()" class="text-sm text-gray-600 hover:text-teal-500">로그아웃</button>
+                            <button onclick="handleLogout()" class="text-sm text-gray-600 hover:text-teal-500">로그아웃</button>
                         </div>
                     </header>
+                    
                     <main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
                         <div class="flex items-center justify-between mb-6">
-                            <button onclick="window.changeDate(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&lt;</button>
-                            <h2 class="text-xl font-semibold text-gray-800">${new Date(dateKey).toLocaleDateString('ko-KR', { timeZone: 'UTC' })}</h2>
-                            <button onclick="window.changeDate(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&gt;</button>
+                            <button onclick="changeDate(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&lt;</button>
+                            <h2 class="text-xl font-semibold text-gray-800">${new Date(dateKey + 'T00:00:00').toLocaleDateString('ko-KR')}</h2>
+                            <button onclick="changeDate(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold">&gt;</button>
                         </div>
+
                         <div class="bg-white p-6 rounded-lg shadow-md mb-8">
                             <div class="flex flex-col md:flex-row items-center justify-around gap-8">
                                 <div class="relative flex items-center justify-center w-48 h-48">
@@ -198,23 +158,26 @@
                                     </svg>
                                     <div class="absolute flex flex-col items-center">
                                         <span class="text-3xl font-bold text-gray-800">${totals.calories}</span>
-                                        <span class="text-sm text-gray-500">/ ${userInfo.goal} kcal</span>
+                                        <span class="text-sm text-gray-500">/ ${state.user.goal} kcal</span>
                                     </div>
                                 </div>
                                 <div class="w-full md:w-1/2 space-y-4">
-                                    ${NutrientBar('탄수화물', totals.carbs, userInfo.carbsGoal, 'bg-orange-500')}
-                                    ${NutrientBar('단백질', totals.protein, userInfo.proteinGoal, 'bg-sky-500')}
-                                    ${NutrientBar('지방', totals.fat, userInfo.fatGoal, 'bg-amber-400')}
+                                    ${NutrientBar('탄수화물', totals.carbs, state.user.carbsGoal, 'bg-orange-500')}
+                                    ${NutrientBar('단백질', totals.protein, state.user.proteinGoal, 'bg-sky-500')}
+                                    ${NutrientBar('지방', totals.fat, state.user.fatGoal, 'bg-amber-400')}
                                 </div>
                             </div>
                         </div>
+
                         <div class="space-y-6">
                             ${Object.entries(meals).map(([mealType, entries]) => MealCard(mealType, entries)).join('')}
                         </div>
                     </main>
-                    <div class="fixed bottom-6 right-6 z-20">
-                        <button onclick="window.openModal()" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300">+</button>
+
+                    <div class="fixed bottom-6 right-6">
+                        <button onclick="openModal()" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300">+</button>
                     </div>
+
                     <div id="add-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
                         ${AddFoodModal()}
                     </div>
@@ -228,7 +191,7 @@
                 <div>
                     <div class="flex justify-between items-center mb-1">
                         <span class="text-sm font-medium text-gray-700">${label}</span>
-                        <span class="text-xs text-gray-500">${consumed}g / ${goal}g</span>
+                        <span class="text-xs text-gray-500">${Math.round(consumed)}g / ${goal}g</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-2.5">
                         <div class="${color} h-2.5 rounded-full" style="width: ${percentage}%"></div>
@@ -248,7 +211,7 @@
                                     <p class="font-semibold text-gray-700">${entry.name}</p>
                                     <p class="text-sm text-gray-500">${entry.calories} kcal</p>
                                 </div>
-                                <button onclick="window.deleteFood('${entry.id}')" class="text-red-500 hover:text-red-700 font-bold text-xl">×</button>
+                                <button onclick="deleteFood('${entry.id}')" class="text-red-500 hover:text-red-700 font-bold text-xl">×</button>
                             </li>
                         `).join('')}
                     </ul>
@@ -258,7 +221,7 @@
 
         const AddFoodModal = () => `
             <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative">
-                <button onclick="window.closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-xl">×</button>
+                <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-xl">×</button>
                 <h2 class="text-2xl font-bold mb-4 text-gray-800">식단 기록하기</h2>
                 <form id="add-food-form">
                     <div class="mb-4">
@@ -279,31 +242,22 @@
                 </form>
             </div>
         `;
-        
+
         // --- 렌더링 및 이벤트 핸들러 ---
         const appContainer = document.getElementById('app-container');
 
         const render = () => {
-            if (!state.authReady) {
-                appContainer.innerHTML = LoadingSpinner();
-                return;
+            if (state.currentPage === 'loading') {
+                appContainer.innerHTML = '<div class="flex items-center justify-center min-h-screen"><p class="text-gray-500">앱을 불러오는 중입니다...</p></div>';
+            } else if (state.currentPage === 'login') {
+                appContainer.innerHTML = LoginPage();
+            } else if (state.currentPage === 'register') {
+                appContainer.innerHTML = RegisterPage();
+            } else if (state.currentPage === 'onboarding') {
+                appContainer.innerHTML = OnboardingPage();
+            } else if (state.currentPage === 'dashboard') {
+                appContainer.innerHTML = DashboardPage();
             }
-
-            let html = '';
-            if (state.isLoggedIn) {
-                if (state.userInfo) {
-                    html = DashboardPage();
-                } else {
-                    html = OnboardingPage();
-                }
-            } else {
-                if (state.currentPage === 'register') {
-                    html = RegisterPage();
-                } else {
-                    html = LoginPage();
-                }
-            }
-            appContainer.innerHTML = html;
             addEventListeners();
         };
 
@@ -313,13 +267,26 @@
         };
 
         const addEventListeners = () => {
-            document.getElementById('login-form')?.addEventListener('submit', handleLogin);
-            document.getElementById('register-form')?.addEventListener('submit', handleRegister);
-            document.getElementById('onboarding-form')?.addEventListener('submit', handleOnboarding);
-            document.getElementById('add-food-form')?.addEventListener('submit', handleAddFood);
+            const formIdMap = {
+                login: 'login-form',
+                register: 'register-form',
+                onboarding: 'onboarding-form',
+                dashboard: 'add-food-form',
+            };
+            const handlerMap = {
+                login: handleLogin,
+                register: handleRegister,
+                onboarding: handleOnboarding,
+                dashboard: handleAddFood,
+            };
+
+            const formId = formIdMap[state.currentPage];
+            if (formId) {
+                document.getElementById(formId)?.addEventListener('submit', handlerMap[state.currentPage]);
+            }
             
             if (state.currentPage === 'onboarding') {
-                 document.querySelectorAll('.goal-btn').forEach(btn => {
+                document.querySelectorAll('.goal-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         document.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('bg-teal-500', 'text-white', 'border-teal-500'));
                         e.currentTarget.classList.add('bg-teal-500', 'text-white', 'border-teal-500');
@@ -327,154 +294,146 @@
                 });
             }
         };
-
-        // --- Firebase CRUD 및 인증 로직 ---
-        const handleLogin = async (e) => {
-            e.preventDefault();
-            const email = e.target.email.value;
-            const password = e.target.password.value;
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                alert("로그인 실패: " + error.message);
-            }
-        };
-
-        const handleRegister = async (e) => {
-            e.preventDefault();
-            const email = e.target.email.value;
-            const password = e.target.password.value;
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                alert("회원가입 실패: " + error.message);
-            }
-        };
         
-        const handleOnboarding = async (e) => {
+        // --- Firebase 기능 로직 ---
+
+        const handleLogin = (e) => {
             e.preventDefault();
-            const selectedGoalEl = document.querySelector('#onboarding-form .goal-btn.bg-teal-500');
-            if (!selectedGoalEl) {
-                alert("목표를 선택해주세요.");
-                return;
-            }
-            const selectedGoal = selectedGoalEl.dataset.goal;
+            const email = e.target.email.value;
+            const password = e.target.password.value;
+            auth.signInWithEmailAndPassword(email, password)
+                .catch(error => alert(error.message));
+        };
+
+        const handleRegister = (e) => {
+            e.preventDefault();
+            const email = e.target.email.value;
+            const password = e.target.password.value;
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    // Firestore에 기본 사용자 문서 생성
+                    db.collection('users').doc(userCredential.user.uid).set({
+                        email: userCredential.user.email,
+                        name: '새 사용자',
+                        goal: 2000, // 기본값
+                    });
+                })
+                .catch(error => alert(error.message));
+        };
+
+        const handleLogout = () => {
+            auth.signOut();
+        };
+
+        const handleOnboarding = (e) => {
+            e.preventDefault();
+            if (!state.user) return;
+
+            const selectedGoal = document.querySelector('.goal-btn.bg-teal-500').dataset.goal;
             let calorieGoal = 2000;
             if (selectedGoal === '체중 감량') calorieGoal = 1800;
             if (selectedGoal === '근육 증가') calorieGoal = 2500;
             
-            const userInfo = {
+            const userData = {
                 goal: calorieGoal,
                 carbsGoal: Math.round(calorieGoal * 0.5 / 4),
                 proteinGoal: Math.round(calorieGoal * 0.3 / 4),
                 fatGoal: Math.round(calorieGoal * 0.2 / 9)
             };
             
-            try {
-                const userDocRef = doc(db, "users", auth.currentUser.uid);
-                await setDoc(userDocRef, userInfo);
-            } catch (error) {
-                alert("정보 저장 실패: " + error.message);
-            }
+            db.collection('users').doc(state.user.uid).update(userData)
+                .then(() => {
+                    state.user = { ...state.user, ...userData };
+                    navigate('dashboard');
+                })
+                .catch(error => alert("목표 업데이트 실패: " + error.message));
         };
 
-        const handleLogout = async () => {
-            await signOut(auth);
-        };
-        
-        const handleAddFood = async (e) => {
+        const handleAddFood = (e) => {
             e.preventDefault();
+            const calories = parseInt(e.target.calories.value);
             const newEntry = {
-                uid: auth.currentUser.uid,
-                date: state.currentDate,
                 name: e.target.foodName.value,
-                calories: parseInt(e.target.calories.value),
+                calories: calories,
                 mealType: e.target.mealType.value,
-                carbs: Math.round(parseInt(e.target.calories.value) * 0.5 / 4),
-                protein: Math.round(parseInt(e.target.calories.value) * 0.2 / 4),
-                fat: Math.round(parseInt(e.target.calories.value) * 0.3 / 9),
+                carbs: Math.round(calories * 0.5 / 4),
+                protein: Math.round(calories * 0.2 / 4),
+                fat: Math.round(calories * 0.3 / 9),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
-            
-            try {
-                await addDoc(collection(db, "foodEntries"), newEntry);
-                closeModal();
-            } catch (error) {
-                alert("기록 추가 실패: " + error.message);
+
+            db.collection('users').doc(state.user.uid).collection(state.currentDate).add(newEntry)
+                .then(() => {
+                    closeModal();
+                    fetchFoodEntriesForDate(state.currentDate); // 데이터 추가 후 새로고침
+                })
+                .catch(error => alert("음식 추가 실패: " + error.message));
+        };
+
+        const deleteFood = (entryId) => {
+            if (confirm('정말로 이 항목을 삭제하시겠습니까?')) {
+                db.collection('users').doc(state.user.uid).collection(state.currentDate).doc(entryId).delete()
+                    .then(() => {
+                        fetchFoodEntriesForDate(state.currentDate); // 데이터 삭제 후 새로고침
+                    })
+                    .catch(error => alert("삭제 실패: " + error.message));
             }
         };
 
-        const deleteFood = async (id) => {
-            if (confirm("정말로 이 기록을 삭제하시겠습니까?")) {
-                try {
-                    await deleteDoc(doc(db, "foodEntries", id));
-                } catch (error) {
-                    alert("삭제 실패: " + error.message);
-                }
-            }
-        };
-
-        const setupListeners = (uid) => {
-            if (state.unsubscribeFoodListener) state.unsubscribeFoodListener();
-            const foodQuery = query(collection(db, "foodEntries"), where("uid", "==", uid));
-            state.unsubscribeFoodListener = onSnapshot(foodQuery, (snapshot) => {
-                const allEntries = {};
-                snapshot.forEach((doc) => {
-                    const entry = { id: doc.id, ...doc.data() };
-                    if (!allEntries[entry.date]) allEntries[entry.date] = [];
-                    allEntries[entry.date].push(entry);
-                });
-                state.foodEntries = allEntries;
-                if (state.authReady) render();
-            });
-
-            if (state.unsubscribeUserListener) state.unsubscribeUserListener();
-            const userDocRef = doc(db, "users", uid);
-            state.unsubscribeUserListener = onSnapshot(userDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    state.userInfo = docSnap.data();
-                    if (state.authReady) render();
-                }
-            });
-        };
-
-        // --- 앱 시작 및 인증 상태 감지 ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                state.isLoggedIn = true;
-                state.user = user;
-                const userDocRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(userDocRef);
-                if (docSnap.exists()) {
-                    state.userInfo = docSnap.data();
-                    setupListeners(user.uid);
-                } else {
-                    state.userInfo = null;
-                }
-            } else {
-                if (state.unsubscribeFoodListener) state.unsubscribeFoodListener();
-                if (state.unsubscribeUserListener) state.unsubscribeUserListener();
-                Object.assign(state, {
-                    isLoggedIn: false, user: null, userInfo: null, foodEntries: {},
-                    currentPage: 'login', unsubscribeFoodListener: null, unsubscribeUserListener: null,
-                });
-            }
-            state.authReady = true;
-            render();
-            document.body.style.visibility = 'visible';
-        });
-        
-        // --- 전역 스코프에 함수 노출 ---
-        window.navigate = navigate;
-        window.changeDate = (amount) => {
+        const changeDate = (amount) => {
             const currentDateObj = new Date(state.currentDate);
             currentDateObj.setDate(currentDateObj.getDate() + amount);
-            state.currentDate = getLocalDateString(currentDateObj);
-            render();
+            state.currentDate = currentDateObj.toISOString().split('T')[0];
+            fetchFoodEntriesForDate(state.currentDate);
         };
-        window.openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
-        window.closeModal = () => document.getElementById('add-food-modal').classList.add('hidden');
-        window.deleteFood = deleteFood;
 
-    </script>
-</body>
-</html>
+        const openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
+        const closeModal = () => document.getElementById('add-food-modal').classList.add('hidden');
+
+        // Firestore에서 특정 날짜의 식단 기록을 가져오는 함수
+        const fetchFoodEntriesForDate = async (dateKey) => {
+            if (!state.user) return;
+            try {
+                const snapshot = await db.collection('users').doc(state.user.uid).collection(dateKey).orderBy('createdAt').get();
+                const entries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                state.foodEntries[dateKey] = entries;
+                render();
+            } catch (error) {
+                console.error("Error fetching food entries: ", error);
+                alert("데이터를 불러오는 데 실패했습니다.");
+            }
+        };
+
+        // --- Firebase 인증 상태 리스너 ---
+        auth.onAuthStateChanged(async (firebaseUser) => {
+            if (firebaseUser) {
+                // 사용자가 로그인한 경우
+                const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    state.isLoggedIn = true;
+                    state.user = { uid: firebaseUser.uid, ...userData };
+                    
+                    if (userData.goal && userData.carbsGoal) {
+                        // 목표가 설정되어 있으면 대시보드로 이동
+                        state.currentPage = 'dashboard';
+                        fetchFoodEntriesForDate(state.currentDate);
+                    } else {
+                        // 목표가 설정 안되어 있으면 온보딩 페이지로
+                        navigate('onboarding');
+                    }
+                } else {
+                    // Firestore에 사용자 데이터가 없는 경우 (예: 회원가입 직후)
+                    navigate('onboarding');
+                }
+            } else {
+                // 사용자가 로그아웃한 경우
+                state = {
+                    ...state, // currentDate는 유지
+                    isLoggedIn: false,
+                    user: null,
+                    foodEntries: {},
+                };
+                navigate('login');
+            }
+        });
