@@ -233,7 +233,7 @@
                         <div class="space-y-6">
                             ${Object.entries(meals).map(([mealType, entries]) => MealCard(mealType, entries)).join('')}
                         </div>
-                         <footer class="mt-12 text-right">
+                         <footer class="mt-12 text-left">
                             <button onclick="window.openDeleteModal()" class="text-xs text-gray-400 hover:text-red-500 hover:underline">회원 탈퇴</button>
                         </footer>
                     </main>
@@ -508,8 +508,7 @@
                 const userDocRef = doc(db, "users", auth.currentUser.uid);
                 await setDoc(userDocRef, userInfo);
                 state.userInfo = userInfo;
-                setupFoodListener(auth.currentUser.uid);
-                render(); // BUG FIX: 온보딩 완료 후 즉시 렌더링
+                // onAuthStateChanged가 리스너를 설정하고 렌더링을 다시 호출합니다.
             } catch (error) {
                 alert("정보 저장 실패: " + error.message);
             }
