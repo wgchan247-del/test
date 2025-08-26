@@ -28,7 +28,7 @@
         }
         .meal-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px -5px rgba(236, 128, 128, 0.15);
+            box-shadow: 0 10px 20px -5px rgba(235, 99, 70, 0.15);
         }
         .nutrient-ring {
             --size: 80px;
@@ -48,7 +48,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: conic-gradient(var(--color, #f43f5e) calc(var(--p, 0) * 1%), #fce7f3 0);
+            background: conic-gradient(var(--color, #f97316) calc(var(--p, 0) * 1%), #fee2e2 0);
             border-radius: 50%;
             mask: radial-gradient(farthest-side, transparent calc(99% - var(--thickness)), #fff calc(100% - var(--thickness)));
             -webkit-mask: radial-gradient(farthest-side, transparent calc(99% - var(--thickness)), #fff calc(100% - var(--thickness)));
@@ -58,10 +58,10 @@
             transition: opacity 0.3s ease-in-out;
         }
         .custom-shadow {
-            box-shadow: 0 4px 12px 0 rgba(236, 128, 128, 0.1);
+            box-shadow: 0 4px 12px 0 rgba(235, 99, 70, 0.1);
         }
         .dashed-border {
-             background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='24' ry='24' stroke='%23FBCFE8FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+             background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='24' ry='24' stroke='%23fed7aa' stroke-width='3' stroke-dasharray='6%2c 14' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
         }
         .calendar-day {
             transition: background-color 0.2s ease-in-out;
@@ -86,10 +86,7 @@
             <div class="flex justify-center mb-4">
                 <div class="w-16 h-16 bg-orange-400 rounded-full flex items-center justify-center shadow-lg shadow-orange-200">
                     <svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 19V5" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 5h8" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 12h5" />
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l3 6 3-6v14" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 19V5C8 4.44772 8.44772 4 9 4H10C10.5523 4 11 4.44772 11 5V12M11 12C11 10.3431 12.3431 9 14 9C15.6569 9 17 10.3431 17 12V19M11 12H8" />
                     </svg>
                 </div>
             </div>
@@ -378,19 +375,20 @@
                     <label for="exercise-name" class="block text-sm font-medium text-slate-600">운동 이름</label>
                     <input type="text" id="exercise-name" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required placeholder="예: 달리기, 요가">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="exercise-duration" class="block text-sm font-medium text-slate-600">운동 시간 (분)</label>
-                        <input type="number" id="exercise-duration" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required>
-                    </div>
-                    <div>
-                        <label for="exercise-calories" class="block text-sm font-medium text-slate-600">소모 칼로리 (kcal)</label>
-                        <input type="number" id="exercise-calories" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required>
-                    </div>
+                <div>
+                    <label for="exercise-duration" class="block text-sm font-medium text-slate-600">운동 시간 (분)</label>
+                    <input type="number" id="exercise-duration" class="mt-1 block w-full rounded-lg border-slate-300 shadow-sm focus:border-orange-500 focus:ring-orange-500" required>
+                </div>
+                <button type="button" id="calculate-exercise-calories-btn" class="w-full bg-teal-100 text-teal-600 py-2.5 rounded-lg text-sm font-semibold hover:bg-teal-200">AI 예상 소모 칼로리 계산</button>
+                <div id="exercise-calorie-loader" class="hidden text-center py-2">
+                    <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                </div>
+                <div id="exercise-calorie-result" class="hidden text-center bg-orange-50 p-3 rounded-lg">
+                    <p class="text-slate-600">예상 소모 칼로리: <span id="calculated-calories" class="font-bold text-orange-600">0</span> kcal</p>
                 </div>
                 <div class="pt-4 flex space-x-3">
                     <button type="button" id="cancel-add-exercise" class="w-full bg-slate-100 text-slate-600 py-3 rounded-full font-semibold hover:bg-slate-200 transition duration-300">취소</button>
-                    <button type="submit" class="w-full bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 transition duration-300">기록하기</button>
+                    <button type="submit" id="submit-exercise-btn" class="w-full bg-orange-500 text-white py-3 rounded-full font-semibold hover:bg-orange-600 transition disabled:bg-orange-300" disabled>기록하기</button>
                 </div>
             </form>
         </div>
@@ -987,6 +985,7 @@
             const isDashboardVisible = !dashboardView.classList.contains('hidden');
             dashboardView.classList.toggle('hidden');
             calendarView.classList.toggle('hidden');
+            statsView.classList.add('hidden'); // 다른 뷰로 전환 시 통계 뷰는 숨김
             if (isDashboardVisible) {
                 // 대시보드 -> 캘린더 화면으로 전환
                 calendarToggleButton.innerHTML = homeIconSVG;
@@ -996,6 +995,22 @@
                 calendarToggleButton.innerHTML = calendarIconSVG;
             }
         });
+        
+        statsToggleButton.addEventListener('click', () => {
+            const isDashboardVisible = !dashboardView.classList.contains('hidden');
+            dashboardView.classList.toggle('hidden');
+            statsView.classList.toggle('hidden');
+            calendarView.classList.add('hidden'); // 다른 뷰로 전환 시 캘린더 뷰는 숨김
+             if (isDashboardVisible) {
+                // 대시보드 -> 통계 화면으로 전환
+                statsToggleButton.innerHTML = homeIconSVG;
+                renderCharts(); // 최신 데이터로 차트를 그립니다.
+            } else {
+                // 통계 -> 대시보드 화면으로 전환
+                statsToggleButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>`;
+            }
+        });
+
 
         prevMonthBtn.addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() - 1);
