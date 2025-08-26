@@ -387,7 +387,8 @@
             try {
                 const base64Image = await fileToBase64(file);
 
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`, {
+                const model = "gemini-1.5-flash-latest"; // 최신 모델 이름으로 변경
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -543,6 +544,9 @@
                 });
                 state.foodEntries = allEntries;
                 render();
+            }, (error) => {
+                console.error("Snapshot listener error:", error);
+                // 여기서 오류 처리를 할 수 있습니다. 예를 들어 사용자에게 알림.
             });
         };
 
@@ -586,10 +590,6 @@
         };
         window.openModal = () => document.getElementById('add-food-modal').classList.remove('hidden');
         window.closeModal = () => document.getElementById('add-food-modal').classList.add('hidden');
-
-        // 페이지가 로드되면 바로 첫 화면을 렌더링합니다.
-        // onAuthStateChanged가 첫 렌더링을 담당하므로 이 부분은 삭제합니다.
-        // render();
 
     </script>
 </body>
