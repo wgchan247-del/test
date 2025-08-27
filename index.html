@@ -185,7 +185,7 @@
             async analyzePhoto(file) { 
                 const base64Image = await this.fileToBase64(file); 
                 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${App.config.geminiKey}`; 
-                const prompt = "당신은 매우 정확하고 꼼꼼한 영양 분석가입니다. 이 사진 속의 모든 '음식'을 분석해주세요. 각 음식에 대해 한국어 이름, 현실적인 예상 칼로리(kcal), 탄수화물(g), 단백질(g), 지방(g)을 추정해주세요. 규칙: 1. 물 같은 예외적인 음식을 제외하고 칼로리, 탄수화물, 단백질, 지방은 단위가 0이 될 수 없습니다. 2. 음식 이름을 모르면, 그 항목은 결과에서 아예 제외하세요. 3. 식기나 그릇 등 음식이 아닌 항목은 결과에서 반드시 제외해주세요. 4. '쌀밥 100g'은 탄수화물이 약 30g인 것을 기준으로 삼아, 다른 음식의 영양 정보도 현실적으로 계산해주세요. 응답은 다른 설명 없이, 유효한 JSON 배열 형식으로만 반환해주세요."; 
+                const prompt = "당신은 매우 정확하고 꼼꼼한 영양 분석가입니다. 이 사진 속의 모든 '음식'을 분석해주세요. 각 음식에 대해 한국어 이름, 현실적인 예상 칼로리(kcal), 탄수화물(g), 단백질(g), 지방(g)을 추정해주세요. 규칙: 1. 물 같은 예외적인 음식을 제외하면 칼로리는 0이 될 수 없습니다. 2. 음식 이름이 없으면, 그 항목은 결과에서 아예 제외하세요. 3. 식기나 그릇 등 음식이 아닌 항목은 결과에서 반드시 제외해주세요. 4. '쌀밥 100g'은 탄수화물이 약 30g인 것을 기준으로 삼아, 다른 음식의 영양 정보도 현실적으로 계산해주세요. 응답은 다른 설명 없이, 유효한 JSON 배열 형식으로만 반환해주세요."; 
                 const requestBody = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64Image } }] }] }; 
                 const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }); 
                 if (!response.ok) throw new Error(`API 오류: ${response.status}`); 
@@ -212,6 +212,7 @@
 </script>
 </body>
 </html>
+
 
 
 
