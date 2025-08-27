@@ -137,7 +137,7 @@
             
             handleManualSuggestion() {
                 const editableList = document.getElementById('editable-food-list');
-                editableList.innerHTML = EditableFoodList(["", "", ""]); // 3개의 빈칸으로 시작
+                editableList.innerHTML = EditableFoodList(["", "", ""]);
                 document.getElementById('modal-step-1').classList.add('hidden');
                 document.getElementById('modal-step-2').classList.remove('hidden');
             },
@@ -189,7 +189,10 @@
                 if (!response.ok) throw new Error(`API 오류: ${response.status}`); 
                 const data = await response.json(); 
                 let jsonString = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]'; 
-                try { return JSON.parse(jsonString.replace(/```json|```/g, '').trim()); } catch(e) { throw new Error("AI 응답을 처리할 수 없습니다."); }
+                try { 
+                    const results = JSON.parse(jsonString.replace(/```json|```/g, '').trim());
+                    return results.filter(name => name && typeof name === 'string' && name.trim() !== '');
+                } catch(e) { throw new Error("AI 응답을 처리할 수 없습니다."); }
             },
             async analyzeText(text) {
                 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${App.config.geminiKey}`;
@@ -205,7 +208,10 @@
                 if (!response.ok) throw new Error(`API 오류: ${response.status}`);
                 const data = await response.json();
                 let jsonString = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
-                try { return JSON.parse(jsonString.replace(/```json|```/g, '').trim()); } catch(e) { throw new Error("AI 응답을 처리할 수 없습니다."); }
+                try { 
+                    const results = JSON.parse(jsonString.replace(/```json|```/g, '').trim());
+                    return results.filter(item => item && item.calories > 0 && item.name && item.name.trim() !== '');
+                } catch(e) { throw new Error("AI 응답을 처리할 수 없습니다."); }
             },
             async addFoodEntries(uid, date, entries) { const batch = App.db.batch(); const ref = App.db.collection('users').doc(uid).collection(date); entries.forEach(entry => { entry.createdAt = firebase.firestore.FieldValue.serverTimestamp(); batch.set(ref.doc(), entry); }); await batch.commit(); App.handlers.closeModal(); const newEntries = await App.api.getFoodEntries(uid, date); App.setState({ foodEntries: { ...App.state.foodEntries, [date]: newEntries } }); },
             async deleteFoodEntry(uid, date, entryId) { return App.db.collection('users').doc(uid).collection(date).doc(entryId).delete(); },
