@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitMeal - AI 식단 관리</title>
+    <title>FitMeal - AI 식단 관리 (Final Version)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -12,106 +12,155 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        html { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        html { font-family: 'Inter', sans-serif; }
         button:disabled { cursor: not-allowed; opacity: 0.7; }
         .btn-interactive { transition: transform 0.1s ease; }
         .btn-interactive:active { transform: scale(0.98); }
     </style>
 </head>
 <body class="bg-gray-50">
-
-    <div id="app-container">
-        <div class="flex items-center justify-center min-h-screen">
-            <p class="text-gray-500">FitMeal을 준비 중입니다...</p>
-        </div>
-    </div>
-
+    <div id="app-container"></div>
 <script>
-    // --- 1. 구성 설정 ---
-    const firebaseConfig = { apiKey: "AIzaSyCRax6rd1rlBIc3kVgg5OkHmSIQyzJmC8A", authDomain: "fitmeal-app-d1a97.firebaseapp.com", projectId: "fitmeal-app-d1a97", storageBucket: "fitmeal-app-d1a97.appspot.com", messagingSenderId: "968711774677", appId: "1:968711774677:web:b3d3cb9ccc2388c3ba5d5c" };
-    const GEMINI_API_KEY = "AIzaSyDI3SsZ3cLDWdAfoVVeMe1NplZxhB91wCk";
+    const App = {
+        config: {
+            firebase: { apiKey: "AIzaSyCRax6rd1rlBIc3kVgg5OkHmSIQyzJmC8A", authDomain: "fitmeal-app-d1a97.firebaseapp.com", projectId: "fitmeal-app-d1a97", storageBucket: "fitmeal-app-d1a97.appspot.com", messagingSenderId: "968711774677", appId: "1:968711774677:web:b3d3cb9ccc2388c3ba5d5c" },
+            geminiKey: "AIzaSyDI3SsZ3cLDWdAfoVVeMe1NplZxhB91wCk"
+        },
+        
+        state: {
+            currentPage: 'loading',
+            isLoading: true,
+            user: null,
+            foodEntries: {},
+            currentDate: new Date().toISOString().split('T')[0]
+        },
 
-    // --- 2. 앱 초기화 ---
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+        init() {
+            firebase.initializeApp(this.config.firebase);
+            this.auth = firebase.auth();
+            this.db = firebase.firestore();
+            this.auth.onAuthStateChanged(this.handlers.onAuthStateChanged.bind(this));
+            this.render();
+        },
 
-    // --- 3. 앱 상태 관리 ---
-    let state = { currentPage: 'loading', isLoggedIn: false, user: null, foodEntries: {}, currentDate: new Date().toISOString().split('T')[0] };
+        setState(newState) {
+            this.state = { ...this.state, ...newState };
+            window.requestAnimationFrame(() => this.render());
+        },
 
-    // --- 4. HTML 템플릿 함수 ---
-    const Logo = (sizeClass = "text-4xl") => `<div class="flex items-center justify-center gap-2"><svg class="${sizeClass.replace('text-','w-').replace('4xl','10').replace('2xl','8')} text-teal-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.384,13.823,19.2,11.639,16.8,14.038V3a1,1,0,0,0-2,0v11.038L12.4,11.639,10.216,13.823,15.8,19.4a1,1,0,0,0,1.414,0ZM12,12a1,1,0,0,0-1,1v8a1,1,0,0,0,2,0V13A1,1,0,0,0,12,12ZM7.2,14.038,4.8,11.639,2.616,13.823,8.2,19.4a1,1,0,0,0,1.414,0L11.8,17.239,9.6,15.055,7.2,17.454V3a1,1,0,0,0-2,0Z"/></svg><h1 class="${sizeClass} font-bold text-teal-500">FitMeal</h1></div>`;
-    const LoginPage = () => `<div class="flex flex-col items-center justify-center min-h-screen p-4"><div class="w-full max-w-sm"><div class="mb-2">${Logo("text-4xl")}</div><p class="text-center text-gray-600 mb-8">AI 식단 관리, 피트밀과 함께</p><form id="login-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4"><div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2" for="email">이메일</label><input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="email" type="email" required></div><div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2" for="password">비밀번호</label><input class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500" id="password" type="password" required></div><button id="login-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 btn-interactive" type="submit">로그인</button></form><p class="text-center text-gray-500 text-sm">계정이 없으신가요? <button onclick="navigate('register')" class="font-bold text-teal-500 hover:text-teal-700">회원가입</button></p></div></div>`;
-    const RegisterPage = () => `<div class="flex flex-col items-center justify-center min-h-screen p-4"><div class="w-full max-w-sm"><h1 class="text-4xl font-bold text-center text-teal-500 mb-8">회원가입</h1><form id="register-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4"><div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">이메일</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="email" type="email" required></div><div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="password" type="password" required></div><button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg btn-interactive" type="submit">다음</button></form><p class="text-center text-gray-500 text-sm">이미 계정이 있으신가요? <button onclick="navigate('login')" class="font-bold text-teal-500 hover:text-teal-700">로그인</button></p></div></div>`;
-    const OnboardingPage = () => `<div class="flex flex-col items-center justify-center min-h-screen p-4"><div class="w-full max-w-md text-center"><h1 class="text-3xl font-bold text-gray-800 mb-2">FitMeal에 오신 것을 환영합니다!</h1><p class="text-gray-600 mb-8">정확한 추천을 위해 목표를 알려주세요.</p><form id="onboarding-form" class="bg-white shadow-lg rounded-lg p-8"><div class="mb-6"><label class="block text-gray-700 text-lg font-bold mb-4">가장 중요한 목표는 무엇인가요?</label><div id="goal-options" class="flex flex-col sm:flex-row justify-center gap-4"><button type="button" data-goal="체중 감량" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition bg-teal-500 border-teal-500 text-white btn-interactive">체중 감량</button><button type="button" data-goal="체중 유지" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition border-gray-300 text-gray-700 btn-interactive">체중 유지</button><button type="button" data-goal="근육 증가" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition border-gray-300 text-gray-700 btn-interactive">근육 증가</button></div></div><button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg btn-interactive" type="submit">피트밀 시작하기</button></form></div></div>`;
-    const DashboardPage = () => { if (!state.user) return `<div class="flex items-center justify-center min-h-screen"><p>사용자 정보를 불러오는 중입니다...</p></div>`; const dateKey = state.currentDate; const todaysEntries = state.foodEntries[dateKey] || []; const totals = todaysEntries.reduce((a, e) => ({ calories: a.calories + (e.calories||0), carbs: a.carbs + (e.carbs||0), protein: a.protein + (e.protein||0), fat: a.fat + (e.fat||0) }), { calories:0, carbs:0, protein:0, fat:0 }); const meals = { '아침':[],'점심':[],'저녁':[],'간식':[]}; todaysEntries.forEach(e => meals[e.mealType]?.push(e)); const caloriePercentage = state.user.goal > 0 ? Math.min((totals.calories/state.user.goal)*100, 100) : 0; const circ = 2 * Math.PI * 50; const offset = circ - (caloriePercentage/100) * circ; return `<div class="min-h-screen bg-gray-50"><header class="bg-white shadow-sm sticky top-0 z-10"><div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">${Logo("text-2xl")}<button onclick="handleLogout()" class="text-sm text-gray-600 hover:text-teal-500">로그아웃</button></div></header><main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8"><div class="flex items-center justify-between mb-6"><button onclick="changeDate(-1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold btn-interactive">&lt;</button><h2 class="text-xl font-semibold text-gray-800">${new Date(dateKey + 'T00:00:00').toLocaleDateString('ko-KR')}</h2><button onclick="changeDate(1)" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold btn-interactive">&gt;</button></div><div class="bg-white p-6 rounded-lg shadow-md mb-8"><div class="flex flex-col md:flex-row items-center justify-around gap-8"><div class="relative flex items-center justify-center w-48 h-48"><svg class="w-full h-full" viewBox="0 0 120 120"><circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60"/><circle class="text-teal-500" stroke-width="10" stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60" transform="rotate(-90 60 60)"/></svg><div class="absolute flex flex-col items-center"><span class="text-3xl font-bold text-gray-800">${Math.round(totals.calories)}</span><span class="text-sm text-gray-500">/ ${state.user.goal||2000} kcal</span></div></div><div class="w-full md:w-1/2 space-y-4">${NutrientBar('탄수화물',totals.carbs,state.user.carbsGoal||0,'bg-orange-500')}${NutrientBar('단백질',totals.protein,state.user.proteinGoal||0,'bg-sky-500')}${NutrientBar('지방',totals.fat,state.user.fatGoal||0,'bg-amber-400')}</div></div></div><div class="space-y-6">${Object.entries(meals).map(([type, entries]) => MealCard(type, entries)).join('')}</div></main><div class="fixed bottom-6 right-6"><button onclick="openModal()" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300 btn-interactive">+</button></div><div id="add-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">${AddFoodModal()}</div></div>`; };
-    const NutrientBar = (label, consumed, goal, color) => { const percentage = goal > 0 ? Math.min((consumed/goal)*100, 100) : 0; return `<div><div class="flex justify-between items-center mb-1"><span class="text-sm font-medium text-gray-700">${label}</span><span class="text-xs text-gray-500">${Math.round(consumed)}g / ${goal}g</span></div><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="${color} h-2.5 rounded-full" style="width: ${percentage}%"></div></div></div>`; };
-    const MealCard = (mealType, entries) => `<div class="bg-white p-6 rounded-lg shadow-md"><h3 class="text-lg font-bold text-gray-800 mb-4">${mealType}</h3>${entries.length > 0 ? `<ul class="divide-y divide-gray-200">${entries.map(entry => `<li class="py-3 flex justify-between items-center"><div><p class="font-semibold text-gray-700">${entry.name}</p><p class="text-sm text-gray-500">${entry.calories} kcal</p></div><button onclick="deleteFood('${entry.id}')" class="text-red-500 hover:text-red-700 font-bold text-xl">×</button></li>`).join('')}</ul>` : `<p class="text-gray-500 text-sm">기록된 식단이 없어요.</p>`}</div>`;
-    const AddFoodModal = () => `<div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 relative"><button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">×</button><h2 class="text-2xl font-bold mb-4 text-gray-800">AI 사진으로 식단 기록</h2><div class="mb-4"><label class="block text-sm font-bold mb-2">식사 종류</label><select id="mealType" class="w-full p-3 border rounded-lg bg-gray-50"><option>아침</option><option>점심</option><option>저녁</option><option>간식</option></select></div><div class="mb-4"><label class="block text-sm font-bold mb-2" for="food-image-input">음식 사진 업로드</label><input type="file" id="food-image-input" accept="image/jpeg, image/png, image/webp" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"><img id="image-preview" class="hidden rounded-lg mt-4 w-full h-auto object-cover"/></div><button id="ai-analyze-btn" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition btn-interactive">AI로 분석하기</button><div id="ai-results-container" class="mt-6"></div><button id="record-selected-btn" class="hidden w-full bg-sky-500 text-white font-bold py-3 rounded-lg hover:bg-sky-600 transition mt-4 btn-interactive">선택 항목 기록하기</button></div>`;
-    
-    const appContainer = document.getElementById('app-container');
-    const render = () => { const { currentPage } = state; if (currentPage === 'login') appContainer.innerHTML = LoginPage(); else if (currentPage === 'register') appContainer.innerHTML = RegisterPage(); else if (currentPage === 'onboarding') appContainer.innerHTML = OnboardingPage(); else if (currentPage === 'dashboard') appContainer.innerHTML = DashboardPage(); addEventListeners(); };
-    const navigate = (page) => { state.currentPage = page; render(); };
-    const addEventListeners = () => { const { currentPage } = state; if (currentPage === 'login') document.getElementById('login-form')?.addEventListener('submit', handleLogin); if (currentPage === 'register') document.getElementById('register-form')?.addEventListener('submit', handleRegister); if (currentPage === 'onboarding') { document.getElementById('onboarding-form')?.addEventListener('submit', handleOnboarding); document.querySelectorAll('.goal-btn').forEach(btn => btn.addEventListener('click', (e) => { document.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('bg-teal-500', 'text-white', 'border-teal-500')); e.currentTarget.classList.add('bg-teal-500', 'text-white', 'border-teal-500'); })); } if (currentPage === 'dashboard') { document.getElementById('food-image-input')?.addEventListener('change', handleImagePreview); document.getElementById('ai-analyze-btn')?.addEventListener('click', handlePhotoAnalysis); document.getElementById('record-selected-btn')?.addEventListener('click', handleAddSelectedFoods); } };
-    
-    const handleImagePreview = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); const preview = document.getElementById('image-preview'); reader.onload = (event) => { preview.src = event.target.result; preview.classList.remove('hidden'); }; reader.readAsDataURL(file); };
-    const fileToBase64 = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); });
-    
-    async function handlePhotoAnalysis() {
-        const fileInput = document.getElementById('food-image-input'); if (!fileInput.files.length) return alert('분석할 음식 사진을 업로드해주세요.'); const file = fileInput.files[0]; const resultsContainer = document.getElementById('ai-results-container'); const analyzeBtn = document.getElementById('ai-analyze-btn'); const recordBtn = document.getElementById('record-selected-btn'); resultsContainer.innerHTML = '<p class="text-center text-gray-500">AI가 사진을 분석 중입니다... 🤖</p>'; analyzeBtn.disabled = true; analyzeBtn.textContent = '분석 중...'; recordBtn.classList.add('hidden');
-        try {
-            const base64Image = await fileToBase64(file); const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${GEMINI_API_KEY}`; const prompt = "이 사진에 있는 모든 음식 각각에 대해 이름, 예상 칼로리(kcal), 탄수화물(g), 단백질(g), 지방(g)을 추출해서 JSON 배열 형식으로 응답해줘. 음식과 관련없는 객체는 제외해줘. 숫자는 정수로 반올림하고, 다른 설명 없이 순수 JSON 배열만 응답해줘."; const requestBody = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64Image } }] }] }; const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }); if (!response.ok) throw new Error(`API 오류: ${response.status}`); const data = await response.json(); let jsonString = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]'; jsonString = jsonString.replace(/```json|```/g, '').trim(); 
-            let foodItems = [];
-            try { foodItems = JSON.parse(jsonString); } catch (e) { console.error("JSON 파싱 오류:", e); throw new Error("AI 응답을 처리할 수 없습니다."); }
-            displayAIResults(foodItems);
-        } catch (error) { console.error("AI 사진 분석 중 오류:", error); resultsContainer.innerHTML = `<p class="text-center text-red-500">사진 분석에 실패했습니다: ${error.message}</p>`; } finally { analyzeBtn.disabled = false; analyzeBtn.textContent = 'AI로 분석하기'; }
-    }
+        render() {
+            const { currentPage, isLoading } = this.state;
+            const appContainer = document.getElementById('app-container');
+            if (!appContainer) return;
 
-    function displayAIResults(foodItems) {
-        const resultsContainer = document.getElementById('ai-results-container'); const recordBtn = document.getElementById('record-selected-btn'); if (!foodItems || !foodItems.length) { resultsContainer.innerHTML = '<p class="text-center text-gray-500">분석된 음식이 없습니다.</p>'; recordBtn.classList.add('hidden'); return; }
-        resultsContainer.innerHTML = `<h4 class="font-bold mb-2 text-gray-700">분석 결과 (기록할 항목 선택)</h4><ul class="space-y-2">${foodItems.map((item, index) => `<li class="flex items-center p-3 bg-gray-50 rounded-lg"><input id="food-${index}" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-teal-600 focus:ring-teal-500" data-name="${item.name||'이름없음'}" data-calories="${item.calories||0}" data-carbs="${item.carbs||0}" data-protein="${item.protein||0}" data-fat="${item.fat||0}" checked><label for="food-${index}" class="ml-3 text-gray-800"><span class="font-semibold">${item.name||'이름없음'}</span><span class="text-sm text-gray-500"> - ${item.calories||0} kcal</span></label></li>`).join('')}</ul>`; recordBtn.classList.remove('hidden');
-    }
-
-    const handleLogin = async (e) => { e.preventDefault(); const loginBtn = document.getElementById('login-btn'); loginBtn.disabled = true; loginBtn.textContent = '로그인 중...'; try { await auth.signInWithEmailAndPassword(e.target.email.value, e.target.password.value); } catch (error) { console.error("Firebase 로그인 오류:", error); alert(`로그인 실패: ${error.message}`); loginBtn.disabled = false; loginBtn.textContent = '로그인'; } };
-    const handleRegister = (e) => { e.preventDefault(); const btn = e.target.querySelector('button'); btn.disabled = true; auth.createUserWithEmailAndPassword(e.target.email.value, e.target.password.value).then(cred => db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, name: '새 사용자' })).catch(err => { alert(err.message); btn.disabled = false; }); };
-    const handleLogout = () => auth.signOut();
-    const handleOnboarding = (e) => { e.preventDefault(); if (!state.user?.uid) return alert("사용자 정보가 없습니다."); const el = document.querySelector('.goal-btn.bg-teal-500'); if (!el) return alert('목표를 선택해주세요.'); let goal = 2000; if (el.dataset.goal === '체중 감량') goal = 1800; if (el.dataset.goal === '근육 증가') goal = 2500; const data = { goal, carbsGoal: Math.round(goal*0.5/4), proteinGoal: Math.round(goal*0.3/4), fatGoal: Math.round(goal*0.2/9) }; db.collection('users').doc(state.user.uid).set(data, { merge: true }).then(() => { state.user = { ...state.user, ...data }; navigate('dashboard'); }).catch(err => alert(err.message)); };
-    async function handleAddSelectedFoods() { const sel = document.querySelectorAll('#ai-results-container input:checked'); if (!sel.length) return alert('기록할 음식을 선택해주세요.'); const btn = document.getElementById('record-selected-btn'); btn.disabled = true; btn.textContent = '저장 중...'; const entries = Array.from(sel).map(cb => ({ name: cb.dataset.name, calories: parseInt(cb.dataset.calories), carbs: parseInt(cb.dataset.carbs), protein: parseInt(cb.dataset.protein), fat: parseInt(cb.dataset.fat), mealType: document.getElementById('mealType').value, createdAt: firebase.firestore.FieldValue.serverTimestamp() })); try { const batch = db.batch(); const ref = db.collection('users').doc(state.user.uid).collection(state.currentDate); entries.forEach(entry => batch.set(ref.doc(), entry)); await batch.commit(); closeModal(); fetchFoodEntriesForDate(state.currentDate, true); } catch (error) { alert('저장 실패: ' + error.message); btn.disabled = false; btn.textContent = '선택 항목 기록하기'; } }
-    const deleteFood = (id) => { if (confirm('삭제하시겠습니까?')) db.collection('users').doc(state.user.uid).collection(state.currentDate).doc(id).delete().then(() => fetchFoodEntriesForDate(state.currentDate, true)).catch(err => alert(err.message)); };
-    const changeDate = (amount) => { const d = new Date(state.currentDate); d.setDate(d.getDate() + amount); state.currentDate = d.toISOString().split('T')[0]; fetchFoodEntriesForDate(state.currentDate, true); };
-    const openModal = () => document.getElementById('add-food-modal')?.classList.remove('hidden');
-    const closeModal = () => document.getElementById('add-food-modal')?.classList.add('hidden');
-    const fetchFoodEntriesForDate = async (dateKey, forceRender = false) => { if (!state.user?.uid) return; try { const snapshot = await db.collection('users').doc(state.user.uid).collection(dateKey).orderBy('createdAt').get(); state.foodEntries[dateKey] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); if(forceRender) render(); } catch (error) { console.error("Error fetching entries:", error); alert("데이터 로딩에 실패했습니다."); } };
-
-    auth.onAuthStateChanged(async (firebaseUser) => {
-        try {
-            if (firebaseUser) {
-                const userDoc = await db.collection('users').doc(firebaseUser.uid).get();
-                state.isLoggedIn = true;
-                if (userDoc.exists) {
-                    state.user = { uid: firebaseUser.uid, ...userDoc.data() };
-                    if (state.user.goal) {
-                        await fetchFoodEntriesForDate(state.currentDate);
-                        navigate('dashboard');
-                    } else { navigate('onboarding'); }
-                } else {
-                    state.user = { uid: firebaseUser.uid, email: firebaseUser.email };
-                    navigate('onboarding');
-                }
-            } else {
-                state = { ...state, isLoggedIn: false, user: null, foodEntries: {}, currentPage: 'login' };
-                render();
+            if (isLoading) {
+                appContainer.innerHTML = `<div class="flex items-center justify-center min-h-screen"><p class="text-gray-500">FitMeal을 준비 중입니다...</p></div>`;
+                return;
             }
-        } catch (error) {
-            console.error("앱 시작 중 심각한 오류 발생:", error);
-            appContainer.innerHTML = `<div class="p-4 text-center text-red-500">앱을 시작하는 중 오류가 발생했습니다.<br>잠시 후 새로고침 해주세요.</div>`;
-        }
-    });
-</script>
 
+            let pageHtml = '';
+            switch(currentPage) {
+                case 'login': pageHtml = this.components.LoginPage(); break;
+                case 'register': pageHtml = this.components.RegisterPage(); break;
+                case 'onboarding': pageHtml = this.components.OnboardingPage(); break;
+                case 'dashboard': pageHtml = this.components.DashboardPage(this.state); break;
+                default: pageHtml = `<div class="p-4 text-center">페이지를 찾을 수 없습니다.</div>`;
+            }
+            appContainer.innerHTML = pageHtml;
+            this.addEventListeners();
+        },
+
+        addEventListeners() {
+            const { currentPage } = this.state;
+            if (currentPage === 'login') document.getElementById('login-form')?.addEventListener('submit', this.handlers.handleLogin.bind(this));
+            if (currentPage === 'register') document.getElementById('register-form')?.addEventListener('submit', this.handlers.handleRegister.bind(this));
+            if (currentPage === 'onboarding') {
+                document.getElementById('onboarding-form')?.addEventListener('submit', this.handlers.handleOnboarding.bind(this));
+                document.querySelectorAll('.goal-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.goal-btn').forEach(b => b.classList.remove('bg-teal-500', 'text-white', 'border-teal-500'));
+                    e.currentTarget.classList.add('bg-teal-500', 'text-white', 'border-teal-500');
+                }));
+            }
+            if (currentPage === 'dashboard') {
+                document.getElementById('food-image-input')?.addEventListener('change', this.handlers.handleImagePreview);
+                document.getElementById('ai-analyze-btn')?.addEventListener('click', this.handlers.handlePhotoAnalysis.bind(this));
+                document.getElementById('record-selected-btn')?.addEventListener('click', this.handlers.handleAddSelectedFoods.bind(this));
+                window.openModal = this.handlers.openModal;
+                window.closeModal = this.handlers.closeModal;
+                window.deleteFood = this.handlers.deleteFood.bind(this);
+                window.changeDate = this.handlers.changeDate.bind(this);
+            }
+            window.navigate = this.handlers.navigateTo;
+        },
+
+        handlers: {
+            async onAuthStateChanged(firebaseUser) {
+                try {
+                    if (firebaseUser) {
+                        const userProfile = await App.api.getUserProfile(firebaseUser.uid);
+                        const user = userProfile 
+                            ? { uid: firebaseUser.uid, email: firebaseUser.email, ...userProfile }
+                            : { uid: firebaseUser.uid, email: firebaseUser.email };
+
+                        const foodEntries = await App.api.getFoodEntries(user.uid, App.state.currentDate);
+                        App.setState({ 
+                            user, 
+                            foodEntries: { [App.state.currentDate]: foodEntries }, 
+                            isLoading: false, 
+                            currentPage: user.goal ? 'dashboard' : 'onboarding' 
+                        });
+                    } else {
+                        App.setState({ user: null, isLoading: false, currentPage: 'login' });
+                    }
+                } catch (error) {
+                    console.error("인증 상태 변경 중 오류:", error);
+                    document.getElementById('app-container').innerHTML = `<div class="p-4 text-center text-red-500">오류가 발생했습니다. 새로고침 해주세요.</div>`;
+                }
+            },
+            navigateTo(page) { App.setState({ currentPage: page }); },
+            handleImagePreview(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); const preview = document.getElementById('image-preview'); if (preview) { reader.onload = (event) => { preview.src = event.target.result; preview.classList.remove('hidden'); }; reader.readAsDataURL(file); } },
+            async handleLogin(e) { e.preventDefault(); const btn = document.getElementById('login-btn'); btn.disabled = true; btn.textContent = '로그인 중...'; try { await App.api.signIn(e.target.email.value, e.target.password.value); } catch (error) { alert(`로그인 실패: ${error.message}`); btn.disabled = false; btn.textContent = '로그인'; } },
+            async handleRegister(e) { e.preventDefault(); const btn = e.target.querySelector('button'); btn.disabled = true; try { await App.api.register(e.target.email.value, e.target.password.value); } catch (error) { alert(error.message); btn.disabled = false; } },
+            handleLogout() { App.auth.signOut(); },
+            async handleOnboarding(e) { e.preventDefault(); const el = document.querySelector('.goal-btn.bg-teal-500'); if (!el) return alert('목표를 선택해주세요.'); let goal = 2000; if (el.dataset.goal === '체중 감량') goal = 1800; if (el.dataset.goal === '근육 증가') goal = 2500; const userData = { goal, carbsGoal: Math.round(goal*0.5/4), proteinGoal: Math.round(goal*0.3/4), fatGoal: Math.round(goal*0.2/9) }; await App.api.updateUserProfile(this.state.user.uid, userData); },
+            async handlePhotoAnalysis() {
+                const fileInput = document.getElementById('food-image-input'); if (!fileInput.files.length) return alert('분석할 음식 사진을 업로드해주세요.');
+                const analyzeBtn = document.getElementById('ai-analyze-btn'); analyzeBtn.disabled = true; analyzeBtn.textContent = '분석 중...';
+                const resultsContainer = document.getElementById('ai-results-container'); resultsContainer.innerHTML = '<p class="text-center text-gray-500">AI가 사진을 분석 중입니다... 🤖</p>';
+                try {
+                    const foodItems = await App.api.analyzePhoto(fileInput.files[0]);
+                    const recordBtn = document.getElementById('record-selected-btn');
+                    if (!foodItems || !foodItems.length) { resultsContainer.innerHTML = '<p class="text-center text-gray-500">분석된 음식이 없습니다.</p>'; recordBtn.classList.add('hidden'); return; }
+                    resultsContainer.innerHTML = App.components.AIResultList(foodItems);
+                    recordBtn.classList.remove('hidden');
+                } catch (error) { resultsContainer.innerHTML = `<p class="text-center text-red-500">사진 분석 실패: ${error.message}</p>`; } finally { analyzeBtn.disabled = false; analyzeBtn.textContent = 'AI로 분석하기'; }
+            },
+            async handleAddSelectedFoods() { const sel = document.querySelectorAll('#ai-results-container input:checked'); if (!sel.length) return alert('기록할 음식을 선택해주세요.'); const btn = document.getElementById('record-selected-btn'); btn.disabled = true; btn.textContent = '저장 중...'; const entries = Array.from(sel).map(cb => ({ name: cb.dataset.name, calories: parseInt(cb.dataset.calories), carbs: parseInt(cb.dataset.carbs), protein: parseInt(cb.dataset.protein), fat: parseInt(cb.dataset.fat), mealType: document.getElementById('mealType').value })); try { await App.api.addFoodEntries(this.state.user.uid, this.state.currentDate, entries); } catch(e) { alert('저장 실패: '+e.message); btn.disabled = false; btn.textContent = '선택 항목 기록하기'; } },
+            async deleteFood(id) { if (confirm('삭제하시겠습니까?')) { await App.api.deleteFoodEntry(this.state.user.uid, this.state.currentDate, id); const newEntries = await this.api.getFoodEntries(this.state.user.uid, this.state.currentDate); this.setState({ foodEntries: { ...this.state.foodEntries, [this.state.currentDate]: newEntries } }); }},
+            async changeDate(amount) { const d = new Date(this.state.currentDate); d.setDate(d.getDate() + amount); const newDate = d.toISOString().split('T')[0]; const newEntries = await this.api.getFoodEntries(this.state.user.uid, newDate); this.setState({ currentDate: newDate, foodEntries: { ...this.state.foodEntries, [newDate]: newEntries } }); },
+            openModal() { document.getElementById('add-food-modal')?.classList.remove('hidden'); },
+            closeModal() { document.getElementById('add-food-modal')?.classList.add('hidden'); },
+        },
+
+        api: {
+            fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = reject; }); },
+            async signIn(email, password) { return App.auth.signInWithEmailAndPassword(email, password); },
+            async register(email, password) { const cred = await App.auth.createUserWithEmailAndPassword(email, password); return App.db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, name: '새 사용자' }); },
+            async getUserProfile(uid) { const doc = await App.db.collection('users').doc(uid).get(); return doc.exists ? doc.data() : null; },
+            async updateUserProfile(uid, data) { return App.db.collection('users').doc(uid).set(data, { merge: true }); },
+            async getFoodEntries(uid, date) { const snapshot = await App.db.collection('users').doc(uid).collection(date).orderBy('createdAt').get(); return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); },
+            async analyzePhoto(file) { const base64Image = await this.fileToBase64(file); const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${App.config.geminiKey}`; const prompt = "이 사진에 있는 모든 음식 각각에 대해 이름, 예상 칼로리(kcal), 탄수화물(g), 단백질(g), 지방(g)을 추출해서 JSON 배열 형식으로 응답해줘. 음식과 관련없는 객체는 제외해줘. 숫자는 정수로 반올림하고, 다른 설명 없이 순수 JSON 배열만 응답해줘."; const requestBody = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64Image } }] }] }; const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }); if (!response.ok) throw new Error(`API 오류: ${response.status}`); const data = await response.json(); let jsonString = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]'; try { return JSON.parse(jsonString.replace(/```json|```/g, '').trim()); } catch(e) { console.error("JSON 파싱 오류:", e, "원본:", jsonString); throw new Error("AI 응답을 처리할 수 없습니다."); }},
+            async addFoodEntries(uid, date, entries) { const batch = App.db.batch(); const ref = App.db.collection('users').doc(uid).collection(date); entries.forEach(entry => { entry.createdAt = firebase.firestore.FieldValue.serverTimestamp(); batch.set(ref.doc(), entry); }); await batch.commit(); App.handlers.closeModal(); const newEntries = await App.api.getFoodEntries(uid, date); App.setState({ foodEntries: { ...App.state.foodEntries, [date]: newEntries } }); },
+            async deleteFoodEntry(uid, date, entryId) { return App.db.collection('users').doc(uid).collection(date).doc(entryId).delete(); },
+        },
+
+        components: {
+            Logo, LoginPage, RegisterPage, OnboardingPage, DashboardPage, NutrientBar, MealCard, AddFoodModal,
+            AIResultList(foodItems) { return `<h4 class="font-bold mb-2 text-gray-700">분석 결과</h4><ul class="space-y-2">${foodItems.map((item, index) => `<li class="flex items-center p-3 bg-gray-50 rounded-lg"><input id="food-${index}" type="checkbox" class="h-5 w-5 rounded" data-name="${item.name||''}" data-calories="${item.calories||0}" data-carbs="${item.carbs||0}" data-protein="${item.protein||0}" data-fat="${item.fat||0}" checked><label for="food-${index}" class="ml-3"><span class="font-semibold">${item.name||'이름없음'}</span><span class="text-sm text-gray-500"> - ${item.calories||0} kcal</span></label></li>`).join('')}</ul>`; }
+        }
+    };
+    
+    App.init();
+</script>
 </body>
 </html>
