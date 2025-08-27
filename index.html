@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitMeal - AI 식단 관리 (AI Logic Upgrade)</title>
+    <title>FitMeal - AI 식단 관리 (AI Safety Filter)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -210,6 +210,7 @@
                 let jsonString = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
                 try { 
                     const results = JSON.parse(jsonString.replace(/```json|```/g, '').trim());
+                    // AI가 규칙을 어겼을 경우를 대비한 안전장치
                     return results.filter(item => item && item.calories > 0 && item.name && item.name.trim() !== '');
                 } catch(e) { throw new Error("AI 응답을 처리할 수 없습니다."); }
             },
