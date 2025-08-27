@@ -19,11 +19,15 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <div id="app-container"></div>
+
+    <div id="app-container">
+        <div class="flex items-center justify-center min-h-screen">
+            <p class="text-gray-500">FitMeal을 준비 중입니다...</p>
+        </div>
+    </div>
+
 <script>
-    // =================================================================
-    // 🧱 1. UI 컴포넌트 (부품) 정의
-    // =================================================================
+    // --- 1. UI 컴포넌트 (부품) 정의 ---
     const Logo = (sizeClass = "text-4xl") => `<div class="flex items-center justify-center gap-2"><svg class="${sizeClass.replace('text-','w-').replace('4xl','10').replace('2xl','8')} text-teal-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.384,13.823,19.2,11.639,16.8,14.038V3a1,1,0,0,0-2,0v11.038L12.4,11.639,10.216,13.823,15.8,19.4a1,1,0,0,0,1.414,0ZM12,12a1,1,0,0,0-1,1v8a1,1,0,0,0,2,0V13A1,1,0,0,0,12,12ZM7.2,14.038,4.8,11.639,2.616,13.823,8.2,19.4a1,1,0,0,0,1.414,0L11.8,17.239,9.6,15.055,7.2,17.454V3a1,1,0,0,0-2,0Z"/></svg><h1 class="${sizeClass} font-bold text-teal-500">FitMeal</h1></div>`;
     const LoginPage = () => `<div class="flex flex-col items-center justify-center min-h-screen p-4"><div class="w-full max-w-sm"><div class="mb-2">${Logo("text-4xl")}</div><p class="text-center text-gray-600 mb-8">AI 식단 관리, 피트밀과 함께</p><form id="login-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4"><div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2" for="email">이메일</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="email" type="email" required></div><div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2" for="password">비밀번호</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="password" type="password" required></div><button id="login-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg btn-interactive" type="submit">로그인</button></form><p class="text-center text-gray-500 text-sm">계정이 없으신가요? <button onclick="App.handlers.navigateTo('register')" class="font-bold text-teal-500 hover:text-teal-700">회원가입</button></p></div></div>`;
     const RegisterPage = () => `<div class="flex flex-col items-center justify-center min-h-screen p-4"><div class="w-full max-w-sm"><h1 class="text-4xl font-bold text-center text-teal-500 mb-8">회원가입</h1><form id="register-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4"><div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">이메일</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="email" type="email" required></div><div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="password" type="password" required></div><button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg btn-interactive" type="submit">다음</button></form><p class="text-center text-gray-500 text-sm">이미 계정이 있으신가요? <button onclick="App.handlers.navigateTo('login')" class="font-bold text-teal-500 hover:text-teal-700">로그인</button></p></div></div>`;
@@ -127,8 +131,8 @@
                 } catch (error) { resultsContainer.innerHTML = `<p class="text-center text-red-500">사진 분석 실패: ${error.message}</p>`; } finally { analyzeBtn.disabled = false; analyzeBtn.textContent = 'AI로 분석하기'; }
             },
             async handleAddSelectedFoods() { const sel = document.querySelectorAll('#ai-results-container input:checked'); if (!sel.length) return alert('기록할 음식을 선택해주세요.'); const btn = document.getElementById('record-selected-btn'); btn.disabled = true; btn.textContent = '저장 중...'; const entries = Array.from(sel).map(cb => ({ name: cb.dataset.name, calories: parseInt(cb.dataset.calories), carbs: parseInt(cb.dataset.carbs), protein: parseInt(cb.dataset.protein), fat: parseInt(cb.dataset.fat), mealType: document.getElementById('mealType').value })); try { await App.api.addFoodEntries(this.state.user.uid, this.state.currentDate, entries); } catch(e) { alert('저장 실패: '+e.message); btn.disabled = false; btn.textContent = '선택 항목 기록하기'; } },
-            async deleteFood(id) { if (confirm('삭제하시겠습니까?')) { await App.api.deleteFoodEntry(this.state.user.uid, this.state.currentDate, id); const newEntries = await this.api.getFoodEntries(this.state.user.uid, this.state.currentDate); this.setState({ foodEntries: { ...this.state.foodEntries, [this.state.currentDate]: newEntries } }); }},
-            async changeDate(amount) { const d = new Date(this.state.currentDate); d.setDate(d.getDate() + amount); const newDate = d.toISOString().split('T')[0]; const newEntries = await this.api.getFoodEntries(this.state.user.uid, newDate); this.setState({ currentDate: newDate, foodEntries: { ...this.state.foodEntries, [newDate]: newEntries } }); },
+            async deleteFood(id) { if (confirm('삭제하시겠습니까?')) { await App.api.deleteFoodEntry(this.state.user.uid, this.state.currentDate, id); const newEntries = await App.api.getFoodEntries(this.state.user.uid, this.state.currentDate); this.setState({ foodEntries: { ...this.state.foodEntries, [this.state.currentDate]: newEntries } }); }},
+            async changeDate(amount) { const d = new Date(this.state.currentDate); d.setDate(d.getDate() + amount); const newDate = d.toISOString().split('T')[0]; const newEntries = await App.api.getFoodEntries(this.state.user.uid, newDate); this.setState({ currentDate: newDate, foodEntries: { ...this.state.foodEntries, [newDate]: newEntries } }); },
             openModal() { document.getElementById('add-food-modal')?.classList.remove('hidden'); },
             closeModal() { document.getElementById('add-food-modal')?.classList.add('hidden'); },
         },
@@ -140,7 +144,22 @@
             async getUserProfile(uid) { const doc = await App.db.collection('users').doc(uid).get(); return doc.exists ? doc.data() : null; },
             async updateUserProfile(uid, data) { await App.db.collection('users').doc(uid).set(data, { merge: true }); App.setState({ user: { ...App.state.user, ...data }}); },
             async getFoodEntries(uid, date) { const snapshot = await App.db.collection('users').doc(uid).collection(date).orderBy('createdAt').get(); return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); },
-            async analyzePhoto(file) { const base64Image = await this.fileToBase64(file); const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${App.config.geminiKey}`; const prompt = "이 사진에 있는 모든 음식 각각에 대해 이름, 예상 칼로리(kcal), 탄수화물(g), 단백질(g), 지방(g)을 추출해서 JSON 배열 형식으로 응답해줘. 음식과 관련없는 객체는 제외해줘. 숫자는 정수로 반올림하고, 다른 설명 없이 순수 JSON 배열만 응답해줘."; const requestBody = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64Image } }] }] }; const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }); if (!response.ok) throw new Error(`API 오류: ${response.status}`); const data = await response.json(); let jsonString = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]'; try { return JSON.parse(jsonString.replace(/```json|```/g, '').trim()); } catch(e) { console.error("JSON 파싱 오류:", e, "원본:", jsonString); throw new Error("AI 응답을 처리할 수 없습니다."); }},
+            async analyzePhoto(file) { 
+                const base64Image = await this.fileToBase64(file); 
+                const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${App.config.geminiKey}`; 
+                const prompt = "이 사진에 있는 모든 음식 각각에 대해 이름, 예상 칼로리(kcal), 탄수화물(g), 단백질(g), 지방(g)을 추출해서 JSON 배열 형식으로 응답해줘. 음식과 관련없는 객체는 제외해줘. 숫자는 정수로 반올림하고, 다른 설명 없이 순수 JSON 배열만 응답해줘."; 
+                const requestBody = { contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64Image } }] }] }; 
+                const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }); 
+                if (!response.ok) throw new Error(`API 오류: ${response.status}`); 
+                const data = await response.json(); 
+                let jsonString = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]'; 
+                try { 
+                    return JSON.parse(jsonString.replace(/```json|```/g, '').trim()); 
+                } catch(e) { 
+                    console.error("JSON 파싱 오류:", e, "원본:", jsonString); 
+                    throw new Error("AI 응답을 처리할 수 없습니다."); 
+                }
+            },
             async addFoodEntries(uid, date, entries) { const batch = App.db.batch(); const ref = App.db.collection('users').doc(uid).collection(date); entries.forEach(entry => { entry.createdAt = firebase.firestore.FieldValue.serverTimestamp(); batch.set(ref.doc(), entry); }); await batch.commit(); App.handlers.closeModal(); const newEntries = await App.api.getFoodEntries(uid, date); App.setState({ foodEntries: { ...App.state.foodEntries, [date]: newEntries } }); },
             async deleteFoodEntry(uid, date, entryId) { return App.db.collection('users').doc(uid).collection(date).doc(entryId).delete(); },
         },
