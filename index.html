@@ -67,7 +67,8 @@
     const App = {
         config: {
             firebase: { apiKey: "AIzaSyCRax6rd1rlBIc3kVgg5OkHmSIQyzJmC8A", authDomain: "fitmeal-app-d1a97.firebaseapp.com", projectId: "fitmeal-app-d1a97", storageBucket: "fitmeal-app-d1a97.appspot.com", messagingSenderId: "968711774677", appId: "1:968711774677:web:b3d3cb9ccc2388c3ba5d5c" },
-            geminiKey: "" // API 키는 보안을 위해 서버 환경 변수로 관리하는 것이 가장 좋습니다.
+            // ⛔️ API 키를 제거하고, 프록시 서버 주소를 추가합니다.
+            proxyServerUrl: "http://127.0.0.1:5000" 
         },
         state: { currentPage: 'loading', isLoading: true, user: null, foodEntries: {}, currentDate: new Date().toISOString().split('T')[0] },
 
@@ -184,8 +185,8 @@
             
             showLoading(show) {
                 document.getElementById('modal-step-1')?.classList.toggle('hidden', show);
-                document.getElementById('modal-step-2')?.classList.toggle('hidden', show);
-                document.getElementById('modal-step-3')?.classList.toggle('hidden', show);
+                document.getElementById('modal-step-2')?.classList.toggle('hidden', true);
+                document.getElementById('modal-step-3')?.classList.toggle('hidden', true);
                 document.getElementById('modal-loading')?.classList.toggle('hidden', !show);
             },
             
@@ -229,6 +230,9 @@
                 this.handlers.showLoading(true);
                 try {
                     const foodNames = await App.api.suggestFoodsFromPhoto(fileInput.files[0]);
+                     if (!foodNames || foodNames.length === 0) {
+                        throw new Error("AI가 사진에서 음식을 찾지 못했습니다.");
+                    }
                     const editableList = document.getElementById('editable-food-list');
                     editableList.innerHTML = EditableFoodList(foodNames);
                     document.getElementById('modal-step-1').classList.add('hidden');
@@ -260,6 +264,9 @@
                 this.handlers.showLoading(true);
                 try {
                     const foodItems = await App.api.analyzeText(foodList.join(', '));
+                    if (!foodItems || foodItems.length === 0) {
+                        throw new Error("AI가 유효한 영양 정보를 반환하지 않았습니다.");
+                    }
                     const finalResults = document.getElementById('final-results-container');
                     finalResults.innerHTML = FinalResultList(foodItems);
                     document.getElementById('modal-step-2').classList.add('hidden');
@@ -321,99 +328,43 @@
         },
 
         api: {
-            fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = reject; }); },
+            // Firebase 관련 API들은 그대로 유지합니다.
             async signIn(email, password) { return App.auth.signInWithEmailAndPassword(email, password); },
             async register(email, password) { const cred = await App.auth.createUserWithEmailAndPassword(email, password); return App.db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, name: '새 사용자' }); },
             async getUserProfile(uid) { const doc = await App.db.collection('users').doc(uid).get(); return doc.exists ? doc.data() : null; },
             async updateUserProfile(uid, data) { await App.db.collection('users').doc(uid).set(data, { merge: true }); App.setState({ user: { ...App.state.user, ...data }}); },
             async getFoodEntries(uid, date) { const snapshot = await App.db.collection('users').doc(uid).collection(date).orderBy('createdAt').get(); return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); },
-            async suggestFoodsFromPhoto(file) { 
-                const base64Image = await this.fileToBase64(file); 
-                const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${App.config.geminiKey}`; 
-                const prompt = "이 사진에 보이는 음식들의 이름을 한국어로, JSON 문자열 배열 형식으로 간단히 나열해줘. 예: `[\"쌀밥\", \"김치찌개\", \"계란말이\"]`"; 
-                const requestBody = { contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: file.type, data: base64Image } }] }] }; 
-                const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }); 
-                if (!response.ok) throw new Error(`API 오류: ${response.status}`); 
-                const data = await response.json(); 
-                let jsonString = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]'; 
-                try { 
-                    const results = JSON.parse(jsonString.replace(/```json|```/g, '').trim());
-                    return results.filter(name => name && typeof name === 'string' && name.trim() !== '');
-                } catch(e) { throw new Error("AI 응답을 처리할 수 없습니다."); }
-            },
-            async analyzeText(text) {
-                const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${App.config.geminiKey}`;
-                const prompt = `당신은 한국 음식 데이터에 특화된 매우 정밀한 영양 분석 AI입니다. 다음 텍스트에 나열된 각 음식의 영양 정보를 분석하여 JSON 배열 형식으로 반환해 주세요.
-
-                **[엄격히 준수해야 할 규칙]**
-                1.  **JSON 형식:** 응답은 오직 유효한 JSON 배열이어야 합니다. 다른 설명이나 텍스트는 절대 포함하지 마세요. 각 객체는 \`{ "name": "음식 (양)", "calories": 숫자, "carbs": 숫자, "protein": 숫자, "fat": 숫자 }\` 형식을 따라야 합니다.
-                2.  **이름과 양:** 'name' 필드에는 반드시 음식 이름과 일반적인 1인분 기준의 양(예: "쌀밥 (210g)")을 명시해야 합니다.
-                3.  **영양소 현실성:**
-                    * **칼로리 계산:** 칼로리는 \`(탄수화물 * 4) + (단백질 * 4) + (지방 * 9)\` 공식에 거의 근접해야 합니다. 약간의 오차는 허용됩니다.
-                    * **탄수화물 수치:** '쌀밥', '라면'과 같은 탄수화물 위주 음식이라도 1인분(약 200-300g)의 탄수화물 함량은 60-90g 범위를 넘지 않도록 현실적으로 계산해야 합니다.
-                    * **총량 검사:** 'carbs', 'protein', 'fat'의 그램(g) 총합이 'name'에 명시된 총량(g)을 초과해서는 안 됩니다.
-                4.  **0 값 금지:** 물을 제외한 모든 음식의 'calories'는 0이 될 수 없습니다. 모든 영양소 값은 0 이상이어야 합니다.
-
-                **[입력 텍스트]**
-                "${text}"
-
-                **[출력 예시]**
-                [
-                  { "name": "쌀밥 (210g)", "calories": 310, "carbs": 68, "protein": 6, "fat": 1 },
-                  { "name": "김치찌개 (400g)", "calories": 250, "carbs": 15, "protein": 20, "fat": 12 }
-                ]`;
-                const requestBody = { contents: [{ parts: [{ text: prompt }] }] };
-                const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
-                if (!response.ok) throw new Error(`API 오류: ${response.status}`);
-                const data = await response.json();
-                let jsonString = data.candidates?.[0]?.content?.parts?.[0]?.text || '[]';
-                try {
-                    const results = JSON.parse(jsonString.replace(/```json|```/g, '').trim());
-
-                    // --- AI Safety Filter & Data Validation ---
-                    // AI가 생성한 데이터의 무결성을 클라이언트 측에서 한 번 더 검증합니다.
-                    const validatedResults = results.filter(item => {
-                        if (!item || !item.name || typeof item.name !== 'string' || item.name.trim() === '') return false;
-                        
-                        const calories = parseFloat(item.calories);
-                        const carbs = parseFloat(item.carbs ?? 0);
-                        const protein = parseFloat(item.protein ?? 0);
-                        const fat = parseFloat(item.fat ?? 0);
-
-                        if (isNaN(calories) || calories <= 0) return false;
-                        if (isNaN(carbs) || isNaN(protein) || isNaN(fat) || carbs < 0 || protein < 0 || fat < 0) return false;
-
-                        const calculatedCalories = (carbs * 4) + (protein * 4) + (fat * 9);
-                        if (calculatedCalories > 10 && (calories > calculatedCalories * 1.5 || calories < calculatedCalories * 0.5)) {
-                            console.warn('AI Safety Filter: 칼로리 계산이 비현실적인 데이터를 필터링했습니다.', item);
-                            return false;
-                        }
-                        
-                        if (carbs > 150) {
-                             console.warn('AI Safety Filter: 탄수화물 수치가 비현실적인 데이터를 필터링했습니다.', item);
-                             return false;
-                        }
-                        return true;
-                    }).map(item => ({
-                         name: item.name,
-                         calories: Math.round(parseFloat(item.calories)),
-                         carbs: Math.round(parseFloat(item.carbs ?? 0)),
-                         protein: Math.round(parseFloat(item.protein ?? 0)),
-                         fat: Math.round(parseFloat(item.fat ?? 0)),
-                    }));
-                    
-                    if (validatedResults.length === 0 && results.length > 0) {
-                        throw new Error("AI가 유효하지 않은 영양 정보를 반환했습니다. 다시 시도해주세요.");
-                    }
-                    return validatedResults;
-
-                } catch (e) {
-                    console.error("AI 응답 처리 오류:", e, "원본 응답:", jsonString);
-                    throw new Error("AI 응답을 처리하는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-                }
-            },
             async addFoodEntries(uid, date, entries) { const batch = App.db.batch(); const ref = App.db.collection('users').doc(uid).collection(date); entries.forEach(entry => { entry.createdAt = firebase.firestore.FieldValue.serverTimestamp(); batch.set(ref.doc(), entry); }); await batch.commit(); App.handlers.closeModal(); const newEntries = await App.api.getFoodEntries(uid, date); App.setState({ foodEntries: { ...App.state.foodEntries, [date]: newEntries } }); },
             async deleteFoodEntry(uid, date, entryId) { return App.db.collection('users').doc(uid).collection(date).doc(entryId).delete(); },
+            
+            // ✅ AI 관련 API들을 프록시 서버를 호출하도록 수정합니다.
+            async suggestFoodsFromPhoto(file) {
+                const formData = new FormData();
+                formData.append('image', file);
+                const response = await fetch(`${App.config.proxyServerUrl}/api/suggest-foods-from-photo`, { 
+                    method: 'POST', 
+                    body: formData 
+                });
+                const data = await response.json();
+                if (response.ok && data.status === 'success') {
+                    return data.foodNames;
+                } else {
+                    throw new Error(data.message || '알 수 없는 서버 오류가 발생했습니다.');
+                }
+            },
+            async analyzeText(text) {
+                const response = await fetch(`${App.config.proxyServerUrl}/api/analyze-text`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+                const data = await response.json();
+                if (response.ok && data.status === 'success') {
+                    return data.nutritionInfo;
+                } else {
+                    throw new Error(data.message || '알 수 없는 서버 오류가 발생했습니다.');
+                }
+            },
         },
     };
     
@@ -421,12 +372,4 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
 
