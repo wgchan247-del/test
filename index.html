@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display.swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         html { font-family: 'Inter', sans-serif; }
         button:disabled { cursor: not-allowed; opacity: 0.7; }
@@ -30,7 +30,7 @@
 
 <script>
     // --- 1. UI 컴포넌트 (부품) 정의 ---
-    const Logo = (sizeClass = "text-4xl") => `<div class="flex items-center justify-center gap-2"><svg class="${sizeClass.replace('text-','w-').replace('4xl','10').replace('2xl','8')} text-teal-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.384,13.823,19.2,11.639,16.8,14.038V3a1,1,0,0,0-2,0v11.038L12.4,11.639,10.216,13.823,15.8,19.4a1,1,0,0,0,1.414,0ZM12,12a1,1,0,0,0-1,1v8a1,1,0,0,0,2,0V13A1,1,0,0,0,12,12ZM7.2,14.038,4.8,11.639,2.616,13.823,8.2,19.4a1,1,0,0,0,1.414,0L11.8,17.239,9.6,15.055,7.2,17.454V3a1,1,0,0,0-2,0Z"/></svg><h1 class="${sizeClass} font-bold text-teal-500">FitMeal</h1></div>`;
+    const Logo = (sizeClass = "text-4xl") => `<div class="flex items-center justify-center gap-2"><svg class="${sizeClass.replace('text-','w-').replace('4xl','10').replace('2xl','8')} text-teal-500" xmlns="http://www.w.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M21.384,13.823,19.2,11.639,16.8,14.038V3a1,1,0,0,0-2,0v11.038L12.4,11.639,10.216,13.823,15.8,19.4a1,1,0,0,0,1.414,0ZM12,12a1,1,0,0,0-1,1v8a1,1,0,0,0,2,0V13A1,1,0,0,0,12,12ZM7.2,14.038,4.8,11.639,2.616,13.823,8.2,19.4a1,1,0,0,0,1.414,0L11.8,17.239,9.6,15.055,7.2,17.454V3a1,1,0,0,0-2,0Z"/></svg><h1 class="${sizeClass} font-bold text-teal-500">FitMeal</h1></div>`;
     const LoginPage = () => `<div class="flex flex-col items-center justify-center min-h-screen p-4"><div class="w-full max-w-sm"><div class="mb-2">${Logo("text-4xl")}</div><p class="text-center text-gray-600 mb-8">AI 식단 관리, 피트밀과 함께</p><form id="login-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4"><div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2" for="email">이메일</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="email" type="email" required></div><div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2" for="password">비밀번호</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="password" type="password" required></div><button id="login-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg btn-interactive" type="submit">로그인</button></form><p class="text-center text-gray-500 text-sm">계정이 없으신가요? <button onclick="App.handlers.navigateTo('register')" class="font-bold text-teal-500 hover:text-teal-700">회원가입</button></p></div></div>`;
     const RegisterPage = () => `<div class="flex flex-col items-center justify-center min-h-screen p-4"><div class="w-full max-w-sm"><h1 class="text-4xl font-bold text-center text-teal-500 mb-8">회원가입</h1><form id="register-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4"><div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">이메일</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="email" type="email" required></div><div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="password" type="password" required></div><button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg btn-interactive" type="submit">다음</button></form><p class="text-center text-gray-500 text-sm">이미 계정이 있으신가요? <button onclick="App.handlers.navigateTo('login')" class="font-bold text-teal-500 hover:text-teal-700">로그인</button></p></div></div>`;
     const OnboardingPage = () => `<div class="flex flex-col items-center justify-center min-h-screen p-4"><div class="w-full max-w-md text-center"><h1 class="text-3xl font-bold text-gray-800 mb-2">FitMeal에 오신 것을 환영합니다!</h1><p class="text-gray-600 mb-8">정확한 추천을 위해 목표를 알려주세요.</p><form id="onboarding-form" class="bg-white shadow-lg rounded-lg p-8"><div class="mb-6"><label class="block text-gray-700 text-lg font-bold mb-4">가장 중요한 목표는 무엇인가요?</label><div id="goal-options" class="flex flex-col sm:flex-row justify-center gap-4"><button type="button" data-goal="체중 감량" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition bg-teal-500 border-teal-500 text-white btn-interactive">체중 감량</button><button type="button" data-goal="체중 유지" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition border-gray-300 text-gray-700 btn-interactive">체중 유지</button><button type="button" data-goal="근육 증가" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition border-gray-300 text-gray-700 btn-interactive">근육 증가</button></div></div><button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg btn-interactive" type="submit">피트밀 시작하기</button></form></div></div>`;
@@ -67,7 +67,6 @@
     const App = {
         config: {
             firebase: { apiKey: "AIzaSyCRax6rd1rlBIc3kVgg5OkHmSIQyzJmC8A", authDomain: "fitmeal-app-d1a97.firebaseapp.com", projectId: "fitmeal-app-d1a97", storageBucket: "fitmeal-app-d1a97.appspot.com", messagingSenderId: "968711774677", appId: "1:968711774677:web:b3d3cb9ccc2388c3ba5d5c" },
-            // ⛔️ API 키를 제거하고, 프록시 서버 주소를 추가합니다.
             proxyServerUrl: "http://127.0.0.1:5000" 
         },
         state: { currentPage: 'loading', isLoading: true, user: null, foodEntries: {}, currentDate: new Date().toISOString().split('T')[0] },
@@ -183,11 +182,21 @@
                 await App.api.updateUserProfile(this.state.user.uid, userData);
             },
             
+            // ✅ BUG FIX: 로딩 함수가 다른 단계의 화면에 영향을 주지 않도록 수정
             showLoading(show) {
-                document.getElementById('modal-step-1')?.classList.toggle('hidden', show);
-                document.getElementById('modal-step-2')?.classList.toggle('hidden', true);
-                document.getElementById('modal-step-3')?.classList.toggle('hidden', true);
-                document.getElementById('modal-loading')?.classList.toggle('hidden', !show);
+                const loadingEl = document.getElementById('modal-loading');
+                const step1El = document.getElementById('modal-step-1');
+                const step2El = document.getElementById('modal-step-2');
+                const step3El = document.getElementById('modal-step-3');
+
+                if (show) {
+                    loadingEl?.classList.remove('hidden');
+                    step1El?.classList.add('hidden');
+                    step2El?.classList.add('hidden');
+                    step3El?.classList.add('hidden');
+                } else {
+                    loadingEl?.classList.add('hidden');
+                }
             },
             
             showToast(message, type = 'error', duration = 3000) {
@@ -225,19 +234,29 @@
                 });
             },
 
+            // ✅ BUG FIX: 로딩 함수 수정에 맞춰 핸들러 로직 변경
             async handlePhotoSuggestion() {
-                const fileInput = document.getElementById('food-image-input'); if (!fileInput.files.length) { this.handlers.showToast('분석할 음식 사진을 업로드해주세요.'); return; }
+                const fileInput = document.getElementById('food-image-input');
+                if (!fileInput.files.length) {
+                    this.handlers.showToast('분석할 음식 사진을 업로드해주세요.');
+                    return;
+                }
                 this.handlers.showLoading(true);
                 try {
                     const foodNames = await App.api.suggestFoodsFromPhoto(fileInput.files[0]);
-                     if (!foodNames || foodNames.length === 0) {
+                    if (!foodNames || foodNames.length === 0) {
                         throw new Error("AI가 사진에서 음식을 찾지 못했습니다.");
                     }
                     const editableList = document.getElementById('editable-food-list');
                     editableList.innerHTML = EditableFoodList(foodNames);
-                    document.getElementById('modal-step-1').classList.add('hidden');
                     document.getElementById('modal-step-2').classList.remove('hidden');
-                } catch (error) { this.handlers.showToast(`AI 추천 실패: ${error.message}`); } finally { this.handlers.showLoading(false); }
+                } catch (error) {
+                    this.handlers.showToast(`AI 추천 실패: ${error.message}`);
+                    // 실패 시 1단계로 복귀
+                    document.getElementById('modal-step-1').classList.remove('hidden');
+                } finally {
+                    this.handlers.showLoading(false);
+                }
             },
             
             handleManualSuggestion() {
@@ -256,10 +275,14 @@
                 list.appendChild(newItem);
             },
 
+            // ✅ BUG FIX: 로딩 함수 수정에 맞춰 핸들러 로직 변경
             async handleNutritionCalculation() {
                 const inputs = document.querySelectorAll('.food-name-input');
                 const foodList = Array.from(inputs).map(input => input.value).filter(value => value.trim() !== '');
-                if (foodList.length === 0) { this.handlers.showToast('분석할 음식을 하나 이상 입력해주세요.'); return; }
+                if (foodList.length === 0) {
+                    this.handlers.showToast('분석할 음식을 하나 이상 입력해주세요.');
+                    return;
+                }
                 
                 this.handlers.showLoading(true);
                 try {
@@ -269,23 +292,41 @@
                     }
                     const finalResults = document.getElementById('final-results-container');
                     finalResults.innerHTML = FinalResultList(foodItems);
-                    document.getElementById('modal-step-2').classList.add('hidden');
                     document.getElementById('modal-step-3').classList.remove('hidden');
-                } catch (error) { this.handlers.showToast(`영양 정보 계산 실패: ${error.message}`); } finally { this.handlers.showLoading(false); }
+                } catch (error) {
+                    this.handlers.showToast(`영양 정보 계산 실패: ${error.message}`);
+                     // 실패 시 2단계로 복귀
+                    document.getElementById('modal-step-2').classList.remove('hidden');
+                } finally {
+                    this.handlers.showLoading(false);
+                }
             },
 
             async handleAddSelectedFoods() { const sel = document.querySelectorAll('#final-results-container input:checked'); if (!sel.length) { this.handlers.showToast('기록할 음식을 선택해주세요.'); return; } const btn = document.getElementById('record-btn'); btn.disabled = true; btn.textContent = '저장 중...'; const mealType = document.getElementById('mealType-select').value; const entries = Array.from(sel).map(cb => ({ name: cb.dataset.name, calories: parseInt(cb.dataset.calories), carbs: parseInt(cb.dataset.carbs), protein: parseInt(cb.dataset.protein), fat: parseInt(cb.dataset.fat), mealType })); try { await App.api.addFoodEntries(this.state.user.uid, this.state.currentDate, entries); } catch(e) { this.handlers.showToast('저장 실패: '+e.message); btn.disabled = false; btn.textContent = '이대로 기록하기'; } },
             async deleteFood(id) { const confirmed = await App.handlers.confirmAction('정말로 삭제하시겠습니까?'); if (confirmed) { await App.api.deleteFoodEntry(App.state.user.uid, App.state.currentDate, id); const newEntries = await App.api.getFoodEntries(App.state.user.uid, App.state.currentDate); App.setState({ foodEntries: { ...App.state.foodEntries, [App.state.currentDate]: newEntries } }); }},
             async changeDate(amount) { const d = new Date(App.state.currentDate); d.setDate(d.getDate() + amount); const newDate = d.toISOString().split('T')[0]; const newEntries = await App.api.getFoodEntries(App.state.user.uid, newDate); App.setState({ currentDate: newDate, foodEntries: { ...App.state.foodEntries, [newDate]: newEntries } }); },
             openModal() {
-                document.getElementById('settings-modal')?.classList.add('hidden'); // Close other modal
+                // 모달을 열 때 상태 초기화
+                document.getElementById('modal-step-1')?.classList.remove('hidden');
+                document.getElementById('modal-step-2')?.classList.add('hidden');
+                document.getElementById('modal-step-3')?.classList.add('hidden');
+                document.getElementById('modal-loading')?.classList.add('hidden');
+                const preview = document.getElementById('image-preview');
+                if (preview) {
+                    preview.src = '';
+                    preview.classList.add('hidden');
+                }
+                const fileInput = document.getElementById('food-image-input');
+                if(fileInput) fileInput.value = '';
+
+                document.getElementById('settings-modal')?.classList.add('hidden'); 
                 document.getElementById('add-food-modal')?.classList.remove('hidden');
             },
             closeModal() { 
                 document.getElementById('add-food-modal')?.classList.add('hidden'); 
             },
             openSettingsModal() {
-                document.getElementById('add-food-modal')?.classList.add('hidden'); // Close other modal
+                document.getElementById('add-food-modal')?.classList.add('hidden'); 
                 document.getElementById('settings-modal')?.classList.remove('hidden');
             },
             closeSettingsModal() { 
@@ -328,7 +369,6 @@
         },
 
         api: {
-            // Firebase 관련 API들은 그대로 유지합니다.
             async signIn(email, password) { return App.auth.signInWithEmailAndPassword(email, password); },
             async register(email, password) { const cred = await App.auth.createUserWithEmailAndPassword(email, password); return App.db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, name: '새 사용자' }); },
             async getUserProfile(uid) { const doc = await App.db.collection('users').doc(uid).get(); return doc.exists ? doc.data() : null; },
@@ -337,7 +377,6 @@
             async addFoodEntries(uid, date, entries) { const batch = App.db.batch(); const ref = App.db.collection('users').doc(uid).collection(date); entries.forEach(entry => { entry.createdAt = firebase.firestore.FieldValue.serverTimestamp(); batch.set(ref.doc(), entry); }); await batch.commit(); App.handlers.closeModal(); const newEntries = await App.api.getFoodEntries(uid, date); App.setState({ foodEntries: { ...App.state.foodEntries, [date]: newEntries } }); },
             async deleteFoodEntry(uid, date, entryId) { return App.db.collection('users').doc(uid).collection(date).doc(entryId).delete(); },
             
-            // ✅ AI 관련 API들을 프록시 서버를 호출하도록 수정합니다.
             async suggestFoodsFromPhoto(file) {
                 const formData = new FormData();
                 formData.append('image', file);

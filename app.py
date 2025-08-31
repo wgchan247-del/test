@@ -17,8 +17,8 @@ CORS(app)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # --- Gemini API 엔드포인트 ---
-GEMINI_PRO_VISION_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key={GEMINI_API_KEY}"
-GEMINI_PRO_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GEMINI_API_KEY}"
+# ✅ 오류 해결: API 모델 이름을 지원되는 최신 버전(gemini-1.5-flash-latest)으로 변경하고 URL을 하나로 통일합니다.
+GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={GEMINI_API_KEY}"
 
 # --- API 라우트 정의 ---
 
@@ -53,13 +53,22 @@ def suggest_foods_from_photo():
         # 3. Gemini API에 POST 요청 전송
         print("2. Gemini API에 POST 요청 전송...")
         headers = {"Content-Type": "application/json"}
-        response = requests.post(GEMINI_PRO_VISION_URL, headers=headers, json=payload)
+        response = requests.post(GEMINI_API_URL, headers=headers, json=payload) # ✅ 수정된 URL 사용
         response.raise_for_status() # 200번대 응답이 아니면 예외 발생
 
         print(f"3. Gemini API로부터 응답 받음. 상태 코드: {response.status_code}")
         result = response.json()
         
         # 4. 응답에서 텍스트 추출 및 파싱
+        # ✅ 안전장치 추가: AI가 응답을 거부하는 경우를 대비
+        if 'candidates' not in result or not result['candidates']:
+             # AI가 유해성 등의 이유로 응답을 거부했을 때의 처리
+            block_reason = result.get('promptFeedback', {}).get('blockReason', '알 수 없음')
+            print(f"!!! AI가 응답을 거부했습니다. 이유: {block_reason}")
+            # result 전체를 로그로 남겨 디버깅을 돕습니다.
+            print(f"전체 응답: {result}")
+            raise KeyError("AI로부터 유효한 응답을 받지 못했습니다.")
+
         food_text = result['candidates'][0]['content']['parts'][0]['text']
         food_names = [name.strip() for name in food_text.split(',')]
         
@@ -118,13 +127,20 @@ def analyze_text():
         # 2. Gemini API에 POST 요청
         print(f"1. 다음 텍스트 분석 요청: {food_text}")
         headers = {"Content-Type": "application/json"}
-        response = requests.post(GEMINI_PRO_URL, headers=headers, json=payload)
+        response = requests.post(GEMINI_API_URL, headers=headers, json=payload) # ✅ 수정된 URL 사용
         response.raise_for_status()
 
         print(f"2. Gemini API로부터 응답 받음. 상태 코드: {response.status_code}")
         result = response.json()
         
         # 3. 응답에서 JSON 텍스트 추출 및 파싱
+        # ✅ 안전장치 추가: AI가 응답을 거부하는 경우를 대비
+        if 'candidates' not in result or not result['candidates']:
+            block_reason = result.get('promptFeedback', {}).get('blockReason', '알 수 없음')
+            print(f"!!! AI가 응답을 거부했습니다. 이유: {block_reason}")
+            print(f"전체 응답: {result}")
+            raise KeyError("AI로부터 유효한 응답을 받지 못했습니다.")
+
         json_text = result['candidates'][0]['content']['parts'][0]['text']
         # Gemini가 응답에 ```json ... ``` 같은 마크다운을 포함할 수 있으므로 제거
         if '```json' in json_text:
@@ -148,3 +164,4 @@ def analyze_text():
 # --- 서버 실행 ---
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+
