@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitMeal - AI 식단 관리 (Debugging)</title>
+    <title>FitMeal - AI 식단 관리</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display.swap" rel="stylesheet">
     <style>
         html { font-family: 'Inter', sans-serif; }
         button:disabled { cursor: not-allowed; opacity: 0.7; }
@@ -34,7 +34,7 @@
     const LoginPage = () => `<div class="flex flex-col items-center justify-center min-h-screen p-4"><div class="w-full max-w-sm"><div class="mb-2">${Logo("text-4xl")}</div><p class="text-center text-gray-600 mb-8">AI 식단 관리, 피트밀과 함께</p><form id="login-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4"><div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2" for="email">이메일</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="email" type="email" required></div><div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2" for="password">비밀번호</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="password" type="password" required></div><button id="login-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg btn-interactive" type="submit">로그인</button></form><p class="text-center text-gray-500 text-sm">계정이 없으신가요? <button onclick="App.handlers.navigateTo('register')" class="font-bold text-teal-500 hover:text-teal-700">회원가입</button></p></div></div>`;
     const RegisterPage = () => `<div class="flex flex-col items-center justify-center min-h-screen p-4"><div class="w-full max-w-sm"><h1 class="text-4xl font-bold text-center text-teal-500 mb-8">회원가입</h1><form id="register-form" class="bg-white shadow-lg rounded-lg px-8 pt-6 pb-8 mb-4"><div class="mb-4"><label class="block text-gray-700 text-sm font-bold mb-2">이메일</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="email" type="email" required></div><div class="mb-6"><label class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label><input class="w-full p-3 border border-gray-300 rounded-lg" id="password" type="password" required></div><button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg btn-interactive" type="submit">다음</button></form><p class="text-center text-gray-500 text-sm">이미 계정이 있으신가요? <button onclick="App.handlers.navigateTo('login')" class="font-bold text-teal-500 hover:text-teal-700">로그인</button></p></div></div>`;
     const OnboardingPage = () => `<div class="flex flex-col items-center justify-center min-h-screen p-4"><div class="w-full max-w-md text-center"><h1 class="text-3xl font-bold text-gray-800 mb-2">FitMeal에 오신 것을 환영합니다!</h1><p class="text-gray-600 mb-8">정확한 추천을 위해 목표를 알려주세요.</p><form id="onboarding-form" class="bg-white shadow-lg rounded-lg p-8"><div class="mb-6"><label class="block text-gray-700 text-lg font-bold mb-4">가장 중요한 목표는 무엇인가요?</label><div id="goal-options" class="flex flex-col sm:flex-row justify-center gap-4"><button type="button" data-goal="체중 감량" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition bg-teal-500 border-teal-500 text-white btn-interactive">체중 감량</button><button type="button" data-goal="체중 유지" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition border-gray-300 text-gray-700 btn-interactive">체중 유지</button><button type="button" data-goal="근육 증가" class="goal-btn w-full p-4 border-2 rounded-lg font-semibold transition border-gray-300 text-gray-700 btn-interactive">근육 증가</button></div></div><button class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg btn-interactive" type="submit">피트밀 시작하기</button></form></div></div>`;
-    const DashboardPage = (state) => { if (!state.user) return `<div class="flex items-center justify-center min-h-screen"><p>사용자 정보를 불러오는 중입니다...</p></div>`; const dateKey = state.currentDate; const todaysEntries = state.foodEntries[dateKey] || []; const totals = todaysEntries.reduce((a, e) => ({ calories: a.calories + (e.calories||0), carbs: a.carbs + (e.carbs||0), protein: a.protein + (e.protein||0), fat: a.fat + (e.fat||0) }), { calories:0, carbs:0, protein:0, fat:0 }); const meals = { '아침':[],'점심':[],'저녁':[],'간식':[]}; todaysEntries.forEach(e => meals[e.mealType]?.push(e)); const caloriePercentage = state.user.goal > 0 ? Math.min((totals.calories/state.user.goal)*100, 100) : 0; const circ = 2 * Math.PI * 50; const offset = circ - (caloriePercentage/100) * circ; return `<div class="min-h-screen bg-gray-50"><header class="bg-white shadow-sm sticky top-0 z-10"><div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center"><div class="flex items-center gap-4">${Logo("text-2xl")}<button id="settings-btn" class="text-sm text-gray-600 hover:text-teal-500 btn-interactive">프로필 설정</button></div><button id="logout-btn" class="text-sm text-gray-600 hover:text-teal-500 btn-interactive">로그아웃</button></div></header><main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8"><div class="flex items-center justify-between mb-6"><button id="prev-date-btn" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold btn-interactive">&lt;</button><h2 class="text-xl font-semibold text-gray-800">${new Date(dateKey + 'T00:00:00').toLocaleDateString('ko-KR')}</h2><button id="next-date-btn" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold btn-interactive">&gt;</button></div><div class="bg-white p-6 rounded-lg shadow-md mb-8"><div class="flex flex-col md:flex-row items-center justify-around gap-8"><div class="relative flex items-center justify-center w-48 h-48"><svg class="w-full h-full" viewBox="0 0 120 120"><circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60"/><circle class="text-teal-500" stroke-width="10" stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60" transform="rotate(-90 60 60)"/></svg><div class="absolute flex flex-col items-center"><span class="text-3xl font-bold text-gray-800">${Math.round(totals.calories)}</span><span class="text-sm text-gray-500">/ ${state.user.goal||2000} kcal</span></div></div><div class="w-full md:w-1/2 space-y-4">${NutrientBar('탄수화물',totals.carbs,state.user.carbsGoal||0,'bg-orange-500')}${NutrientBar('단백질',totals.protein,state.user.proteinGoal||0,'bg-sky-500')}${NutrientBar('지방',totals.fat,state.user.fatGoal||0,'bg-amber-400')}</div></div></div><div class="space-y-6">${Object.entries(meals).map(([type, entries]) => MealCard(type, entries)).join('')}</div></main><div class="fixed bottom-6 right-6"><button id="add-food-btn" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300 btn-interactive">+</button></div><div id="add-food-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 p-4 flex items-center justify-center z-50">${AddFoodModal()}</div><div id="settings-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 p-4 flex items-center justify-center z-50">${SettingsModal(state)}</div></div>`; };
+    const DashboardPage = (state) => { if (!state.user) return `<div class="flex items-center justify-center min-h-screen"><p>사용자 정보를 불러오는 중입니다...</p></div>`; const dateKey = state.currentDate; const todaysEntries = state.foodEntries[dateKey] || []; const totals = todaysEntries.reduce((a, e) => ({ calories: a.calories + (e.calories||0), carbs: a.carbs + (e.carbs||0), protein: a.protein + (e.protein||0), fat: a.fat + (e.fat||0) }), { calories:0, carbs:0, protein:0, fat:0 }); const meals = { '아침':[],'점심':[],'저녁':[],'간식':[]}; todaysEntries.forEach(e => meals[e.mealType]?.push(e)); const caloriePercentage = state.user.goal > 0 ? Math.min((totals.calories/state.user.goal)*100, 100) : 0; const circ = 2 * Math.PI * 50; const offset = circ - (caloriePercentage/100) * circ; return `<div class="min-h-screen bg-gray-50"><header class="bg-white shadow-sm sticky top-0 z-10"><div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center"><div class="flex items-center gap-4">${Logo("text-2xl")}<button id="settings-btn" class="text-sm text-gray-600 hover:text-teal-500 btn-interactive">프로필 설정</button></div><button id="logout-btn" class="text-sm text-gray-600 hover:text-teal-500 btn-interactive">로그아웃</button></div></header><main class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8"><div class="flex items-center justify-between mb-6"><button id="prev-date-btn" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold btn-interactive">&lt;</button><h2 class="text-xl font-semibold text-gray-800">${new Date(dateKey + 'T00:00:00').toLocaleDateString('ko-KR')}</h2><button id="next-date-btn" class="p-2 rounded-full hover:bg-gray-200 text-xl font-bold btn-interactive">&gt;</button></div><div class="bg-white p-6 rounded-lg shadow-md mb-8"><div class="flex flex-col md:flex-row items-center justify-around gap-8"><div class="relative flex items-center justify-center w-48 h-48"><svg class="w-full h-full" viewBox="0 0 120 120"><circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60"/><circle class="text-teal-500" stroke-width="10" stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="50" cx="60" cy="60" transform="rotate(-90 60 60)"/></svg><div class="absolute flex flex-col items-center"><span class="text-3xl font-bold text-gray-800">${Math.round(totals.calories)}</span><span class="text-sm text-gray-500">/ ${state.user.goal||2000} kcal</span></div></div><div class="w-full md:w-1/2 space-y-4">${NutrientBar('탄수화물',totals.carbs,state.user.carbsGoal||0,'bg-orange-500')}${NutrientBar('단백질',totals.protein,state.user.proteinGoal||0,'bg-sky-500')}${NutrientBar('지방',totals.fat,state.user.fatGoal||0,'bg-amber-400')}</div></div></div><div class="space-y-6">${Object.entries(meals).map(([type, entries]) => MealCard(type, entries)).join('')}</div></main><div class="fixed bottom-6 right-6"><button id="add-food-btn" class="bg-teal-500 text-white w-16 h-16 flex items-center justify-center text-3xl rounded-full shadow-lg hover:bg-teal-600 transition duration-300 btn-interactive">+</button></div><div id="add-food-modal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 p-4 items-center justify-center z-50">${AddFoodModal()}</div><div id="settings-modal" style="display: none;" class="fixed inset-0 bg-black bg-opacity-50 p-4 items-center justify-center z-60">${SettingsModal(state)}</div></div>`; };
     const NutrientBar = (label, consumed, goal, color) => { const percentage = goal > 0 ? Math.min((consumed/goal)*100, 100) : 0; return `<div><div class="flex justify-between items-center mb-1"><span class="text-sm font-medium text-gray-700">${label}</span><span class="text-xs text-gray-500">${Math.round(consumed)}g / ${goal}g</span></div><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="${color} h-2.5 rounded-full" style="width: ${percentage}%"></div></div></div>`; };
     const MealCard = (mealType, entries) => `<div class="bg-white p-6 rounded-lg shadow-md"><h3 class="text-lg font-bold text-gray-800 mb-4">${mealType}</h3>${entries.length > 0 ? `<ul class="divide-y divide-gray-200">${entries.map(entry => `<li class="py-3 flex justify-between items-center"><div><p class="font-semibold text-gray-700">${entry.name}</p><p class="text-xs text-gray-400 mt-1">탄: ${entry.carbs || 0}g ・ 단: ${entry.protein || 0}g ・ 지: ${entry.fat || 0}g</p></div><div class="text-right"><p class="font-semibold text-gray-700">${entry.calories} kcal</p><button onclick="App.handlers.deleteFood('${entry.id}')" class="text-red-500 hover:text-red-700 text-xl leading-none mt-1 btn-interactive">×</button></div></li>`).join('')}</ul>` : `<p class="text-gray-500 text-sm">기록된 식단이 없어요.</p>`}</div>`;
     const AddFoodModal = () => `<div class="bg-white rounded-lg shadow-xl w-full max-w-md modal-content-wrapper"><div class="p-6 relative"><button id="close-add-food-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 font-bold text-2xl z-10">×</button><h2 class="text-2xl font-bold mb-4 text-gray-800">식단 기록</h2><div id="modal-step-1"><div class="mb-4"><label class="block text-sm font-bold mb-2">식사 종류</label><select id="mealType-select" class="w-full p-3 border rounded-lg bg-gray-50"><option>아침</option><option>점심</option><option>저녁</option><option>간식</option></select></div><div class="mb-4"><label class="block text-sm font-bold mb-2" for="food-image-input">음식 사진 업로드</label><input type="file" id="food-image-input" accept="image/jpeg, image/png, image/webp" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"><img id="image-preview" class="hidden rounded-lg mt-4 w-full h-auto object-cover"/></div><button id="ai-suggest-btn" class="w-full bg-teal-500 text-white font-bold py-3 rounded-lg hover:bg-teal-600 transition btn-interactive">AI로 음식 추천받기</button><p class="text-center text-sm text-gray-500 my-4">또는</p><button id="manual-entry-btn" class="w-full bg-gray-200 text-gray-700 font-bold py-3 rounded-lg hover:bg-gray-300 transition btn-interactive">직접 입력하기</button></div><div id="modal-step-2" class="hidden"><div id="editable-food-list"></div><div class="mt-4"><button id="add-food-item-btn" class="w-full text-sm text-teal-600 font-semibold py-2">+ 항목 추가</button></div><hr class="my-4"><button id="calculate-nutrition-btn" class="w-full bg-blue-500 text-white font-bold py-3 rounded-lg hover:bg-blue-600 btn-interactive">영양 정보 계산</button></div><div id="modal-step-3" class="hidden"><div id="final-results-container"></div><button id="record-btn" class="w-full bg-sky-500 text-white font-bold py-3 rounded-lg hover:bg-sky-600 transition mt-4 btn-interactive">이대로 기록하기</button></div><div id="modal-loading" class="hidden"><div class="flex flex-col items-center justify-center p-8"><svg class="animate-spin h-8 w-8 text-teal-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><p class="text-center text-gray-500">AI가 분석 중입니다... 🤖</p></div></div></div>`;
@@ -72,7 +72,6 @@
         state: { currentPage: 'loading', isLoading: true, user: null, foodEntries: {}, currentDate: new Date().toISOString().split('T')[0] },
 
         init() {
-            console.log("▶️ App.init(): 앱 초기화를 시작합니다.");
             firebase.initializeApp(this.config.firebase);
             this.auth = firebase.auth();
             this.db = firebase.firestore();
@@ -83,8 +82,6 @@
         setState(newState) { this.state = { ...this.state, ...newState }; window.requestAnimationFrame(() => this.render()); },
         render() {
             const { currentPage, isLoading } = this.state;
-            // 🐛 DEBUG: 현재 어떤 페이지를 렌더링하는지 확인합니다.
-            console.log(`🔄 App.render(): 페이지 렌더링 중... (현재 페이지: ${currentPage})`);
             const appContainer = document.getElementById('app-container');
             if (!appContainer) return;
             if (isLoading) { appContainer.innerHTML = `<div class="flex items-center justify-center min-h-screen"><p class="text-gray-500">FitMeal을 준비 중입니다...</p></div>`; return; }
@@ -102,8 +99,6 @@
 
         addEventListeners() {
             const { currentPage } = this.state;
-             // 🐛 DEBUG: 어떤 페이지의 이벤트 리스너를 추가하는지 확인합니다.
-            console.log(`🔗 App.addEventListeners(): 이벤트 리스너 추가 시도 (현재 페이지: ${currentPage})`);
             if (currentPage === 'login') document.getElementById('login-form')?.addEventListener('submit', this.handlers.handleLogin.bind(this));
             if (currentPage === 'register') document.getElementById('register-form')?.addEventListener('submit', this.handlers.handleRegister.bind(this));
             if (currentPage === 'onboarding') {
@@ -118,11 +113,7 @@
                 }));
             }
             if (currentPage === 'dashboard') {
-                // 🐛 DEBUG: settings-btn 요소를 찾았는지 확인합니다.
-                const settingsButton = document.getElementById('settings-btn');
-                console.log("🔍 'settings-btn' 버튼 찾기 결과:", settingsButton);
-
-                settingsButton?.addEventListener('click', () => App.handlers.openSettingsModal());
+                document.getElementById('settings-btn')?.addEventListener('click', () => App.handlers.openSettingsModal());
                 document.getElementById('logout-btn')?.addEventListener('click', () => App.handlers.handleLogout());
                 document.getElementById('add-food-btn')?.addEventListener('click', () => App.handlers.openModal());
                 document.getElementById('prev-date-btn')?.addEventListener('click', () => App.handlers.changeDate(-1));
@@ -136,8 +127,8 @@
                 document.getElementById('record-btn')?.addEventListener('click', this.handlers.handleAddSelectedFoods.bind(this));
                 document.getElementById('add-food-item-btn')?.addEventListener('click', this.handlers.addEditableFoodItem);
 
-                document.getElementById('close-settings-modal-btn')?.addEventListener('click', App.handlers.closeSettingsModal);
-                document.getElementById('save-settings-btn')?.addEventListener('click', this.handlers.handleSaveSettings.bind(this));
+                document.getElementById('close-settings-modal-btn')?.addEventListener('click', () => App.handlers.closeSettingsModal());
+                document.getElementById('save-settings-btn')?.addEventListener('click', () => App.handlers.handleSaveSettings.bind(App));
                 document.querySelectorAll('.settings-goal-btn').forEach(btn => btn.addEventListener('click', (e) => {
                     document.querySelectorAll('.settings-goal-btn').forEach(b => {
                         b.classList.remove('bg-teal-500', 'text-white', 'border-teal-500');
@@ -151,7 +142,6 @@
 
         handlers: {
             async onAuthStateChanged(firebaseUser) {
-                // ... (기존과 동일)
                 try {
                     if (firebaseUser) {
                         const userProfile = await App.api.getUserProfile(firebaseUser.uid);
@@ -188,9 +178,7 @@
                 };
                 await App.api.updateUserProfile(this.state.user.uid, userData);
             },
-            
             showLoading(show) {
-                // ... (기존과 동일)
                 const loadingEl = document.getElementById('modal-loading');
                 const step1El = document.getElementById('modal-step-1');
                 const step2El = document.getElementById('modal-step-2');
@@ -205,9 +193,7 @@
                     loadingEl?.classList.add('hidden');
                 }
             },
-            
             showToast(message, type = 'error', duration = 3000) {
-                // ... (기존과 동일)
                 const container = document.getElementById('toast-container');
                 if (!container) return;
                 const toast = document.createElement('div');
@@ -220,9 +206,7 @@
                     toast.addEventListener('animationend', () => toast.remove());
                 }, duration);
             },
-            
             confirmAction(message) {
-                // ... (기존과 동일)
                 return new Promise((resolve) => {
                     const modalHTML = `
                         <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-50 p-4 flex items-center justify-center z-[101]" role="alertdialog" aria-modal="true" aria-labelledby="confirmation-title">
@@ -242,41 +226,26 @@
                     document.getElementById('confirm-cancel-btn')?.addEventListener('click', () => closeModal(false));
                 });
             },
-
             async handlePhotoSuggestion() {
-                // ... (기존과 동일)
                 const fileInput = document.getElementById('food-image-input');
-                if (!fileInput.files.length) {
-                    this.handlers.showToast('분석할 음식 사진을 업로드해주세요.');
-                    return;
-                }
+                if (!fileInput.files.length) { this.handlers.showToast('분석할 음식 사진을 업로드해주세요.'); return; }
                 this.handlers.showLoading(true);
                 try {
                     const foodNames = await App.api.suggestFoodsFromPhoto(fileInput.files[0]);
-                    if (!foodNames || foodNames.length === 0) {
-                        throw new Error("AI가 사진에서 음식을 찾지 못했습니다.");
-                    }
-                    const editableList = document.getElementById('editable-food-list');
-                    editableList.innerHTML = EditableFoodList(foodNames);
+                    if (!foodNames || foodNames.length === 0) { throw new Error("AI가 사진에서 음식을 찾지 못했습니다."); }
+                    document.getElementById('editable-food-list').innerHTML = EditableFoodList(foodNames);
                     document.getElementById('modal-step-2').classList.remove('hidden');
                 } catch (error) {
                     this.handlers.showToast(`AI 추천 실패: ${error.message}`);
                     document.getElementById('modal-step-1').classList.remove('hidden');
-                } finally {
-                    this.handlers.showLoading(false);
-                }
+                } finally { this.handlers.showLoading(false); }
             },
-            
             handleManualSuggestion() {
-                // ... (기존과 동일)
-                const editableList = document.getElementById('editable-food-list');
-                editableList.innerHTML = EditableFoodList(["", "", ""]);
+                document.getElementById('editable-food-list').innerHTML = EditableFoodList(["", "", ""]);
                 document.getElementById('modal-step-1').classList.add('hidden');
                 document.getElementById('modal-step-2').classList.remove('hidden');
             },
-
             addEditableFoodItem() {
-                // ... (기존과 동일)
                 const list = document.querySelector('#editable-food-list ul');
                 if(!list) return;
                 const newItem = document.createElement('li');
@@ -284,74 +253,86 @@
                 newItem.innerHTML = `<input type="text" class="food-name-input w-full p-2 border rounded-lg" value=""><button onclick="this.parentElement.remove()" class="text-red-500 p-2 btn-interactive">×</button>`;
                 list.appendChild(newItem);
             },
-
             async handleNutritionCalculation() {
-                // ... (기존과 동일)
                 const inputs = document.querySelectorAll('.food-name-input');
                 const foodList = Array.from(inputs).map(input => input.value).filter(value => value.trim() !== '');
-                if (foodList.length === 0) {
-                    this.handlers.showToast('분석할 음식을 하나 이상 입력해주세요.');
-                    return;
-                }
-                
+                if (foodList.length === 0) { this.handlers.showToast('분석할 음식을 하나 이상 입력해주세요.'); return; }
                 this.handlers.showLoading(true);
                 try {
                     const foodItems = await App.api.analyzeText(foodList.join(', '));
-                    if (!foodItems || foodItems.length === 0) {
-                        throw new Error("AI가 유효한 영양 정보를 반환하지 않았습니다.");
-                    }
-                    const finalResults = document.getElementById('final-results-container');
-                    finalResults.innerHTML = FinalResultList(foodItems);
+                    if (!foodItems || foodItems.length === 0) { throw new Error("AI가 유효한 영양 정보를 반환하지 않았습니다."); }
+                    document.getElementById('final-results-container').innerHTML = FinalResultList(foodItems);
                     document.getElementById('modal-step-3').classList.remove('hidden');
                 } catch (error) {
                     this.handlers.showToast(`영양 정보 계산 실패: ${error.message}`);
                     document.getElementById('modal-step-2').classList.remove('hidden');
-                } finally {
-                    this.handlers.showLoading(false);
-                }
+                } finally { this.handlers.showLoading(false); }
             },
-
-            async handleAddSelectedFoods() { /* ... (기존과 동일) ... */ },
-            async deleteFood(id) { /* ... (기존과 동일) ... */ },
-            async changeDate(amount) { /* ... (기존과 동일) ... */ },
+            async handleAddSelectedFoods() { /* ... */ },
+            async deleteFood(id) { /* ... */ },
+            async changeDate(amount) { /* ... */ },
+            
+            // ✅ FIX: 모달 관리 로직을 style.display로 변경하여 안정성 확보
             openModal() {
-                // ... (기존과 동일)
-                document.getElementById('modal-step-1')?.classList.remove('hidden');
-                document.getElementById('modal-step-2')?.classList.add('hidden');
-                document.getElementById('modal-step-3')?.classList.add('hidden');
-                document.getElementById('modal-loading')?.classList.add('hidden');
+                // 모달을 열 때 상태 초기화
+                document.getElementById('modal-step-1').classList.remove('hidden');
+                document.getElementById('modal-step-2').classList.add('hidden');
+                document.getElementById('modal-step-3').classList.add('hidden');
                 const preview = document.getElementById('image-preview');
-                if (preview) {
-                    preview.src = '';
-                    preview.classList.add('hidden');
-                }
+                if(preview) { preview.src = ''; preview.classList.add('hidden'); }
                 const fileInput = document.getElementById('food-image-input');
                 if(fileInput) fileInput.value = '';
 
-                document.getElementById('settings-modal')?.classList.add('hidden'); 
-                document.getElementById('add-food-modal')?.classList.remove('hidden');
+                document.getElementById('settings-modal').style.display = 'none';
+                document.getElementById('add-food-modal').style.display = 'flex';
             },
             closeModal() { 
-                document.getElementById('add-food-modal')?.classList.add('hidden'); 
+                document.getElementById('add-food-modal').style.display = 'none';
             },
             openSettingsModal() {
-                // 🐛 DEBUG: 함수가 호출되었는지, modal 요소를 찾았는지 확인합니다.
-                console.log("✅ openSettingsModal() 함수 호출됨!");
-                const settingsModal = document.getElementById('settings-modal');
-                console.log("🔍 'settings-modal' 요소 찾기 결과:", settingsModal);
-
-                document.getElementById('add-food-modal')?.classList.add('hidden'); 
-                if (settingsModal) settingsModal.style.display = 'flex';
+                document.getElementById('add-food-modal').style.display = 'none';
+                document.getElementById('settings-modal').style.display = 'flex';
             },
             closeSettingsModal() { 
-                const settingsModal = document.getElementById('settings-modal');
-                if (settingsModal) settingsModal.style.display = 'none'; 
+                document.getElementById('settings-modal').style.display = 'none';
             },
-            async handleSaveSettings() { /* ... (기존과 동일) ... */ },
+            async handleSaveSettings() {
+                const btn = document.getElementById('save-settings-btn');
+                if (btn) btn.disabled = true;
+
+                const el = document.querySelector('#settings-modal .settings-goal-btn.bg-teal-500');
+                if (!el) {
+                    App.handlers.showToast('새로운 목표를 선택해주세요.');
+                    if (btn) btn.disabled = false;
+                    return;
+                }
+
+                const goalDescription = el.dataset.goal;
+                let goal = 2000;
+                if (goalDescription === '체중 감량') goal = 1800;
+                if (goalDescription === '근육 증가') goal = 2500;
+                
+                const userData = {
+                    goalDescription,
+                    goal,
+                    carbsGoal: Math.round(goal * 0.5 / 4),
+                    proteinGoal: Math.round(goal * 0.3 / 4),
+                    fatGoal: Math.round(goal * 0.2 / 9)
+                };
+                
+                try {
+                    await App.api.updateUserProfile(this.state.user.uid, userData);
+                    App.handlers.showToast('프로필이 성공적으로 업데이트되었습니다.', 'success');
+                    App.handlers.closeSettingsModal();
+                } catch (error) {
+                    App.handlers.showToast(`업데이트 실패: ${error.message}`);
+                } finally {
+                    if (btn) btn.disabled = false;
+                }
+            },
         },
 
         api: {
-            /* ... (기존과 동일) ... */
             async signIn(email, password) { return App.auth.signInWithEmailAndPassword(email, password); },
             async register(email, password) { const cred = await App.auth.createUserWithEmailAndPassword(email, password); return App.db.collection('users').doc(cred.user.uid).set({ email: cred.user.email, name: '새 사용자' }); },
             async getUserProfile(uid) { const doc = await App.db.collection('users').doc(uid).get(); return doc.exists ? doc.data() : null; },
@@ -359,20 +340,13 @@
             async getFoodEntries(uid, date) { const snapshot = await App.db.collection('users').doc(uid).collection(date).orderBy('createdAt').get(); return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); },
             async addFoodEntries(uid, date, entries) { const batch = App.db.batch(); const ref = App.db.collection('users').doc(uid).collection(date); entries.forEach(entry => { entry.createdAt = firebase.firestore.FieldValue.serverTimestamp(); batch.set(ref.doc(), entry); }); await batch.commit(); App.handlers.closeModal(); const newEntries = await App.api.getFoodEntries(uid, date); App.setState({ foodEntries: { ...App.state.foodEntries, [date]: newEntries } }); },
             async deleteFoodEntry(uid, date, entryId) { return App.db.collection('users').doc(uid).collection(date).doc(entryId).delete(); },
-            
             async suggestFoodsFromPhoto(file) {
                 const formData = new FormData();
                 formData.append('image', file);
-                const response = await fetch(`${App.config.proxyServerUrl}/api/suggest-foods-from-photo`, { 
-                    method: 'POST', 
-                    body: formData 
-                });
+                const response = await fetch(`${App.config.proxyServerUrl}/api/suggest-foods-from-photo`, { method: 'POST', body: formData });
                 const data = await response.json();
-                if (response.ok && data.status === 'success') {
-                    return data.foodNames;
-                } else {
-                    throw new Error(data.message || '알 수 없는 서버 오류가 발생했습니다.');
-                }
+                if (response.ok && data.status === 'success') { return data.foodNames; } 
+                else { throw new Error(data.message || '알 수 없는 서버 오류.'); }
             },
             async analyzeText(text) {
                 const response = await fetch(`${App.config.proxyServerUrl}/api/analyze-text`, {
@@ -381,11 +355,8 @@
                     body: JSON.stringify({ text: text })
                 });
                 const data = await response.json();
-                if (response.ok && data.status === 'success') {
-                    return data.nutritionInfo;
-                } else {
-                    throw new Error(data.message || '알 수 없는 서버 오류가 발생했습니다.');
-                }
+                if (response.ok && data.status === 'success') { return data.nutritionInfo; } 
+                else { throw new Error(data.message || '알 수 없는 서버 오류.'); }
             },
         },
     };
