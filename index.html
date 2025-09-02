@@ -341,10 +341,11 @@
                 console.log("🔍 'settings-modal' 요소 찾기 결과:", settingsModal);
 
                 document.getElementById('add-food-modal')?.classList.add('hidden'); 
-                settingsModal?.classList.remove('hidden');
+                if (settingsModal) settingsModal.style.display = 'flex';
             },
             closeSettingsModal() { 
-                document.getElementById('settings-modal')?.classList.add('hidden'); 
+                const settingsModal = document.getElementById('settings-modal');
+                if (settingsModal) settingsModal.style.display = 'none'; 
             },
             async handleSaveSettings() { /* ... (기존과 동일) ... */ },
         },
